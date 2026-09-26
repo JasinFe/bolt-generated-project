@@ -60,3 +60,23 @@ Non-régression : les 15 harnais du domaine (immobilisations, amortissement, cl�
 5. **Immobilisations en cours (23x) → mise en service.** Un assistant de virement du 23 vers le 2x, qui ouvrirait la fiche au jour de mise en service. Le contrôle de clôture « 23 dormant » existe déjà.
 6. **Écouteur d'événement** `immo_acquisition_detectee` : une notification à l'acheteur ou au comptable dès l'enregistrement de la facture, en plus du bandeau.
 7. **Tableau des amortissements DGI (note 3C)** généré depuis le registre et rapproché de la note 3 issue du grand livre.
+
+---
+
+## 5. Mise en œuvre des recommandations (1.856.0)
+
+Nouveau test : `tests/immobilisations_recommandations_1856.php` (50 contrôles). Sur 1.855.0, il échoue dès le premier appel (`FKC_Immobilisation::deprecier()` n'existe pas).
+
+| # | Recommandation | Réalisation |
+|---|----------------|-------------|
+| 1 | **Dépréciations (29x)** | `deprecier( $id, $date, $montant, $motif )` : un montant positif constate (D 6913 incorporelles / 6914 corporelles / 6972 financières, C 29x déduit par `FKC_MappingAmortissement`), un montant négatif reprend (D 29x, C 7913 / 7914 / 7972). Plafonds : la VNC pour une constatation, le cumul pour une reprise. Suivi dans `immo_depreciations`, raccordé au journal temporaire. La VNC en tient compte ; la cession reprend la dépréciation restante dans la même écriture ; le rapprochement confronte le 29 au registre. Carte « Dépréciation » sur la fiche, avec historique. |
+| 2 | **Dégressif et unités d'œuvre** | Méthode au formulaire. Dégressif : coefficient de la fiche ou barème (1,5 pour 3–4 ans, 2 pour 5–6 ans, 2,5 au-delà), premier exercice en mois, bascule en linéaire dès que le taux linéaire restant l'emporte, plan borné à la durée. Unités d'œuvre : unités totales prévues, saisie par exercice (`saisirUnites()`), refus au-delà du total prévu ou après la dotation. Dotation, mensualisation, clôture et cession suivent le plan, quel que soit le mode. |
+| 3 | **Composants** | `ventilerComposant()` : avant la première dotation, un élément à durée propre devient une fiche rattachée (`parent_id`) ; la valeur de la fiche principale baisse d'autant ; une OD reclasse la valeur si le compte change (231 → 234). Un composant ne se décompose pas. La fiche liste ses composants. |
+| 4 | **Réévaluation (106)** | `reevaluer()` : écart = valeur actuelle − VNC, positif uniquement (une baisse est une dépréciation). D 2x / C 106, valeur brute relevée, plan des exercices suivants rebasé sur la durée restante (`rebaser()`). Refusée si une dotation postérieure existe, ou si une dépréciation est encore constatée. |
+| 5 | **Mise en service des en-cours** | `mettreEnService()` : D compte définitif / C 219·229·239·249, comptes d'amortissement et de dotation déduits, durée et méthode saisies. L'amortissement part de `date_mise_en_service` (prorata du premier exercice, mensualisation, dotation complémentaire de cession). Événement `immo_mise_en_service`. |
+| 6 | **Écouteur `immo_acquisition_detectee`** | `FKC_Immobilisation::brancher()` au démarrage. Chaque facture d'achat imputée en classe 2 notifie les administrateurs et les utilisateurs du module Comptabilité (type « tâche », lien vers l'import). Une seule notification par facture, grâce à la clé de regroupement. |
+| 7 | **Note 3C depuis le registre** | `FKC_EtatsDgi::tableauAmortissementsRegistre()` : par poste de la liasse (AE → AN), cumul à l'ouverture, dotations, sorties et clôture tirés des fiches, comparés aux comptes 28 du grand livre, avec l'écart. Affiché sous les notes annexes (badge concordant / écart) et exporté dans le CSV des notes. |
+
+S'y ajoutent :
+- une fiche dépréciée, réévaluée ou décomposée ne s'annule plus tant que ces opérations n'ont pas été défaites ;
+- la note 2 proposée décrit les modes d'amortissement réellement employés et écarte les biens non amortissables.
