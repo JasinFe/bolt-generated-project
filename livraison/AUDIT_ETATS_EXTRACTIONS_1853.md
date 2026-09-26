@@ -82,7 +82,7 @@ Non-régression : `tests/etats_financiers_1564.php` (151 contrôles) et la suite
 
 ---
 
-## 4. Recommandations (non faites dans ce patch)
+## 4. Recommandations (état au 1.854.0 : voir § 5)
 
 1. **Table de correspondance paramétrable pour les packs.** Le repli évite la liasse fausse, mais « 709000 → TC » reste une déduction. Il faudrait que chaque pack déclare, dans son manifeste, la ligne SN et SMT de ses comptes (`FKC_Packs::comptesLiasse()`), et que `postesResultat()` les fusionne. Le contrôle ne signalerait plus alors que les comptes vraiment inconnus.
 2. **709 « Rabais accordés » dans le plan SYSCOHADA.** Le pack Royalties l'utilise pour des revenus de branding, ce qui détourne un compte normé. Le renuméroter (par exemple 706xxx) est recommandé ; le repli le range en TC en attendant.
@@ -92,3 +92,31 @@ Non-régression : `tests/etats_financiers_1564.php` (151 contrôles) et la suite
 6. **Export Excel natif (.xlsx)** des extractions, avec sous-totaux et mise en forme. Le CSV en `;` reste le format d'échange.
 7. **Verrou de dépôt.** Après l'envoi du fichier EDI, figer une empreinte (hash) de la liasse déposée, puis signaler toute écriture postérieure qui la modifierait.
 8. **Contrôle croisé Fiscalité ↔ liasse.** Rapprocher l'impôt sur le résultat (ligne RS / 89) de la déclaration d'IS du module Fiscalité, et le chiffre d'affaires (XB) du CA déclaré en TVA.
+
+---
+
+## 5. Mise en œuvre des recommandations — 1.854.0
+
+Test : `tests/liasse_recommandations_1854.php` (37 contrôles). Suite complète verte.
+
+| # | Recommandation | État | Réalisation |
+|---|----------------|------|-------------|
+| 1 | Correspondance de liasse déclarée par les packs | ✅ Fait | Clé `liasse` des manifestes (`Packs/ong/pack.php`), `FKC_LabelComptable::lignesLiasse()` (Royalties), `FKC_PlanSycebnl::lignesLiasse()`, hook `FKC_EtatsDgi::declarerComptesLiasse()`. Le préfixe le plus long gagne. Une ligne inconnue du modèle est écartée et signalée dans le contrôle ; la partie valide de la déclaration est gardée. Le repli de 1.853.0 ne sert plus qu'aux comptes que personne ne déclare. |
+| 2 | Renuméroter le 709000 Royalties | ✅ Fait | Nouveau compte 706095 « Revenus branding et partenariats artistes ». La saisie sur l'ancien 709000 est refusée, avec un message qui renvoie vers 706095. Les soldes hérités se transfèrent par l'OD de reclassement (`FKC_Reclassement`). Ce blocage est **conditionnel au libellé** : un 709000 « Rabais accordés » créé par le dossier reste imputable et n'est pas proposé au reclassement. |
+| 3 | Performance du contrôle | ✅ Fait | Les états sont mémoïsés par requête, avec une clé `total_changes()` : toute écriture en base invalide la mémoire. Chaque onglet de la liasse ne calcule plus que ce qu'il affiche ; l'EDI et les codes de liasse ne sont calculés que dans leur onglet. Mesure sur 10 000 écritures : Bilan 1,60 s → 0,25 s ; Résultat 1,39 s → 0,09 s ; Notes 1,35 s → 0,10 s ; États financiers 0,13 s → 0,09 s. |
+| 4 | Balance âgée par le lettrage réel | ✅ Fait | La balance âgée utilise désormais `FKC_Imputation`, le moteur du recouvrement. Ordre d'imputation : imputations nommées à l'encaissement, puis reçus rattachés, puis avoirs sur leur facture d'origine ; le FIFO ne traite que le reliquat. La date d'arrêté est propagée jusqu'au moteur (`$asOf`). Extraction et recouvrement donnent maintenant le même chiffre. |
+| 5 | Empreinte de la liasse déposée | ✅ Fait | Bouton « Marquer comme déposée » (référence e-impots et date) dans l'onglet Codes de liasse ; table `liasse_depots`. L'empreinte couvre les soldes N et N-1 de tous les comptes, l'annexe descriptive et l'identification du dossier. Toute divergence ultérieure est signalée : réserve dans le contrôle, badge en en-tête, résultat déposé comparé au résultat actuel, nombre d'écritures passées depuis. Une liasse incohérente ne peut pas être marquée déposée. |
+| 6 | Rapprochement liasse ↔ Fiscalité | ✅ Fait | `rapprochementFiscal()` : l'IS de la liasse (RS) est comparé à la déclaration d'IS (**réserve** en cas d'écart) ; le chiffre d'affaires (XB) est comparé à la base des déclarations de TVA de l'exercice (**information**, avec le nombre de mois déclarés : exportations, opérations exonérées et décalages expliquent des écarts légitimes). |
+| 7 | Grand livre tiers issu de la comptabilité | ⏳ Ouvert | Le grand livre auxiliaire reste reconstitué depuis la Facturation ; le rapprochement 411/401 (1.853.0) en signale les écarts. |
+| 8 | Export Excel natif | ⏳ Ouvert | Le CSV (séparateur `;`, BOM UTF-8) reste le format d'échange. |
+
+### Défaut trouvé en chemin (B-1)
+
+**Le résultat N-1 non déterminé manquait au solde d'ouverture calculé.** Cas : un exercice sans À-nouveaux, dont l'exercice précédent n'a pas encore passé sa détermination du résultat. `FKC_SoldeOuverture::soldesCloture()` ne lit que les classes 1 à 5 ; le résultat N-1, encore en classes 6/7/8, n'était donc reporté nulle part.
+
+Conséquences :
+- le bilan N s'ouvrait déséquilibré du résultat N-1 exact (mesuré : 3 508 000 F) ;
+- la liasse était déclarée « incohérente » : impression, CSV et EDI refusés tant que les À-nouveaux n'étaient pas générés ;
+- c'est pourtant la situation normale de janvier à la clôture de N-1.
+
+Correction : ce résultat est reporté en 130 « Résultat en instance d'affectation », là où les À-nouveaux le porteraient, et le contrôle explique la démarche : clôturer N-1, puis générer les À-nouveaux.
