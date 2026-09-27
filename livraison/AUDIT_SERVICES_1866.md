@@ -160,3 +160,35 @@ Aucun défaut propre : le pack repose entièrement sur la brique verticale, que 
 7. **Cabinet comptable — lettrage automatique** des encaissements sur les notes, en remplacement de l'imputation FIFO de `situation()`.
 8. **Imprimerie — devis et fabrication** : calcul du prix au tirage (papier, plaques, façonnage), acompte à la commande, stock papier en matières (MATIERE), BAT bloquant la mise en production.
 9. **Stock d'ouverture** (Garage) : le stock saisi à la création d'une pièce n'est pas comptabilisé. Prévoir une écriture d'à-nouveau ou forcer le passage par la réception.
+
+---
+
+## 6. Recommandations appliquées (1.867.0)
+
+Les neuf recommandations du § 5 sont livrées dans la 1.867.0. Le nouveau test `tests/services_recommandations_1867.php` compte 43 contrôles : il en échoue 39 sur la 1.866.0 et les passe tous sur la 1.867.0.
+
+| # | Recommandation | Réalisation |
+|---|----------------|-------------|
+| 1 | Garage — nature du stock | Réglage « fournitures (331) / marchandises (311) » sur l'écran Atelier. Le changement **reclasse la valeur déjà en stock** (D nouveau compte · C ancien), sinon les deux comptes dériveraient. |
+| 2 | Garage — fiche véhicule | Table `ga_vehicules` : l'OR retrouve ou crée le véhicule d'après l'immatriculation (« ab-123-ci » = « AB 123 CI »). La fiche porte le kilométrage, le VIN, le téléphone et l'historique des OR. Le prochain entretien est planifié à la facturation (+ intervalle en km ou en mois). L'écran « Véhicules & rappels » liste les véhicules échus ou à 30 jours, avec lien d'appel ; un bandeau les signale à l'atelier. |
+| 3 | Immobilier — révision, charges, émission | **Révision** du loyer par taux ou par montant, historisée (`im_revisions`), avec alerte sur les baux non révisés depuis un an. **Provision sur charges** ajoutée à la quittance : versée au mandant, ou au 707820 pour un bien en propre ; elle est exclue de l'assiette des honoraires. **Régularisation annuelle** : un complément devient une quittance, un trop-perçu est porté au crédit du locataire, une seule fois par an. **Émission groupée** des quittances du mois (bouton), et automatique par la règle « quittances à émettre ». |
+| 4 | Immobilier — reddition imprimable | `immobilier/reddition` : compte rendu de gestion par propriétaire et par période (quittances, charges, encaissé, honoraires HT/TVA, reversements, net, solde du compte 411111), imprimable ou exportable en PDF. |
+| 5 | Juridique — facturation au temps | Note d'honoraires générée depuis les diligences non facturées (heures × taux), avec forfait facultatif. La facture est comptabilisée au 706125, et chaque diligence retient la facture qui l'a portée. La synthèse compare honoraires convenus et facturés (barre d'avancement) et affiche le temps restant à facturer. |
+| 6 | Juridique — provisions sur honoraires | Provision reçue : D trésorerie · C 419450, au nom du client. À la note suivante, elle est imputée automatiquement (D 419450 · C 411) et le reste dû est affiché. |
+| 7 | Cabinet — lettrage | `FKC_CabinetHonoraires::lettrer()` rapproche au 411 chaque encaissement de la note de même montant, puis les groupes chronologiques de même total. Il se déclenche à chaque encaissement et peut aussi être lancé par le bouton « 🔗 Lettrer ». La situation s'appuie sur le lettrage réel ; la répartition du plus ancien au plus récent ne vaut plus que pour ce qui reste non lettré. |
+| 8 | Imprimerie — devis, BAT, papier, acompte | Nouveau modèle `FKC_ImprimerieTravaux` et écrans « Travaux, devis & BAT » : voir le détail ci-dessous. |
+| 9 | Garage — stock d'ouverture | Le stock saisi à la création d'une pièce est comptabilisé : soit en **ouverture** (D stock · C 471800 « Reprise des stocks d'ouverture — à solder »), soit comme **réception** fournisseur (C 408). |
+
+Détail de la recommandation 8 (Imprimerie) :
+- **Chiffrage au tirage** : papier (feuilles par exemplaire, gâche de calage), plaques, façonnage, création, marge. Le calcul donne le prix HT et le prix à l'exemplaire.
+- **Cycle** : devis → accepté → BAT envoyé → BAT validé → production → livré → facturé. **La production est bloquée tant que le BAT n'est pas validé.** Un BAT refusé revient aux corrections avec le motif, et le numéro de version augmente.
+- **Stock de papier** en matières : réception D 321 · C 408 au coût moyen pondéré, consommation (gâche comprise) au lancement de la production.
+- **Acompte** à la commande : D trésorerie · C 419100, imputé sur la facture.
+- **Facture** après livraison : impression au 706118 (706117 en grand format), création au 706116.
+- **Retards** : alerte sur les livraisons promises dépassées.
+
+Chaque nouvelle écriture est rattachée à sa pièce d'origine :
+- les nouvelles tables `ip_mouvements` et `jr_provisions` sont ajoutées à la liste des liens du brouillard et à `FKC_EcritureLiens` ;
+- `FKC_StockCompta::comptabiliserReception()` accepte désormais, lui aussi, un lien.
+
+Le contrôle d'intégrité reste à zéro écriture sans pièce dans les cinq scénarios.
