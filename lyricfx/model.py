@@ -21,6 +21,7 @@ class Word:
 @dataclass
 class Line:
     words: list[Word] = field(default_factory=list)
+    echo: bool = False  # choeurs / réponses entre parenthèses
 
     @property
     def start(self) -> float:
@@ -50,7 +51,8 @@ def save_timing(path: str | Path, lines: list[Line], meta: dict | None = None) -
             f'"start": {w.start:.3f}, "end": {w.end:.3f}}}'
             for w in line.words
         )
-        blocks.append(f'    {{"text": {json.dumps(line.text, ensure_ascii=False)}, "words": [\n{words}\n    ]}}')
+        echo = ', "echo": true' if line.echo else ""
+        blocks.append(f'    {{"text": {json.dumps(line.text, ensure_ascii=False)}{echo}, "words": [\n{words}\n    ]}}')
     out.append(",\n".join(blocks))
     out.append("  ]")
     out.append("}")
@@ -63,6 +65,6 @@ def load_timing(path: str | Path) -> tuple[list[Line], dict]:
     for raw in data.get("lines", []):
         words = [Word(w["text"], float(w["start"]), float(w["end"])) for w in raw["words"]]
         if words:
-            lines.append(Line(words))
+            lines.append(Line(words, bool(raw.get("echo"))))
     meta = {k: v for k, v in data.items() if k != "lines"}
     return lines, meta

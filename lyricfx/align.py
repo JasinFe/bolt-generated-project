@@ -25,10 +25,45 @@ def _weight(text: str) -> float:
     return len(normalize(text)) + 1.5
 
 
-def align(lyrics: list[LyricLine], asr: list[Word], duration: float | None = None) -> list[Line]:
+def map_by_chars(tokens: list[str], timed: list[Word]) -> list[tuple[float, float] | None]:
+    """Reporte des horodatages sur `tokens` par correspondance caractère par caractère.
+
+    Utilisé pour l'alignement forcé : le texte renvoyé est le nôtre, mais découpé
+    différemment (apostrophes, traits d'union, ponctuation…).
+    """
+    a_chars, a_tok = [], []
+    for i, tok in enumerate(tokens):
+        for ch in normalize(tok):
+            a_chars.append(ch)
+            a_tok.append(i)
+    b_chars, b_time = [], []
+    for w in timed:
+        norm = normalize(w.text)
+        dur = max(w.end - w.start, 0.0)
+        for k, ch in enumerate(norm):
+            b_chars.append(ch)
+            b_time.append((w.start + dur * k / len(norm), w.start + dur * (k + 1) / len(norm), dur))
+    res: list[list[float] | None] = [None] * len(tokens)
+    sm = difflib.SequenceMatcher(None, "".join(a_chars), "".join(b_chars), autojunk=False)
+    for i1, j1, size in sm.get_matching_blocks():
+        for k in range(size):
+            t0, t1, dur = b_time[j1 + k]
+            if dur < 0.02:  # mot « instantané » = échec d'alignement
+                continue
+            ti = a_tok[i1 + k]
+            if res[ti] is None:
+                res[ti] = [t0, t1]
+            else:
+                res[ti][1] = max(res[ti][1], t1)
+    return [tuple(r) if r else None for r in res]
+
+
+def align(lyrics: list[LyricLine], asr: list[Word], duration: float | None = None,
+          token_times: list[tuple[float, float] | None] | None = None) -> list[Line]:
     """Associe à chaque mot des paroles un début/fin.
 
-    1. correspondance de séquences (difflib) entre paroles et mots reconnus ;
+    0. `token_times` (alignement forcé) : horodatage direct de chaque mot ;
+    1. sinon, correspondance de séquences (difflib) entre paroles et mots reconnus ;
     2. les horodatages LRC (lignes) servent d'ancres et filtrent les faux appariements ;
     3. les mots restants sont interpolés entre leurs voisins connus.
     """
@@ -45,7 +80,11 @@ def align(lyrics: list[LyricLine], asr: list[Word], duration: float | None = Non
         return []
 
     has_word_times = any(ll.word_starts for ll in lyrics)
-    if asr and not has_word_times:
+    if token_times is not None:
+        for w, tt in zip(flat, token_times):
+            if tt is not None:
+                w.start, w.end = tt
+    elif asr and not has_word_times:
         a = [normalize(w.text) for w in flat]
         b = [normalize(w.text) for w in asr]
         sm = difflib.SequenceMatcher(None, a, b, autojunk=False)
@@ -82,7 +121,7 @@ def align(lyrics: list[LyricLine], asr: list[Word], duration: float | None = Non
     lines: list[Line] = []
     for idx, w in enumerate(flat):
         if idx == 0 or line_of[idx] != line_of[idx - 1]:
-            lines.append(Line())
+            lines.append(Line(echo=lyrics[line_of[idx]].echo))
         lines[-1].words.append(w)
     return lines
 
@@ -146,9 +185,11 @@ def _sanitize(flat: list[Word], duration: float | None) -> None:
             w.start = max(w.start, prev.start + 0.01)
             if prev.end > w.start:
                 prev.end = max(prev.start + MIN_WORD / 2, w.start)
+        if duration:
+            w.start = min(w.start, max(0.0, duration - MIN_WORD))
         w.end = min(max(w.end, w.start + MIN_WORD), w.start + MAX_WORD)
         if duration:
-            w.end = min(w.end, duration)
+            w.end = max(min(w.end, duration), w.start)
         prev = w
 
 

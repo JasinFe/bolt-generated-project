@@ -1,0 +1,34 @@
+{
+  "description": "Question / réponse : les phrases alternent à gauche et à droite, couleur par phrase",
+  "mode": "highlight",
+  "font": "Bebas Neue",
+  "font_size": 108,
+  "uppercase": true,
+  "letter_spacing": 1,
+  "color_unsung": "#FFFFFF",
+  "color_sung": "#FFFFFF",
+  "palette": [
+    "#FFE600",
+    "#FF6FB1"
+  ],
+  "outline": 6,
+  "outline_color": "#000000",
+  "shadow": 4,
+  "align": "alternate",
+  "margin_h": 110,
+  "position": "center",
+  "max_chars_per_line": 22,
+  "tilt": 3,
+  "tilt_alternate": true,
+  "active_scale": 1.12,
+  "echo": {
+    "scale": 0.78,
+    "italic": true,
+    "color": "#8FD3FF"
+  },
+  "animation": {
+    "in": "pop",
+    "out": "fade",
+    "duration": 0.12
+  }
+}

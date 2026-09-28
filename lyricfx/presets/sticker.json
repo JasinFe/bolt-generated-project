@@ -1,0 +1,33 @@
+{
+  "description": "Style CapCut : mot chanté sur une pastille violette, majuscules bien grasses",
+  "mode": "highlight",
+  "font": "Poppins Black",
+  "font_size": 84,
+  "uppercase": true,
+  "color_unsung": "#FFFFFF",
+  "color_sung": "#FFFFFF",
+  "color_active": "#FFFFFF",
+  "outline": 5,
+  "outline_color": "#000000",
+  "shadow": 3,
+  "active_box": {
+    "enabled": true,
+    "color": "#7B2FF7",
+    "size": 16,
+    "text_color": "#FFFFFF"
+  },
+  "active_scale": 1.06,
+  "position": "bottom",
+  "max_chars_per_line": 26,
+  "echo": {
+    "scale": 0.8,
+    "italic": true,
+    "color": "#FF6FB1"
+  },
+  "animation": {
+    "in": "pop",
+    "out": "fade",
+    "duration": 0.14
+  },
+  "letter_spacing": 1
+}

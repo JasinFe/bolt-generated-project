@@ -1,0 +1,37 @@
+{
+  "description": "Gospel lumineux : remplissage or, halo chaud, chœurs en bleu ciel",
+  "mode": "karaoke",
+  "font": "Poppins Black",
+  "font_size": 84,
+  "color_unsung": "#FFFFFF",
+  "unsung_opacity": 0.9,
+  "color_sung": "#FFC940",
+  "outline": 3,
+  "outline_color": "#2A1600",
+  "shadow": 2,
+  "glow": {
+    "enabled": true,
+    "color": "#FFB020",
+    "size": 9,
+    "blur": 16,
+    "opacity": 0.75,
+    "when": "sung"
+  },
+  "position": "center",
+  "lines_on_screen": 2,
+  "next_line": {
+    "scale": 0.7,
+    "opacity": 0.5
+  },
+  "echo": {
+    "scale": 0.78,
+    "italic": true,
+    "color": "#8FD3FF"
+  },
+  "animation": {
+    "in": "slide",
+    "out": "fade",
+    "duration": 0.22
+  },
+  "letter_spacing": 1
+}

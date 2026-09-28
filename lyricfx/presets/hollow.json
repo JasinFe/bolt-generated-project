@@ -1,0 +1,35 @@
+{
+  "description": "Contour seul : les lettres vides se remplissent de jaune au fil du chant",
+  "mode": "karaoke",
+  "font": "Anton",
+  "font_size": 104,
+  "uppercase": true,
+  "letter_spacing": 5,
+  "color_unsung": "#FFFFFF",
+  "unsung_opacity": 0.0,
+  "color_sung": "#FFE600",
+  "outline": 2,
+  "outline_color": "#FFFFFF",
+  "shadow": 0,
+  "blur": 0.4,
+  "glow": {
+    "enabled": true,
+    "color": "#FFE600",
+    "size": 3,
+    "blur": 12,
+    "opacity": 0.45,
+    "when": "sung"
+  },
+  "position": "center",
+  "max_chars_per_line": 24,
+  "echo": {
+    "scale": 0.75,
+    "italic": true,
+    "color": "#FFD166"
+  },
+  "animation": {
+    "in": "fade",
+    "out": "fade",
+    "duration": 0.2
+  }
+}

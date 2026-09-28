@@ -1,0 +1,29 @@
+{
+  "description": "Cinéma : sous-titre discret, majuscules espacées, remplissage doux",
+  "mode": "karaoke",
+  "font": "Poppins SemiBold",
+  "font_size": 50,
+  "bold": false,
+  "uppercase": true,
+  "letter_spacing": 6,
+  "color_unsung": "#FFFFFF",
+  "unsung_opacity": 0.55,
+  "color_sung": "#FFFFFF",
+  "outline": 0,
+  "shadow": 2,
+  "shadow_opacity": 0.6,
+  "blur": 0.5,
+  "position": "bottom",
+  "margin_v": 80,
+  "max_chars_per_line": 40,
+  "echo": {
+    "scale": 0.85,
+    "italic": true,
+    "color": "#E8C79A"
+  },
+  "animation": {
+    "in": "fade",
+    "out": "fade",
+    "duration": 0.35
+  }
+}

@@ -26,5 +26,6 @@
     "in": "slide",
     "out": "fade",
     "duration": 0.22
-  }
+  },
+  "letter_spacing": 1
 }

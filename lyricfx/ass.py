@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from .model import Line, Word
-
-ALIGN = {"bottom": 2, "center": 5, "top": 8}
-
 
 # --------------------------------------------------------------------------- couleurs / temps
 def _rgb(color: str) -> tuple[int, int, int]:
@@ -62,7 +61,8 @@ def split_long(line: Line, max_chars: int) -> list[Line]:
             score -= 4  # on préfère couper après une ponctuation
         if best_score is None or score < best_score:
             best, best_score = i, score
-    return split_long(Line(line.words[:best]), max_chars) + split_long(Line(line.words[best:]), max_chars)
+    return (split_long(Line(line.words[:best], line.echo), max_chars)
+            + split_long(Line(line.words[best:], line.echo), max_chars))
 
 
 def chunk(line: Line, n: int, max_gap: float = 0.7) -> list[Line]:
@@ -70,11 +70,11 @@ def chunk(line: Line, n: int, max_gap: float = 0.7) -> list[Line]:
     cur: list[Word] = []
     for w in line.words:
         if cur and (len(cur) >= n or w.start - cur[-1].end > max_gap):
-            out.append(Line(cur))
+            out.append(Line(cur, line.echo))
             cur = []
         cur.append(w)
     if cur:
-        out.append(Line(cur))
+        out.append(Line(cur, line.echo))
     return out
 
 
@@ -99,30 +99,56 @@ def windows(lines: list[Line], lead: float, tail: float, hold: float) -> list[li
             cur[1] = nxt[0] = cut
         elif nxt[0] - cur[1] < cs(hold):
             cur[1] = nxt[0]
-    return [r for r in res]
+    return res
 
 
 # --------------------------------------------------------------------------- écriture ASS
+ROW = {"bottom": 1, "center": 4, "top": 7}  # + 0 gauche, +1 centre, +2 droite (pavé numérique)
+
+
+@dataclass
+class Ctx:
+    """Réglages propres à une ligne affichée (position, couleurs, chœur…)."""
+    an: int
+    x: float
+    sung: str
+    unsung: str
+    unsung_op: float
+    active: str
+    glow: str
+    scale: int = 100
+    italic: bool = False
+    tilt: float = 0.0
+
+
+@dataclass
+class Layer:
+    layer: int
+    style: str
+    kind: str  # main | glow | flat
+    dx: float = 0.0
+    color: str = "#FFFFFF"
+    opacity: float = 1.0
+
+
 class AssWriter:
     def __init__(self, style: dict, width: int, height: int):
-        self.st = style
+        self.st = s = style
         self.w, self.h = width, height
         self.k = min(width, height) / 1080
-        s = style
         self.fs = round(s["font_size"] * self.k)
-        self.an = ALIGN.get(s["position"], 2)
+        self.row = ROW.get(s["position"], 1)
         self.glow = s["glow"]["enabled"]
         self.box = s["box"]["enabled"]
         self.two = int(s["lines_on_screen"]) >= 2 and s["mode"] != "word"
-        self.x = width // 2
         line_h = self.fs * 1.25
         next_h = line_h * s["next_line"]["scale"]
         gap = self.fs * 0.15
         mv = s["margin_v"] * self.k
-        if self.an == 2:
+        if self.row == 1:
             self.y_next = height - mv
             self.y_cur = self.y_next - next_h - gap if self.two else height - mv
-        elif self.an == 8:
+        elif self.row == 7:
             self.y_cur = mv
             self.y_next = mv + line_h + gap
         else:
@@ -130,13 +156,43 @@ class AssWriter:
             self.y_next = height / 2 + (line_h + gap) / 2
         self.slide_from = self.y_next if self.two else self.y_cur + line_h * 0.6
 
+    # ---- contexte d'une ligne
+    def ctx(self, i: int, line: Line) -> Ctx:
+        s = self.st
+        align = s["align"]
+        if align == "alternate":
+            align = "left" if i % 2 == 0 else "right"
+        col = {"left": 0, "center": 1, "right": 2}.get(align, 1)
+        mh = s["margin_h"] * self.k
+        x = (mh, self.w / 2, self.w - mh)[col]
+        c = Ctx(self.row + col, x, s["color_sung"], s["color_unsung"], s["unsung_opacity"],
+                s["color_active"], s["glow"]["color"])
+        if s["palette"]:
+            accent = s["palette"][i % len(s["palette"])]
+            if s["mode"] == "karaoke":
+                c.sung = accent
+            else:
+                c.active = accent
+            c.glow = accent
+        if line.echo:
+            e = s["echo"]
+            if e.get("color"):
+                if s["mode"] == "karaoke":
+                    c.sung = e["color"]
+                else:
+                    c.active = e["color"]
+                c.glow = e["color"]
+            c.scale = round(e["scale"] * 100)
+            c.italic = bool(e["italic"])
+        if s["tilt"]:
+            c.tilt = s["tilt"] * (-1 if s["tilt_alternate"] and i % 2 else 1)
+        return c
+
     # ---- en-tête
     def header(self) -> str:
         s, k = self.st, self.k
         box = s["box"]
         outline = s["outline"] * k
-        outline_col = style_color(s["outline_color"])
-        shadow = s["shadow"] * k
         bold = -1 if s["bold"] else 0
         italic = -1 if s["italic"] else 0
         spacing = s["letter_spacing"] * k
@@ -144,24 +200,24 @@ class AssWriter:
         def style_line(name, size, primary, secondary, outline_c, outline_w, shadow_w, border_style=1):
             return (f"Style: {name},{s['font']},{size},{primary},{secondary},{outline_c},"
                     f"{style_color(s['shadow_color'], s['shadow_opacity'])},{bold},{italic},0,0,100,100,"
-                    f"{spacing:.1f},0,{border_style},{outline_w:.1f},{shadow_w:.1f},{self.an},0,0,0,1")
+                    f"{spacing:.1f},0,{border_style},{outline_w:.1f},{shadow_w:.1f},{self.row + 1},0,0,0,1")
 
+        g, nl = s["glow"], s["next_line"]
         styles = [
             style_line("Main", self.fs, style_color(s["color_sung"]),
-                       style_color(s["color_unsung"], s["unsung_opacity"]), outline_col, outline, shadow),
+                       style_color(s["color_unsung"], s["unsung_opacity"]),
+                       style_color(s["outline_color"]), outline, s["shadow"] * k),
+            style_line("Glow", self.fs, "&HFF000000", "&HFF000000",
+                       style_color(g["color"], g["opacity"]), g["size"] * k, 0),
+            style_line("Flat", self.fs, "&H00FFFFFF", "&H00FFFFFF", "&HFF000000", 0, 0),
+            style_line("Next", round(self.fs * nl["scale"]),
+                       style_color(nl["color"] or s["color_unsung"], nl["opacity"]),
+                       style_color(nl["color"] or s["color_unsung"], nl["opacity"]),
+                       style_color(s["outline_color"], nl["opacity"]), outline * nl["scale"], 0),
+            # Bandeau : couche séparée (texte invisible, seul le fond « BorderStyle 3 » est dessiné)
+            style_line("Box", self.fs, "&HFF000000", "&HFF000000",
+                       style_color(box["color"], box["opacity"]), box["padding"] * k, 0, border_style=3),
         ]
-        g = s["glow"]
-        styles.append(style_line("Glow", self.fs, "&HFF000000", "&HFF000000",
-                                 style_color(g["color"], g["opacity"]), g["size"] * k, 0))
-        nl = s["next_line"]
-        styles.append(style_line("Next", round(self.fs * nl["scale"]),
-                                 style_color(nl["color"] or s["color_unsung"], nl["opacity"]),
-                                 style_color(nl["color"] or s["color_unsung"], nl["opacity"]),
-                                 style_color(s["outline_color"], nl["opacity"]), outline * nl["scale"], 0))
-        # Bandeau : couche séparée (texte invisible, seul le fond « BorderStyle 3 » est dessiné)
-        styles.append(style_line("Box", self.fs, "&HFF000000", "&HFF000000",
-                                 style_color(box["color"], box["opacity"]), box["padding"] * k, 0,
-                                 border_style=3))
         return "\n".join([
             "[Script Info]",
             "; Généré par lyricfx",
@@ -187,34 +243,53 @@ class AssWriter:
         t = _escape(w.text.upper() if self.st["uppercase"] else w.text)
         return t if last else t + " "
 
-    def _prefix(self, first: bool, last: bool, glow: bool, y: float | None = None,
+    def _plain(self, line: Line) -> str:
+        return "".join(self._word(w, j == len(line.words) - 1) for j, w in enumerate(line.words))
+
+    def _prefix(self, c: Ctx, lay: Layer | None, first: bool, last: bool, y: float | None = None,
                 slide: bool = True, fade_in: bool = True, fade_out: bool = True) -> str:
         s, a = self.st, self.st["animation"]
         y = self.y_cur if y is None else y
+        x = c.x + (lay.dx if lay else 0)
         d = round(a["duration"] * 1000)
-        tags = [f"\\an{self.an}"]
+        tags = [f"\\an{c.an}"]
         if first and a["in"] == "slide" and slide:
-            tags.append(f"\\move({self.x},{self.slide_from:.0f},{self.x},{y:.0f},0,{d})")
+            tags.append(f"\\move({x:.0f},{self.slide_from:.0f},{x:.0f},{y:.0f},0,{d})")
         else:
-            tags.append(f"\\pos({self.x},{y:.0f})")
+            tags.append(f"\\pos({x:.0f},{y:.0f})")
         fin = d if first and fade_in and a["in"] != "none" else 0
         fout = d if last and fade_out and a["out"] != "none" else 0
         if fin or fout:
             tags.append(f"\\fad({fin},{fout})")
         if first and a["in"] in ("zoom", "pop"):
-            start = 70 if a["in"] == "zoom" else 135
-            tags.append(f"\\fscx{start}\\fscy{start}\\t(0,{d},\\fscx100\\fscy100)")
-        blur = s["glow"]["blur"] * self.k if glow else s["blur"]
-        if blur:
-            tags.append(f"\\blur{blur:g}")
+            start = round(c.scale * (0.7 if a["in"] == "zoom" else 1.35))
+            tags.append(f"\\fscx{start}\\fscy{start}\\t(0,{d},\\fscx{c.scale}\\fscy{c.scale})")
+        elif c.scale != 100:
+            tags.append(f"\\fscx{c.scale}\\fscy{c.scale}")
+        if c.tilt:
+            tags.append(f"\\frz{c.tilt:g}")
+        if c.italic:
+            tags.append("\\i1")
+        kind = lay.kind if lay else "main"
+        if kind == "glow":
+            tags.append(f"\\3c{tag_color(c.glow)}\\blur{s['glow']['blur'] * self.k:g}")
+        elif kind == "flat":
+            tags.append(f"\\1c{tag_color(lay.color)}\\1a{tag_alpha(lay.opacity)}")
+        else:
+            if s["mode"] == "karaoke":
+                tags.append(f"\\1c{tag_color(c.sung)}\\2c{tag_color(c.unsung)}\\2a{tag_alpha(c.unsung_op)}")
+            if s["blur"]:
+                tags.append(f"\\blur{s['blur']:g}")
         return "{" + "".join(tags) + "}"
 
     def _event(self, layer: int, start: int, end: int, style: str, text: str) -> str:
         return f"Dialogue: {layer},{ts(start)},{ts(end)},{style},,0,0,0,,{text}"
 
     # ---- mode karaoké (balayage \kf)
-    def _karaoke_text(self, line: Line, start: int, glow: bool) -> str:
-        sweep = "\\ko" if glow and self.st["glow"]["when"] == "sung" else "\\kf"
+    def _karaoke_text(self, line: Line, start: int, kind: str) -> str:
+        if kind == "flat":
+            return self._plain(line)
+        sweep = "\\ko" if kind == "glow" and self.st["glow"]["when"] == "sung" else "\\kf"
         parts, pos = [], start
         for i, w in enumerate(line.words):
             ws, we = cs(w.start), cs(w.end)
@@ -227,36 +302,52 @@ class AssWriter:
         return "".join(parts)
 
     # ---- modes highlight / reveal / word (un évènement par mot actif)
-    def _state_text(self, line: Line, k: int, glow: bool) -> str:
+    def _state_text(self, line: Line, k: int, c: Ctx, kind: str) -> str:
         s = self.st
         reveal = s["mode"] == "reveal"
-        scale = round(s["active_scale"] * 100)
+        base = c.scale
+        scale = round(base * s["active_scale"])
         p = round(s["pop_duration"] * 1000)
         g = s["glow"]
+        ab = s["active_box"]
+        sticker = ab["enabled"] and kind == "main"
+        glow_a = tag_alpha(g["opacity"])
         out = []
         for j, w in enumerate(line.words):
             tags = ""
             if j < k:
-                tags = (f"\\3c{tag_color(g['color'])}\\3a{tag_alpha(g['opacity'])}" if glow
-                        else f"\\1c{tag_color(s['color_sung'])}\\1a&H00&")
+                if kind == "glow":
+                    tags = f"\\3c{tag_color(c.glow)}\\3a{glow_a}"
+                elif kind == "main":
+                    tags = f"\\1c{tag_color(c.sung)}\\1a&H00&"
             elif j == k:
-                tags = (f"\\3c{tag_color(s['color_active'])}\\3a{tag_alpha(g['opacity'])}" if glow
-                        else f"\\1c{tag_color(s['color_active'])}\\1a&H00&")
-                if scale != 100:
+                if kind == "glow":
+                    tags = f"\\3c{tag_color(c.active)}\\3a{glow_a}"
+                elif kind == "main":
+                    tags = f"\\1c{tag_color(c.active)}\\1a&H00&"
+                if sticker:
+                    col = c.active if ab.get("color") == "active" else ab["color"]
+                    tags += (f"\\3c{tag_color(col)}\\3a&H00&\\bord{ab['size'] * self.k:g}\\shad0\\blur0"
+                             f"\\1c{tag_color(ab['text_color'])}")
+                if scale != base:
                     # « pop » : léger dépassement puis retour à la taille active
-                    tags += (f"\\fscx100\\fscy100\\t(0,{p},\\fscx{scale + 8}\\fscy{scale + 8})"
+                    tags += (f"\\fscx{base}\\fscy{base}\\t(0,{p},\\fscx{scale + 8}\\fscy{scale + 8})"
                              f"\\t({p},{2 * p},\\fscx{scale}\\fscy{scale})")
             else:
-                if j == k + 1 and scale != 100 and k >= 0:
-                    tags += "\\fscx100\\fscy100"
+                if j == k + 1 and k >= 0:
+                    if scale != base:
+                        tags += f"\\fscx{base}\\fscy{base}"
+                    if sticker:
+                        tags += (f"\\3c{tag_color(s['outline_color'])}\\bord{s['outline'] * self.k:g}"
+                                 f"\\shad{s['shadow'] * self.k:g}\\blur{s['blur']:g}")
                 if reveal:
                     tags += "\\alpha&HFF&"
-                elif glow:
-                    tags += f"\\3c{tag_color(g['color'])}"
-                    tags += "\\3a&HFF&" if g["when"] == "sung" else f"\\3a{tag_alpha(g['opacity'])}"
-                else:
-                    tags += f"\\1c{tag_color(s['color_unsung'])}\\1a{tag_alpha(s['unsung_opacity'])}"
-            out.append("{" + tags + "}" + self._word(w, j == len(line.words) - 1))
+                elif kind == "glow":
+                    tags += f"\\3c{tag_color(c.glow)}"
+                    tags += "\\3a&HFF&" if g["when"] == "sung" else f"\\3a{glow_a}"
+                elif kind == "main":
+                    tags += f"\\1c{tag_color(c.unsung)}\\1a{tag_alpha(c.unsung_op)}"
+            out.append(("{" + tags + "}" if tags else "") + self._word(w, j == len(line.words) - 1))
         return "".join(out)
 
     def _states(self, line: Line, start: int, end: int) -> list[tuple[int, int, int]]:
@@ -274,40 +365,56 @@ class AssWriter:
                 res.append((k, a, b))
         return res
 
+    def _layers(self) -> list[Layer]:
+        s = self.st
+        layers = []
+        rs = s["rgb_split"]
+        if rs["enabled"]:
+            off = rs["offset"] * self.k
+            layers.append(Layer(1, "Flat", "flat", -off, rs["colors"][0], rs["opacity"]))
+            layers.append(Layer(1, "Flat", "flat", off, rs["colors"][1], rs["opacity"]))
+        if self.glow:
+            layers.append(Layer(1, "Glow", "glow"))
+        layers.append(Layer(2, "Main", "main"))
+        return layers
+
     # ---- assemblage
     def build(self, lines: list[Line]) -> str:
         s = self.st
         disp = layout(lines, s)
         wins = windows(disp, s["lead_in"], s["tail"], s["hold_gap"])
+        layers = self._layers()
         events: list[str] = []
         for i, (line, (start, end)) in enumerate(zip(disp, wins)):
             if end <= start:
                 continue
+            c = self.ctx(i, line)
             # Pas de fondu entre deux lignes qui s'enchaînent sans pause (évite le clignotement)
             fx = {"fade_in": i == 0 or wins[i - 1][1] < start,
                   "fade_out": i + 1 == len(disp) or wins[i + 1][0] > end}
             if self.box:
-                plain = "".join(self._word(w, j == len(line.words) - 1) for j, w in enumerate(line.words))
-                events.append(self._event(0, start, end, "Box", self._prefix(True, True, False, **fx) + plain))
-            layers = [(1, "Glow", True)] if self.glow else []
-            layers.append((2, "Main", False))
+                events.append(self._event(0, start, end, "Box",
+                                          self._prefix(c, None, True, True, **fx) + self._plain(line)))
             if s["mode"] == "karaoke":
-                for layer, name, glow in layers:
-                    text = self._prefix(True, True, glow, **fx) + self._karaoke_text(line, start, glow)
-                    events.append(self._event(layer, start, end, name, text))
+                for lay in layers:
+                    text = self._prefix(c, lay, True, True, **fx) + self._karaoke_text(line, start, lay.kind)
+                    events.append(self._event(lay.layer, start, end, lay.style, text))
             else:
                 states = self._states(line, start, end)
                 for si, (k, a, b) in enumerate(states):
-                    for layer, name, glow in layers:
-                        text = self._prefix(si == 0, si == len(states) - 1, glow, **fx) + \
-                            self._state_text(line, k, glow)
-                        events.append(self._event(layer, a, b, name, text))
+                    for lay in layers:
+                        text = self._prefix(c, lay, si == 0, si == len(states) - 1, **fx) + \
+                            self._state_text(line, k, c, lay.kind)
+                        events.append(self._event(lay.layer, a, b, lay.style, text))
             # Aperçu de la ligne suivante
             if self.two and i + 1 < len(disp):
                 nxt = disp[i + 1]
-                txt = "".join(self._word(w, j == len(nxt.words) - 1) for j, w in enumerate(nxt.words))
-                prefix = self._prefix(True, True, False, y=self.y_next, slide=False)
-                events.append(self._event(2, start, end, "Next", prefix + txt))
+                nc = self.ctx(i + 1, nxt)
+                nc.tilt = 0
+                prefix = self._prefix(nc, None, True, True, y=self.y_next, slide=False)
+                prefix = prefix.replace(f"\\1c{tag_color(nc.sung)}\\2c{tag_color(nc.unsung)}"
+                                        f"\\2a{tag_alpha(nc.unsung_op)}", "")
+                events.append(self._event(2, start, end, "Next", prefix + self._plain(nxt)))
         return self.header() + "\n" + "\n".join(events) + "\n"
 
 

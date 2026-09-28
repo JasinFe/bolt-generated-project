@@ -13,12 +13,35 @@ LRC_TIME = re.compile(r"\[(\d+):(\d+(?:[.:]\d+)?)\]")
 LRC_WORD_TIME = re.compile(r"<(\d+):(\d+(?:[.:]\d+)?)>")
 LRC_META = re.compile(r"^\[[a-zA-Z]+:.*\]$")
 # Lignes de structure à ignorer : [Refrain], (Couplet 2), [Chorus x2]...
-SECTION_TAG = re.compile(r"^\s*[\[(].*[\])]\s*$")
+# Une ligne entre parenthèses qui n'est PAS un repère de structure est un chœur / une réponse.
+BRACKET_TAG = re.compile(r"^\s*\[.*\]\s*$")
+PAREN_LINE = re.compile(r"^\s*\((.*)\)\s*$")
+SECTION_WORDS = re.compile(
+    r"^\s*(refrain|couplet|chorus|verse|intro|outro|pont|bridge|hook|pr[eé][- ]?refrain|pre[- ]?chorus|"
+    r"instrumental|interlude|break|drop|solo|bis|repeat|x\s*\d+|\d+\s*x)\b[\s\d:x.-]*$",
+    re.IGNORECASE,
+)
+
+
+def is_section_tag(text: str) -> bool:
+    if BRACKET_TAG.match(text):
+        return True
+    m = PAREN_LINE.match(text)
+    return bool(m and SECTION_WORDS.match(m.group(1)))
+
+
+def _clean(text: str) -> tuple[list[str], bool]:
+    """Découpe une ligne en mots ; détecte les chœurs « (…) »."""
+    m = PAREN_LINE.match(text)
+    if m and "(" not in m.group(1):
+        return m.group(1).split(), True
+    return text.split(), False
 
 
 @dataclass
 class LyricLine:
     tokens: list[str]
+    echo: bool = False
     start: float | None = None  # début de ligne (LRC)
     word_starts: list[float] | None = None  # LRC enrichi : début de chaque mot
 
@@ -31,9 +54,11 @@ def parse_plain(text: str) -> list[LyricLine]:
     lines = []
     for raw in text.splitlines():
         raw = raw.strip()
-        if not raw or SECTION_TAG.match(raw):
+        if not raw or is_section_tag(raw):
             continue
-        lines.append(LyricLine(raw.split()))
+        tokens, echo = _clean(raw)
+        if tokens:
+            lines.append(LyricLine(tokens, echo))
     return lines
 
 
@@ -45,7 +70,7 @@ def parse_lrc(text: str) -> list[LyricLine]:
             continue
         stamps = [_secs(m, s) for m, s in LRC_TIME.findall(raw)]
         body = LRC_TIME.sub("", raw).strip()
-        if not stamps or not body or SECTION_TAG.match(body):
+        if not stamps or not body or is_section_tag(body):
             continue
         word_starts = None
         if LRC_WORD_TIME.search(body):
@@ -62,11 +87,16 @@ def parse_lrc(text: str) -> list[LyricLine]:
                 for w in words:
                     tokens.append(w)
                     word_starts.append(t)
+            echo = False
+            if tokens and tokens[0].startswith("(") and tokens[-1].endswith(")"):
+                echo = True
+                tokens[0], tokens[-1] = tokens[0][1:], tokens[-1][:-1]
+                tokens = [t for t in tokens if t]
         else:
-            tokens = body.split()
+            tokens, echo = _clean(body)
         # Une même ligne peut être répétée : [00:10.00][01:20.00]Refrain
         for t in stamps:
-            lines.append(LyricLine(tokens, t, word_starts))
+            lines.append(LyricLine(tokens, echo, t, word_starts))
     lines.sort(key=lambda l: l.start)
     return lines
 

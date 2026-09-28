@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calage lyricfx</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #16121b;
+  --surface: #211b28;
+  --surface-2: #2b2334;
+  --line: #3b3146;
+  --text: #efe8f4;
+  --muted: #a797b3;
+  --faint: #6f6179;
+  --amber: #ffb547;
+  --amber-ink: #2a1a00;
+  --pink: #ff6fb1;
+  --mint: #6fd6a8;
+  --danger: #ff7a6b;
+  --display: "Anton", "Impact", "Arial Narrow", sans-serif;
+  --body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.45 var(--body);
+  padding-inline: 16px; padding-block: 14px 24px;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button {
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 12px; cursor: pointer; white-space: nowrap;
+}
+button:hover { border-color: var(--muted); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .row:focus-visible {
+  outline: 2px solid var(--amber); outline-offset: 2px;
+}
+button.primary { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); font-weight: 700; }
+button.ghost { background: transparent; }
+button[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.app { max-width: 1320px; margin: 0 auto; display: grid; gap: 14px; }
+
+header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand h1 { font: 400 26px/1 var(--display); letter-spacing: .02em; margin: 0; text-transform: uppercase; }
+.brand span { color: var(--muted); }
+.loaders { display: flex; flex-wrap: wrap; gap: 8px; }
+.file { position: relative; overflow: hidden; }
+.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.file.done { border-color: var(--mint); }
+.file small { color: var(--muted); margin-left: 6px; max-width: 16ch; display: inline-block; overflow: hidden;
+  text-overflow: ellipsis; vertical-align: bottom; }
+
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; align-items: start; }
+@media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+.col { display: grid; gap: 12px; min-width: 0; }
+
+.stage {
+  position: relative; aspect-ratio: 16 / 7; max-width: 100%; border-radius: 12px; overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 110%, #3a2150 0%, transparent 60%),
+    repeating-linear-gradient(90deg, transparent 0 39px, #ffffff08 39px 40px),
+    #120e16;
+  display: grid; place-items: center; text-align: center; padding: 16px;
+}
+.stage .badge { position: absolute; top: 10px; left: 12px; font: 600 11px/1 var(--body); letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted); }
+.stage .clock { position: absolute; top: 8px; right: 12px; font: 600 13px var(--mono); color: var(--muted);
+  font-variant-numeric: tabular-nums; }
+.lyric { display: grid; gap: 8px; width: 100%; }
+.cur { font: 400 clamp(22px, 4.2vw, 48px)/1.1 var(--display); letter-spacing: .01em; text-transform: uppercase;
+  text-wrap: balance; }
+.nxt { font: 500 clamp(13px, 1.8vw, 18px)/1.3 var(--body); color: var(--faint); min-height: 1.3em; }
+.cur .w {
+  --p: 0%;
+  background: linear-gradient(90deg, var(--amber) var(--p), #ffffffd9 var(--p));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.cur.echo .w { background: linear-gradient(90deg, var(--pink) var(--p), #ffffff8c var(--p));
+  -webkit-background-clip: text; background-clip: text; font-style: italic; }
+.cur.untimed { color: var(--faint); }
+.cur.idle { color: var(--faint); font-size: clamp(16px, 2.4vw, 24px); }
+
+.transport { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.transport .time { font: 600 15px var(--mono); font-variant-numeric: tabular-nums; min-width: 14ch; }
+.tap {
+  flex: 1 1 180px; padding: 14px 18px; font: 400 22px/1 var(--display); letter-spacing: .06em;
+  text-transform: uppercase; background: var(--amber); color: var(--amber-ink); border: 0; border-radius: 10px;
+}
+.tap:active { transform: translateY(1px); filter: brightness(.95); }
+.tap small { display: block; font: 600 11px/1.3 var(--body); letter-spacing: .02em; text-transform: none; margin-top: 4px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; }
+label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+select { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+
+.timeline { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
+.timeline canvas { display: block; width: 100%; height: 128px; cursor: crosshair; touch-action: none; }
+.tl-bar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center;
+  color: var(--muted); font-size: 12px; padding: 2px 4px 6px; }
+.tl-bar .seg button { padding: 4px 10px; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.panel h2 { font: 700 12px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  margin: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px;
+  border-bottom: 1px solid var(--line); }
+.progress { font: 600 12px var(--mono); color: var(--mint); font-variant-numeric: tabular-nums; }
+.lines { max-height: min(62vh, 640px); overflow-y: auto; padding: 6px; }
+.row {
+  display: grid; grid-template-columns: 2.4em 7ch 1fr; gap: 8px; align-items: baseline;
+  padding: 7px 8px; border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+}
+.row:hover { background: var(--surface-2); }
+.row .n { color: var(--faint); font: 400 12px var(--mono); text-align: right; }
+.row .t { font: 600 12px var(--mono); color: var(--faint); font-variant-numeric: tabular-nums; }
+.row.timed .t { color: var(--mint); }
+.row .x { overflow-wrap: anywhere; }
+.row.echo .x { color: var(--pink); font-style: italic; }
+.row.sel { border-color: var(--muted); background: var(--surface-2); }
+.row.playing .x { color: var(--amber); }
+.row.cursor { box-shadow: inset 0 0 0 2px var(--amber); }
+.row .wd { border-radius: 3px; }
+.row .wd.cursor { background: var(--amber); color: var(--amber-ink); padding: 0 2px; }
+.row .wd.set { text-decoration: underline; text-decoration-color: var(--mint); text-underline-offset: 3px; }
+
+.tools { display: grid; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--line); }
+.tools .rowb { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.num { width: 6.5em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 6px 8px; font-family: var(--mono); }
+textarea {
+  width: 100%; min-height: 120px; resize: vertical; background: #120e16; border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px; font: 12px/1.5 var(--mono);
+}
+.note { color: var(--muted); font-size: 12.5px; max-width: 70ch; }
+.note b { color: var(--text); font-weight: 600; }
+kbd { font: 600 11px var(--mono); background: var(--surface-2); border: 1px solid var(--line);
+  border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px; color: var(--text); }
+.keys { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px 16px;
+  color: var(--muted); font-size: 12.5px; }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  background: var(--text); color: var(--bg); padding: 9px 14px; border-radius: 8px; font-weight: 600;
+  box-shadow: 0 6px 24px #0008; max-width: calc(100% - 32px); }
+.paste { display: grid; gap: 8px; }
+details summary { cursor: pointer; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><h1>Calage lyricfx</h1><span>Synchronisez vos paroles à l'oreille, en tapant le rythme.</span></div>
+    <div class="loaders">
+      <label class="file" id="audioBtn"><button type="button" tabindex="-1">🎵 Audio</button>
+        <input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" aria-label="Choisir le fichier audio"></label>
+      <label class="file" id="lyrBtn"><button type="button" tabindex="-1">📝 Paroles / timing</button>
+        <input id="lyricsFile" type="file" accept=".txt,.lrc,.json,text/plain,application/json" aria-label="Choisir les paroles (.txt, .lrc ou .json)"></label>
+      <button id="pasteToggle" type="button" class="ghost">Coller des paroles</button>
+    </div>
+  </header>
+
+  <div class="panel paste" id="pastePanel" hidden style="padding:12px 14px">
+    <label for="pasteArea" class="note">Collez les paroles (une ligne chantée par ligne ; les lignes entre parenthèses sont des chœurs, <code>[Refrain]</code> est ignoré). Un LRC ou un JSON lyricfx fonctionnent aussi.</label>
+    <textarea id="pasteArea" spellcheck="false"></textarea>
+    <div><button id="pasteLoad" type="button" class="primary">Charger ces paroles</button></div>
+  </div>
+
+  <div class="main">
+    <div class="col">
+      <div class="stage" aria-live="off">
+        <div class="badge" id="stageBadge">Aperçu</div>
+        <div class="clock" id="stageClock">0:00.00</div>
+        <div class="lyric"><div class="cur idle" id="cur">Chargez un audio et des paroles</div><div class="nxt" id="nxt"></div></div>
+      </div>
+
+      <div class="transport">
+        <button id="play" type="button" class="primary" aria-label="Lecture / pause">▶ Lecture</button>
+        <button id="back3" type="button" aria-label="Reculer de 3 secondes">−3 s</button>
+        <button id="fwd3" type="button" aria-label="Avancer de 3 secondes">+3 s</button>
+        <span class="time" id="time">0:00.00 / 0:00</span>
+        <label class="inline" for="rate">Vitesse
+          <select id="rate"><option value="0.5">0,5×</option><option value="0.75">0,75×</option><option value="1" selected>1×</option></select></label>
+        <div class="seg" role="group" aria-label="Mode de calage">
+          <button id="modeLine" type="button" aria-pressed="true">Lignes</button>
+          <button id="modeWord" type="button" aria-pressed="false">Mots</button>
+        </div>
+      </div>
+      <button id="tap" type="button" class="tap">Tap<small id="tapHint">Espace : marque le début de la ligne surlignée</small></button>
+
+      <div class="timeline">
+        <div class="tl-bar">
+          <span>Glissez un repère pour le déplacer · cliquez pour vous placer</span>
+          <div class="seg" role="group" aria-label="Zoom de la timeline">
+            <button id="zoomOut" type="button" aria-label="Dézoomer">−</button>
+            <button id="zoomIn" type="button" aria-label="Zoomer">+</button>
+          </div>
+        </div>
+        <canvas id="wave" aria-label="Forme d'onde et repères des lignes"></canvas>
+      </div>
+
+      <details class="panel" style="padding:12px 14px">
+        <summary>Raccourcis clavier et méthode</summary>
+        <div class="keys" style="margin-top:10px">
+          <span><kbd>Espace</kbd> tap (début de ligne / de mot)</span>
+          <span><kbd>P</kbd> lecture / pause</span>
+          <span><kbd>⌫</kbd> annuler le dernier changement</span>
+          <span><kbd>↑</kbd> <kbd>↓</kbd> choisir une ligne</span>
+          <span><kbd>←</kbd> <kbd>→</kbd> décaler la ligne de 0,05 s</span>
+          <span><kbd>Maj</kbd>+<kbd>←</kbd> <kbd>→</kbd> décaler de 0,25 s</span>
+          <span><kbd>Entrée</kbd> réécouter la ligne choisie</span>
+          <span><kbd>[</kbd> <kbd>]</kbd> reculer / avancer de 3 s</span>
+        </div>
+        <p class="note" style="margin-top:12px"><b>Méthode rapide :</b> en mode <b>Lignes</b>, lancez la lecture et tapez
+          <kbd>Espace</kbd> au moment où chaque ligne commence (0,75× aide pour le rap). Corrigez ensuite en glissant les
+          repères. Exportez en <b>LRC</b> puis lancez <code>lyricfx make chanson.mp3 --lyrics chanson.lrc</code> : l'alignement
+          automatique cale chaque mot à l'intérieur de vos lignes. Pour un calage 100 % manuel, utilisez le mode <b>Mots</b>
+          et exportez le <b>JSON</b> (<code>lyricfx render chanson.json --audio chanson.mp3</code>).</p>
+      </details>
+    </div>
+
+    <aside class="panel">
+      <div class="panel-head"><h2>Lignes</h2><span class="progress" id="progress">0 / 0 calées</span></div>
+      <div class="lines" id="lines" role="listbox" aria-label="Lignes des paroles"></div>
+      <div class="tools">
+        <div class="rowb">
+          <label class="inline" for="offset">Décaler tout</label>
+          <input id="offset" class="num" type="number" step="0.05" value="0.00" aria-describedby="offsetHelp">
+          <button id="applyOffset" type="button">Appliquer</button>
+          <button id="clearFrom" type="button" class="ghost">Effacer depuis la ligne choisie</button>
+        </div>
+        <span class="note" id="offsetHelp">Secondes, négatif = plus tôt. Utile si tout le texte arrive en retard.</span>
+        <div class="rowb">
+          <button id="copyLrc" type="button" class="primary">Copier le LRC</button>
+          <button id="copyJson" type="button">Copier le JSON</button>
+          <button id="dlLrc" type="button" class="ghost">Télécharger .lrc</button>
+          <button id="dlJson" type="button" class="ghost">Télécharger .json</button>
+        </div>
+        <label class="inline" for="wordLrc"><input id="wordLrc" type="checkbox"> LRC mot à mot (si vous avez calé les mots)</label>
+        <textarea id="out" readonly spellcheck="false" aria-label="Export" hidden></textarea>
+      </div>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const RATE = 0.075;                 // s par « poids » de mot (≈ caractère)
+const state = {
+  lines: [], mode: "line", cursor: { line: 0, word: 0 }, sel: 0, zoom: 12,
+  audioName: "", duration: 0, peaks: null, peaksPerSec: 100, example: false,
+};
+let history = [];
+
+// ---------------------------------------------------------------- horloge (audio ou simulée)
+const audio = new Audio();
+audio.preload = "auto";
+const sim = { playing: false, t: 0, at: 0, rate: 1 };
+const clock = {
+  get hasAudio() { return !!audio.src; },
+  get t() { return this.hasAudio ? audio.currentTime : sim.playing ? sim.t + (performance.now() - sim.at) / 1000 * sim.rate : sim.t; },
+  get playing() { return this.hasAudio ? !audio.paused : sim.playing; },
+  get dur() { return this.hasAudio && isFinite(audio.duration) ? audio.duration : Math.max(state.duration, lastTime() + 4, 20); },
+  seek(t) { t = Math.max(0, Math.min(t, this.dur)); if (this.hasAudio) audio.currentTime = t; else { sim.t = t; sim.at = performance.now(); } },
+  toggle() {
+    if (this.hasAudio) { audio.paused ? audio.play().catch(() => toast("Cliquez d'abord sur la page pour autoriser le son.")) : audio.pause(); }
+    else { if (sim.playing) { sim.t = this.t; sim.playing = false; } else { sim.at = performance.now(); sim.playing = true; } }
+  },
+  setRate(r) { audio.playbackRate = r; sim.t = this.t; sim.at = performance.now(); sim.rate = r; },
+};
+
+// ---------------------------------------------------------------- parsing (mêmes règles que lyricfx)
+const SECTION = /^\s*(refrain|couplet|chorus|verse|intro|outro|pont|bridge|hook|pr[eé][- ]?refrain|pre[- ]?chorus|instrumental|interlude|break|drop|solo|bis|repeat|x\s*\d+|\d+\s*x)\b[\s\d:x.-]*$/i;
+const LRC_T = /\[(\d+):(\d+(?:[.:]\d+)?)\]/g;
+const LRC_W = /<(\d+):(\d+(?:[.:]\d+)?)>/;
+const secs = (m, s) => parseInt(m, 10) * 60 + parseFloat(s.replace(":", "."));
+
+function isSection(t) {
+  if (/^\s*\[.*\]\s*$/.test(t)) return true;
+  const m = t.match(/^\s*\((.*)\)\s*$/);
+  return !!(m && SECTION.test(m[1]));
+}
+function clean(t) {
+  const m = t.match(/^\s*\((.*)\)\s*$/);
+  if (m && !m[1].includes("(")) return { tokens: m[1].split(/\s+/).filter(Boolean), echo: true };
+  return { tokens: t.split(/\s+/).filter(Boolean), echo: false };
+}
+const mkLine = (tokens, echo) => ({ echo, words: tokens.map((text) => ({ text, start: null, end: null })) });
+
+function parseText(text, name = "") {
+  text = text.replace(/^﻿/, "");
+  const trimmed = text.trim();
+  if (name.endsWith(".json") || trimmed.startsWith("{")) {
+    const d = JSON.parse(trimmed);
+    if (d.duration) state.duration = d.duration;
+    return d.lines.map((l) => ({ echo: !!l.echo, words: l.words.map((w) => ({ text: w.text, start: +w.start, end: +w.end })) }));
+  }
+  const lines = [];
+  const isLrc = name.endsWith(".lrc") || /\[\d+:\d+(?:[.:]\d+)?\]/.test(text);
+  for (let raw of text.split(/\r?\n/)) {
+    raw = raw.trim();
+    if (!raw) continue;
+    if (!isLrc) { if (isSection(raw)) continue; const c = clean(raw); if (c.tokens.length) lines.push(mkLine(c.tokens, c.echo)); continue; }
+    const stamps = [...raw.matchAll(LRC_T)].map((m) => secs(m[1], m[2]));
+    let body = raw.replace(LRC_T, "").trim();
+    if (!stamps.length || !body || isSection(body)) continue;
+    let line;
+    if (LRC_W.test(body)) {
+      const words = [];
+      for (const part of body.split(/(?=<\d+:\d+(?:[.:]\d+)?>)/)) {
+        const m = part.match(LRC_W); if (!m) continue;
+        for (const w of part.slice(m[0].length).split(/\s+/).filter(Boolean)) words.push({ text: w, start: secs(m[1], m[2]), end: null });
+      }
+      let echo = false;
+      if (words.length && words[0].text.startsWith("(") && words.at(-1).text.endsWith(")")) {
+        echo = true; words[0].text = words[0].text.slice(1); words.at(-1).text = words.at(-1).text.slice(0, -1);
+      }
+      line = { echo, words };
+    } else { const c = clean(body); line = mkLine(c.tokens, c.echo); line.words[0].start = null; }
+    for (const t of stamps) {
+      const copy = JSON.parse(JSON.stringify(line));
+      if (!LRC_W.test(body)) copy.words[0].start = t;
+      lines.push(copy);
+    }
+  }
+  if (isLrc) lines.sort((a, b) => (a.words[0].start ?? 0) - (b.words[0].start ?? 0));
+  return lines;
+}
+
+// ---------------------------------------------------------------- calcul des temps manquants
+const norm = (s) => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^0-9a-z]+/g, "");
+const weight = (w) => norm(w.text).length + 1.5;
+const lineStart = (l) => l.words[0].start;
+function lastTime() { let t = 0; for (const l of state.lines) for (const w of l.words) { if (w.start != null) t = Math.max(t, w.start); if (w.end != null) t = Math.max(t, w.end); } return t; }
+
+/** Renvoie, pour chaque ligne, les mots avec start/end complets (ou null si la ligne n'est pas calée). */
+function resolve() {
+  const L = state.lines;
+  const starts = L.map(lineStart);
+  return L.map((line, i) => {
+    if (starts[i] == null) return null;
+    let next = null;
+    for (let j = i + 1; j < L.length; j++) if (starts[j] != null) { next = starts[j]; break; }
+    const hardEnd = next != null ? next - 0.05 : clock.dur;
+    const ws = line.words.map((w) => ({ text: w.text, start: w.start, end: w.end }));
+    let k = 0;
+    while (k < ws.length) {
+      let m = k + 1;
+      while (m < ws.length && ws[m].start == null) m++;
+      const run = ws.slice(k, m);
+      let a = ws[k].start, b;
+      if (m < ws.length) b = ws[m].start;
+      else if (ws[m - 1].end != null && m - 1 > k) b = ws[m - 1].end;
+      else {
+        const nat = run.reduce((s, w) => s + weight(w), 0) * RATE * 1.35;
+        const avail = hardEnd - a;
+        b = a + (avail <= nat * 1.8 ? Math.max(avail, 0.1) : nat);
+      }
+      const total = run.reduce((s, w) => s + weight(w), 0);
+      let t = a;
+      run.forEach((w, idx) => {
+        const share = (b - a) * weight(w) / total;
+        if (idx > 0) w.start = t;
+        const nextStart = idx + 1 < run.length ? t + share : (m < ws.length ? ws[m].start : b);
+        if (w.end == null || w.end <= w.start || w.end > nextStart + 0.001) w.end = Math.max(w.start + 0.06, Math.min(nextStart - 0.02, w.start + share));
+        t += share;
+      });
+      k = m;
+    }
+    for (const w of ws) if (w.end > hardEnd + 0.05 && next != null) w.end = Math.max(w.start + 0.05, hardEnd);
+    return { echo: line.echo, words: ws };
+  });
+}
+
+// ---------------------------------------------------------------- historique / sauvegarde locale
+function snapshot() { history.push(JSON.stringify(state.lines)); if (history.length > 300) history.shift(); }
+function undo() {
+  if (!history.length) return toast("Rien à annuler.");
+  state.lines = JSON.parse(history.pop());
+  if (state.mode === "line") state.cursor.line = Math.max(0, state.cursor.line - 1);
+  changed(false);
+}
+function save() {
+  try { localStorage.setItem("lyricfx-calage", JSON.stringify({ lines: state.lines, audioName: state.audioName, example: state.example })); } catch (e) {}
+}
+function restore() {
+  try {
+    const d = JSON.parse(localStorage.getItem("lyricfx-calage") || "null");
+    if (d && d.lines && d.lines.length) { state.lines = d.lines; state.audioName = d.audioName || ""; state.example = !!d.example; return true; }
+  } catch (e) {}
+  return false;
+}
+
+// ---------------------------------------------------------------- actions
+function tap() {
+  if (!state.lines.length) return toast("Chargez d'abord des paroles.");
+  const t = +clock.t.toFixed(3);
+  snapshot();
+  const c = state.cursor;
+  const line = state.lines[c.line];
+  if (state.mode === "line") {
+    setLineStart(c.line, t);
+    state.sel = c.line;
+    c.line = Math.min(c.line + 1, state.lines.length - 1);
+    c.word = 0;
+  } else {
+    const w = line.words[c.word];
+    w.start = t; w.end = null;
+    if (c.word > 0) { const p = line.words[c.word - 1]; if (p.end != null && p.end > t) p.end = null; }
+    state.sel = c.line;
+    if (c.word + 1 < line.words.length) c.word++;
+    else if (c.line + 1 < state.lines.length) { c.line++; c.word = 0; }
+  }
+  state.example = false;
+  changed(true);
+}
+function setLineStart(i, t) {
+  const line = state.lines[i];
+  const s = lineStart(line);
+  if (s != null && line.words.every((w) => w.start != null)) {
+    const d = t - s;
+    line.words.forEach((w) => { w.start = Math.max(0, w.start + d); if (w.end != null) w.end = Math.max(0, w.end + d); });
+  } else if (s != null) {
+    const d = t - s;
+    line.words.forEach((w) => { if (w.start != null) w.start = Math.max(0, w.start + d); if (w.end != null) w.end = Math.max(0, w.end + d); });
+  } else {
+    line.words[0].start = t;
+  }
+}
+function nudge(delta) {
+  const line = state.lines[state.sel];
+  if (!line || lineStart(line) == null) return toast("Cette ligne n'est pas encore calée.");
+  snapshot();
+  setLineStart(state.sel, Math.max(0, lineStart(line) + delta));
+  changed(true);
+}
+function applyOffset() {
+  const d = parseFloat($("offset").value.replace(",", "."));
+  if (!d) return toast("Indiquez un décalage en secondes, par exemple -0.2");
+  snapshot();
+  for (const l of state.lines) for (const w of l.words) { if (w.start != null) w.start = Math.max(0, w.start + d); if (w.end != null) w.end = Math.max(0, w.end + d); }
+  $("offset").value = "0.00";
+  changed(true);
+  toast(`Tout le texte a été décalé de ${d > 0 ? "+" : ""}${d.toFixed(2)} s.`);
+}
+function clearFrom() {
+  snapshot();
+  state.lines.slice(state.sel).forEach((l) => l.words.forEach((w) => { w.start = null; w.end = null; }));
+  state.cursor = { line: state.sel, word: 0 };
+  changed(true);
+  toast(`Timings effacés à partir de la ligne ${state.sel + 1}.`);
+}
+function playLine(i) {
+  const s = lineStart(state.lines[i]);
+  if (s == null) return;
+  clock.seek(Math.max(0, s - 1));
+  if (!clock.playing) clock.toggle();
+}
+
+// ---------------------------------------------------------------- export
+const fmt = (t) => { const m = Math.floor(t / 60), s = t - m * 60; return `${String(m).padStart(2, "0")}:${s.toFixed(2).padStart(5, "0")}`; };
+function toLrc() {
+  const out = [];
+  const wordLevel = $("wordLrc").checked;
+  resolve().forEach((l) => {
+    if (!l) return;
+    let body;
+    if (wordLevel) body = l.words.map((w, i) => `<${fmt(w.start)}>${l.echo && i === 0 ? "(" : ""}${w.text}${l.echo && i === l.words.length - 1 ? ")" : ""}`).join(" ");
+    else { const txt = l.words.map((w) => w.text).join(" "); body = l.echo ? `(${txt})` : txt; }
+    out.push(`[${fmt(l.words[0].start)}]${body}`);
+  });
+  return out.join("\n") + "\n";
+}
+function toJson() {
+  const lines = resolve().filter(Boolean).map((l) => {
+    const o = { text: l.words.map((w) => w.text).join(" ") };
+    if (l.echo) o.echo = true;
+    o.words = l.words.map((w) => ({ text: w.text, start: +w.start.toFixed(3), end: +w.end.toFixed(3) }));
+    return o;
+  });
+  return JSON.stringify({ version: 1, audio: state.audioName, duration: +clock.dur.toFixed(3), source: "éditeur de calage", lines }, null, 1) + "\n";
+}
+function baseName() { return (state.audioName || "paroles").replace(/\.[^.]+$/, ""); }
+function exportText(kind, download) {
+  const untimed = state.lines.filter((l) => lineStart(l) == null).length;
+  const text = kind === "lrc" ? toLrc() : toJson();
+  const out = $("out"); out.hidden = false; out.value = text;
+  const warn = untimed ? ` (${untimed} ligne(s) non calée(s) ignorée(s))` : "";
+  if (download) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+    a.download = `${baseName()}.${kind}`;
+    document.body.appendChild(a); a.click(); a.remove();
+    toast(`Fichier ${baseName()}.${kind} prêt${warn}. S'il ne s'enregistre pas, copiez le texte ci-dessous.`);
+  } else {
+    navigator.clipboard.writeText(text).then(
+      () => toast(`${kind.toUpperCase()} copié${warn}. Collez-le dans ${baseName()}.${kind}`),
+      () => { out.focus(); out.select(); toast("Copie refusée : le texte est sélectionné ci-dessous, faites Ctrl+C."); });
+  }
+}
+
+// ---------------------------------------------------------------- chargement des fichiers
+async function loadAudio(file) {
+  if (audio.src) URL.revokeObjectURL(audio.src);
+  audio.src = URL.createObjectURL(file);
+  audio.playbackRate = +$("rate").value;
+  state.audioName = file.name;
+  $("audioBtn").classList.add("done");
+  $("audioBtn").querySelector("button").innerHTML = `🎵 Audio <small>${escapeHtml(file.name)}</small>`;
+  state.peaks = null;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = await ctx.decodeAudioData(await file.arrayBuffer());
+    state.duration = buf.duration;
+    const n = Math.ceil(buf.duration * state.peaksPerSec);
+    const peaks = new Float32Array(n);
+    const chans = [...Array(buf.numberOfChannels).keys()].map((c) => buf.getChannelData(c));
+    const step = buf.sampleRate / state.peaksPerSec;
+    for (let i = 0; i < n; i++) {
+      let mx = 0;
+      const a = Math.floor(i * step), b = Math.min(buf.length, Math.floor((i + 1) * step));
+      for (let s = a; s < b; s += 4) for (const ch of chans) { const v = Math.abs(ch[s]); if (v > mx) mx = v; }
+      peaks[i] = mx;
+    }
+    state.peaks = peaks;
+    ctx.close && ctx.close();
+  } catch (e) { toast("Forme d'onde indisponible pour ce fichier, la lecture fonctionne quand même."); }
+  save();
+}
+function loadLyrics(text, name) {
+  try {
+    const lines = parseText(text, name.toLowerCase());
+    if (!lines.length) return toast("Aucune ligne trouvée dans ces paroles.");
+    snapshot();
+    state.lines = lines;
+    state.example = false;
+    state.cursor = { line: Math.max(0, lines.findIndex((l) => lineStart(l) == null)), word: 0 };
+    state.sel = 0;
+    $("lyrBtn").classList.add("done");
+    changed(true);
+    toast(`${lines.length} lignes chargées.`);
+  } catch (e) { toast("Fichier illisible : utilisez un .txt, un .lrc ou un .json produit par lyricfx."); }
+}
+function escapeHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+// ---------------------------------------------------------------- affichage : liste
+let resolvedCache = [];
+function changed(persist) {
+  resolvedCache = resolve();
+  renderList();
+  if (persist) save();
+}
+function renderList() {
+  const box = $("lines");
+  const c = state.cursor;
+  box.innerHTML = state.lines.map((l, i) => {
+    const s = lineStart(l);
+    const cls = ["row", s != null ? "timed" : "", l.echo ? "echo" : "", i === state.sel ? "sel" : "", state.mode === "line" && i === c.line ? "cursor" : ""].join(" ");
+    const words = l.words.map((w, j) => {
+      const wc = ["wd", state.mode === "word" && i === c.line && j === c.word ? "cursor" : "", state.mode === "word" && w.start != null ? "set" : ""].join(" ");
+      return `<span class="${wc}">${escapeHtml(w.text)}</span>`;
+    }).join(" ");
+    return `<div class="${cls}" data-i="${i}" role="option" aria-selected="${i === state.sel}" tabindex="-1"><span class="n">${i + 1}</span><span class="t">${s != null ? fmt(s) : "--:--.--"}</span><span class="x">${words}</span></div>`;
+  }).join("");
+  const done = state.lines.filter((l) => lineStart(l) != null).length;
+  $("progress").textContent = `${done} / ${state.lines.length} calées`;
+  $("stageBadge").textContent = state.example ? "Exemple : chargez vos fichiers" : "Aperçu";
+  const target = box.querySelector(".cursor") || box.querySelector(".sel");
+  if (target) {
+    const r = target.getBoundingClientRect(), br = box.getBoundingClientRect();
+    if (r.top < br.top || r.bottom > br.bottom) box.scrollTop += r.top - br.top - br.height / 3;
+  }
+  $("tapHint").textContent = state.mode === "line"
+    ? `Espace : début de la ligne ${Math.min(c.line + 1, state.lines.length)}`
+    : `Espace : début du mot « ${state.lines[c.line]?.words[c.word]?.text ?? ""} »`;
+}
+
+// ---------------------------------------------------------------- affichage : scène + timeline
+const clockFmt = (t) => { const m = Math.floor(t / 60), s = t - m * 60; return `${m}:${s.toFixed(2).padStart(5, "0")}`; };
+let lastPlaying = -2, lastRowPlaying = -1;
+function renderStage(t) {
+  const R = resolvedCache;
+  let idx = -1;
+  for (let i = 0; i < R.length; i++) {
+    if (!R[i]) continue;
+    const s = R[i].words[0].start - 0.35, e = R[i].words.at(-1).end + 0.4;
+    if (t >= s && t <= e) idx = i;
+    if (s > t) break;
+  }
+  const cur = $("cur"), nxt = $("nxt");
+  if (idx !== lastPlaying) {
+    lastPlaying = idx;
+    if (idx < 0) {
+      cur.className = "cur idle";
+      cur.textContent = state.lines.length ? (clock.playing ? "…" : "Lancez la lecture, puis tapez Espace au début de chaque ligne") : "Chargez un audio et des paroles";
+      nxt.textContent = "";
+    } else {
+      cur.className = "cur" + (R[idx].echo ? " echo" : "");
+      cur.innerHTML = R[idx].words.map((w) => `<span class="w">${escapeHtml(w.text)}</span>`).join(" ");
+      const n = state.lines[idx + 1];
+      nxt.textContent = n ? n.words.map((w) => w.text).join(" ") : "";
+    }
+  }
+  if (idx >= 0) {
+    const spans = cur.children;
+    R[idx].words.forEach((w, j) => {
+      const p = t <= w.start ? 0 : t >= w.end ? 100 : (t - w.start) / (w.end - w.start) * 100;
+      spans[j] && spans[j].style.setProperty("--p", p.toFixed(1) + "%");
+    });
+  }
+  if (idx !== lastRowPlaying) {
+    const rows = $("lines").children;
+    rows[lastRowPlaying]?.classList.remove("playing");
+    rows[idx]?.classList.add("playing");
+    lastRowPlaying = idx;
+  }
+}
+
+const cv = $("wave"), g = cv.getContext("2d");
+let drag = null;
+const view = () => { const w = cv.clientWidth; const t0 = Math.max(0, clock.t - state.zoom * 0.3); return { w, t0, pps: w / state.zoom }; };
+function markers() {
+  const res = [];
+  state.lines.forEach((l, i) => {
+    if (state.mode === "line") { const s = lineStart(l); if (s != null) res.push({ t: s, i, j: 0, main: true }); }
+    else l.words.forEach((w, j) => { if (w.start != null) res.push({ t: w.start, i, j, main: j === 0 }); });
+  });
+  return res;
+}
+function drawWave() {
+  const dpr = window.devicePixelRatio || 1;
+  const W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, W, H);
+  const { t0, pps } = view();
+  const mid = H * 0.58, amp = H * 0.36;
+  // graduations
+  g.fillStyle = "#6f6179"; g.font = "10px " + getComputedStyle(document.body).getPropertyValue("--mono");
+  for (let s = Math.ceil(t0); s < t0 + state.zoom; s++) {
+    const x = (s - t0) * pps;
+    g.fillStyle = s % 5 === 0 ? "#3b3146" : "#2b2334"; g.fillRect(x, 16, 1, H - 16);
+    if (s % 5 === 0 || state.zoom <= 8) { g.fillStyle = "#a797b3"; g.fillText(clockFmt(s).replace(/\.00$/, ""), x + 3, 11); }
+  }
+  // forme d'onde
+  if (state.peaks) {
+    g.fillStyle = "#5d4d6b";
+    const P = state.peaks, ps = state.peaksPerSec;
+    for (let x = 0; x < W; x++) {
+      const a = Math.floor((t0 + x / pps) * ps), b = Math.max(a + 1, Math.floor((t0 + (x + 1) / pps) * ps));
+      let mx = 0; for (let k = a; k < b && k < P.length; k++) if (P[k] > mx) mx = P[k];
+      const h = Math.max(1, mx * amp); g.fillRect(x, mid - h, 1, h * 2);
+    }
+  } else {
+    g.fillStyle = "#6f6179"; g.fillText(clock.hasAudio ? "Analyse de l'audio…" : "Chargez un audio pour voir la forme d'onde", 10, mid);
+  }
+  // étendues des lignes calées
+  resolvedCache.forEach((l, i) => {
+    if (!l) return;
+    const x1 = (l.words[0].start - t0) * pps, x2 = (l.words.at(-1).end - t0) * pps;
+    if (x2 < 0 || x1 > W) return;
+    g.fillStyle = state.lines[i].echo ? "#ff6fb124" : "#ffb54724"; g.fillRect(x1, 18, x2 - x1, H - 18);
+  });
+  // repères
+  for (const m of markers()) {
+    const x = (m.t - t0) * pps; if (x < -40 || x > W + 4) continue;
+    const echo = state.lines[m.i].echo;
+    g.fillStyle = echo ? "#ff6fb1" : m.main ? "#ffb547" : "#c99440";
+    g.fillRect(x - (m.main ? 1 : 0.5), 18, m.main ? 2 : 1, H - 18);
+    if (m.main) {
+      g.beginPath(); g.moveTo(x, 18); g.lineTo(x + 7, 18); g.lineTo(x, 27); g.fill();
+      g.fillStyle = "#efe8f4"; g.fillText(String(m.i + 1), x + 4, H - 5);
+    }
+  }
+  // tête de lecture
+  const px = (clock.t - t0) * pps;
+  g.fillStyle = "#efe8f4"; g.fillRect(px - 1, 14, 2, H - 14);
+}
+function hitMarker(x) {
+  const { t0, pps } = view();
+  let best = null, bd = 8;
+  for (const m of markers()) { const d = Math.abs((m.t - t0) * pps - x); if (d < bd) { bd = d; best = m; } }
+  return best;
+}
+cv.addEventListener("pointerdown", (e) => {
+  const x = e.offsetX, m = hitMarker(x);
+  const { t0, pps } = view();
+  if (m) { snapshot(); drag = { m, t0, pps, moved: false }; cv.setPointerCapture(e.pointerId); state.sel = m.i; }
+  else clock.seek(t0 + x / pps);
+});
+cv.addEventListener("pointermove", (e) => {
+  if (!drag) { cv.style.cursor = hitMarker(e.offsetX) ? "ew-resize" : "crosshair"; return; }
+  const t = Math.max(0, drag.t0 + e.offsetX / drag.pps);
+  drag.moved = true;
+  if (drag.m.j === 0) setLineStart(drag.m.i, t);
+  else {
+    const ws = state.lines[drag.m.i].words, w = ws[drag.m.j];
+    const lo = ws[drag.m.j - 1].start ?? 0, hi = ws.slice(drag.m.j + 1).find((x) => x.start != null)?.start ?? Infinity;
+    w.start = Math.min(Math.max(t, lo + 0.03), hi - 0.03); w.end = null;
+  }
+  drag.m.t = t;
+  resolvedCache = resolve();
+});
+cv.addEventListener("pointerup", () => { if (drag) { if (!drag.moved) history.pop(); drag = null; changed(true); } });
+
+// ---------------------------------------------------------------- boucle
+function frame() {
+  const t = clock.t;
+  $("time").textContent = `${clockFmt(t)} / ${clockFmt(clock.dur).replace(/\.\d\d$/, "")}`;
+  $("stageClock").textContent = clockFmt(t);
+  $("play").textContent = clock.playing ? "❚❚ Pause" : "▶ Lecture";
+  if (!clock.hasAudio && sim.playing && t >= clock.dur) { sim.playing = false; sim.t = 0; }
+  renderStage(t);
+  drawWave();
+  requestAnimationFrame(frame);
+}
+
+// ---------------------------------------------------------------- évènements
+let toastTimer;
+function toast(msg) { const el = $("toast"); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.hidden = true), 3400); }
+function setMode(m) {
+  state.mode = m;
+  $("modeLine").setAttribute("aria-pressed", m === "line"); $("modeWord").setAttribute("aria-pressed", m === "word");
+  state.cursor.word = 0;
+  if (m === "word") state.cursor.line = state.sel;
+  renderList();
+}
+$("audioFile").addEventListener("change", (e) => e.target.files[0] && loadAudio(e.target.files[0]));
+$("lyricsFile").addEventListener("change", async (e) => { const f = e.target.files[0]; if (f) loadLyrics(await f.text(), f.name); e.target.value = ""; });
+$("pasteToggle").addEventListener("click", () => { const p = $("pastePanel"); p.hidden = !p.hidden; if (!p.hidden) $("pasteArea").focus(); });
+$("pasteLoad").addEventListener("click", () => { loadLyrics($("pasteArea").value, "colle.txt"); $("pastePanel").hidden = true; });
+$("play").addEventListener("click", () => clock.toggle());
+$("back3").addEventListener("click", () => clock.seek(clock.t - 3));
+$("fwd3").addEventListener("click", () => clock.seek(clock.t + 3));
+$("rate").addEventListener("change", (e) => clock.setRate(+e.target.value));
+$("tap").addEventListener("click", tap);
+$("modeLine").addEventListener("click", () => setMode("line"));
+$("modeWord").addEventListener("click", () => setMode("word"));
+$("zoomIn").addEventListener("click", () => (state.zoom = Math.max(3, state.zoom / 1.5)));
+$("zoomOut").addEventListener("click", () => (state.zoom = Math.min(90, state.zoom * 1.5)));
+$("applyOffset").addEventListener("click", applyOffset);
+$("clearFrom").addEventListener("click", clearFrom);
+$("copyLrc").addEventListener("click", () => exportText("lrc", false));
+$("copyJson").addEventListener("click", () => exportText("json", false));
+$("dlLrc").addEventListener("click", () => exportText("lrc", true));
+$("dlJson").addEventListener("click", () => exportText("json", true));
+$("lines").addEventListener("click", (e) => {
+  const row = e.target.closest(".row"); if (!row) return;
+  const i = +row.dataset.i;
+  state.sel = i; state.cursor = { line: i, word: 0 };
+  renderList();
+  if (lineStart(state.lines[i]) != null) clock.seek(Math.max(0, lineStart(state.lines[i]) - 1));
+});
+document.addEventListener("keydown", (e) => {
+  const tag = e.target.tagName;
+  if (tag === "TEXTAREA" || (tag === "INPUT" && e.target.type !== "checkbox" && e.target.type !== "file") || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key;
+  if (k === " " || k === "Spacebar") { e.preventDefault(); tap(); }
+  else if (k === "p" || k === "P") { e.preventDefault(); clock.toggle(); }
+  else if (k === "Backspace") { e.preventDefault(); undo(); }
+  else if (k === "ArrowUp" || k === "ArrowDown") {
+    e.preventDefault();
+    state.sel = Math.max(0, Math.min(state.lines.length - 1, state.sel + (k === "ArrowUp" ? -1 : 1)));
+    state.cursor = { line: state.sel, word: 0 }; renderList();
+  }
+  else if (k === "ArrowLeft" || k === "ArrowRight") { e.preventDefault(); nudge((k === "ArrowLeft" ? -1 : 1) * (e.shiftKey ? 0.25 : 0.05)); }
+  else if (k === "Enter") { e.preventDefault(); playLine(state.sel); }
+  else if (k === "[") clock.seek(clock.t - 3);
+  else if (k === "]") clock.seek(clock.t + 3);
+});
+window.addEventListener("resize", () => drawWave());
+
+// ---------------------------------------------------------------- démarrage : exemple (domaine public)
+const EXAMPLE = `[00:01.00]Au clair de la lune, mon ami Pierrot
+[00:05.00]Prête-moi ta plume pour écrire un mot
+[00:09.00]Ma chandelle est morte, je n'ai plus de feu
+[00:13.00](Plus de feu)
+[00:15.00]Ouvre-moi ta porte pour l'amour de Dieu`;
+if (!restore()) { state.lines = parseText(EXAMPLE, "exemple.lrc"); state.example = true; state.duration = 19; }
+state.cursor.line = Math.max(0, state.lines.findIndex((l) => lineStart(l) == null));
+changed(false);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

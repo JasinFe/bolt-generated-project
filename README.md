@@ -15,15 +15,17 @@ Tout est **paramétrable** (presets JSON, surcharges en ligne de commande) et **
 ## Comment ça marche
 
 ```
-audio.mp3 ──► [Whisper : mots + horodatage] ──┐
-                                              ├─► timing.json (éditable) ──► .ass stylé ──► ffmpeg ──► vidéo
-paroles.txt / .lrc / LRCLIB (optionnel) ──────┘
+audio.mp3 ─┐
+           ├─► [alignement forcé ou Whisper] ─► timing.json ─► (éditeur de calage) ─► .ass stylé ─► ffmpeg ─► vidéo
+paroles ───┘      .txt / .lrc / LRCLIB
 ```
 
-1. **Synchronisation** : Whisper (via `faster-whisper`) transcrit la voix et donne l'instant de chaque mot.
-   Si vous fournissez les paroles, elles sont **alignées** sur ce que Whisper a entendu. Le texte affiché est alors *exactement le vôtre* : orthographe, ponctuation et découpage des lignes sont respectés, même quand Whisper se trompe ou saute un mot.
-2. **Timing JSON** : le résultat est enregistré dans un fichier JSON simple (un mot par ligne). Vous pouvez le corriger à la main si besoin.
-3. **Rendu** : un sous-titre `.ass` animé est généré (balayage karaoké, pop, glow, fondus…) puis ffmpeg/libass le rend en vidéo.
+1. **Synchronisation automatique**, deux moteurs :
+   - **Alignement forcé** (`--engine align`, utilisé d'office quand vous fournissez les paroles et que `stable-ts` est installé). Whisper ne cherche pas à *deviner* le texte : il repère **où chacun de vos mots est chanté**. C'est de loin le plus fiable sur du rap, du nouchi, du gospel avec beaucoup d'instruments. Avec Demucs installé, la voix est d'abord isolée de la musique.
+   - **Transcription + rapprochement** (`--engine whisper`) : Whisper transcrit, puis vos paroles sont calées sur ce qu'il a entendu. C'est plus rapide, mais moins précis quand Whisper comprend mal.
+2. **Timing JSON** : le résultat est enregistré dans un fichier JSON simple (un mot par ligne).
+3. **Calage manuel (si besoin)** : l'**éditeur de calage** permet de corriger à l'oreille, en tapant le rythme (voir plus bas).
+4. **Rendu** : un sous-titre `.ass` animé est généré (balayage karaoké, pop, glow, pastille, glitch…) puis ffmpeg/libass le rend en vidéo.
 
 ## Installation
 
@@ -31,17 +33,20 @@ Prérequis : **Python 3.10+** et **ffmpeg** (avec libass, présent dans la plupa
 
 ```bash
 # ffmpeg : macOS → brew install ffmpeg · Ubuntu → sudo apt install ffmpeg · Windows → winget install ffmpeg
-pip install -r requirements.txt       # faster-whisper
+pip install -r requirements.txt       # faster-whisper, stable-ts (alignement forcé), demucs (isolation de la voix)
 ./fonts/download_fonts.sh             # (recommandé) polices libres utilisées par les presets
 ```
 
-Optionnel : `pip install demucs` pour isoler la voix avant la transcription (option `--vocals`), ce qui améliore beaucoup la précision sur les morceaux très produits.
+Au premier lancement, les modèles sont téléchargés automatiquement (quelques centaines de Mo à 1,5 Go selon le modèle).
 
 ## Démarrage rapide
 
 ```bash
 # Tout-en-un : audio + paroles → vidéo fond vert, style néon
-python -m lyricfx make ma-chanson.mp3 --lyrics ma-chanson.txt --preset neon
+python -m lyricfx make ma-chanson.mp3 --lyrics ma-chanson.txt --language fr --preset neon
+
+# Comparer tous les styles sur une seule image, à partir du timing obtenu
+python -m lyricfx gallery out/ma-chanson.json
 
 # Fond transparent (ProRes 4444 .mov), format vertical pour Reels/TikTok
 python -m lyricfx make ma-chanson.mp3 --lyrics ma-chanson.txt --preset tiktok --bg transparent --size portrait
@@ -76,18 +81,38 @@ Si un timing existe déjà dans `out-dir`, il est **réutilisé**. Vous pouvez d
 
 ```bash
 python -m lyricfx sync ma-chanson.mp3 --lyrics paroles.txt --language fr -o ma-chanson.json
-# … corrigez éventuellement ma-chanson.json à la main …
+# … vérifiez / corrigez (éditeur de calage ou à la main) …
 python -m lyricfx render ma-chanson.json --audio ma-chanson.mp3 --preset pop --preview 42.5   # image PNG de test
 python -m lyricfx render ma-chanson.json --audio ma-chanson.mp3 --preset pop                  # vidéo finale
 ```
 
 `--preview SECONDES` rend une seule image PNG à l'instant voulu. C'est idéal pour régler un style en quelques secondes.
 
+## Quand le texte n'est pas synchro
+
+Du plus simple au plus précis :
+
+1. **Tout le texte est en avance ou en retard du même écart** → `--offset` au rendu, sans recalcul :
+   `python -m lyricfx render out/chanson.json --audio chanson.mp3 --offset -0.3` (négatif = plus tôt).
+2. **Le calage dérive ou saute des lignes** → vérifiez que l'alignement forcé est actif (le terminal affiche « Alignement forcé des paroles »). Sinon : `pip install stable-ts demucs`, puis relancez avec `--resync`. Si ça ne suffit pas, passez à un modèle plus gros : `--model large-v3`.
+3. **Chanson très difficile (voix superposées, ad-libs, accent fort)** → **éditeur de calage** :
+
+   ```bash
+   python -m lyricfx editor
+   ```
+
+   La page s'ouvre dans votre navigateur et fonctionne hors ligne ; vos fichiers ne quittent pas l'ordinateur. Chargez l'audio et les paroles, lancez la lecture (0,75× aide pour le rap), puis tapez **Espace** au début de chaque ligne. Corrigez ensuite en glissant les repères sur la forme d'onde ou avec les flèches ←/→. Exportez enfin :
+   - **LRC** (recommandé) → `python -m lyricfx make chanson.mp3 --lyrics chanson.lrc --resync`. Vos débuts de ligne servent d'ancres, et l'alignement forcé cale chaque mot à l'intérieur.
+   - **JSON** → `python -m lyricfx render chanson.json --audio chanson.mp3`. C'est votre calage tel quel ; le mode **Mots** permet de caler chaque mot à la main.
+
+   L'éditeur peut aussi ouvrir un `.json` produit par lyricfx, pour ne retoucher que les lignes fausses.
+
 ## Formats de paroles acceptés
 
 | Format | Exemple | Remarque |
 |---|---|---|
-| **Texte** `.txt` | `Au clair de la lune, mon ami Pierrot` | Une ligne = une ligne affichée. Les lignes `[Refrain]`, `(Couplet 2)` et les lignes vides sont ignorées. Nécessite Whisper. |
+| **Texte** `.txt` | `Au clair de la lune, mon ami Pierrot` | Une ligne = une ligne affichée. Les repères `[Refrain]`, `(Couplet 2)`, `(x2)` et les lignes vides sont ignorés. Nécessite Whisper. |
+| **Chœurs / réponses** | `(C'est nous on coordonne)` | Une ligne entière entre parenthèses est affichée comme un **chœur** : plus petite, en italique, dans une autre couleur (réglage `echo`). |
 | **LRC** `.lrc` | `[00:01.00]Au clair de la lune…` | Les temps de début de ligne servent d'ancres et fiabilisent l'alignement. Avec `--no-asr`, fonctionne même **sans Whisper** (mots répartis dans la ligne). |
 | **LRC enrichi** | `[00:01.00]<00:01.00>Au <00:01.40>clair…` | Déjà synchronisé mot à mot : utilisé tel quel. |
 
@@ -102,12 +127,21 @@ python -m lyricfx presets
 | Preset | Mode | Description |
 |---|---|---|
 | `neon` | karaoke | Balayage rose, halo lumineux qui s'allume sur les mots chantés, ligne suivante en aperçu |
+| `lumiere` | karaoke | Gospel lumineux : remplissage or, halo chaud, chœurs en bleu ciel |
 | `classic` | karaoke | Karaoké classique blanc → bleu, deux lignes |
-| `pop` | highlight | Majuscules, mot chanté jaune qui « pop », contour épais |
-| `tiktok` | word | 3 mots max, énormes, au centre (Reels / TikTok / Shorts) |
-| `reveal` | reveal | Les mots apparaissent au fil du chant, halo doré |
-| `boxed` | highlight | Bandeau semi-transparent, lisible sur tout fond |
+| `hollow` | karaoke | Lettres en contour qui se remplissent de jaune |
+| `cinema` | karaoke | Sous-titre discret, majuscules espacées |
 | `minimal` | karaoke | Sobre, ombre douce |
+| `pop` | highlight | Majuscules, mot chanté jaune qui « pop », contour épais |
+| `sticker` | highlight | Style CapCut : mot chanté sur une pastille violette |
+| `glitch` | highlight | Décalage rouge/cyan façon glitch |
+| `pingpong` | highlight | Question / réponse : phrases alternées gauche / droite, couleur par phrase |
+| `boxed` | highlight | Bandeau semi-transparent, lisible sur tout fond |
+| `tiktok` | word | 3 mots max, énormes, au centre (Reels / TikTok / Shorts) |
+| `rap` | word | 3 mots énormes, texte penché qui alterne, couleur différente à chaque phrase |
+| `reveal` | reveal | Les mots apparaissent au fil du chant, halo doré |
+
+Pour choisir, `python -m lyricfx gallery out/chanson.json` rend **tous les styles sur une seule image**, au même instant de votre chanson (`--at 42` pour choisir l'instant, `--size portrait` pour le vertical).
 
 **Modes d'animation** :
 - `karaoke` : la ligne se remplit progressivement, syllabe par syllabe ;
@@ -164,6 +198,12 @@ Les tailles sont en pixels pour une vidéo de référence en 1080p. Elles s'adap
 | `glow.when` | `always` | `always` ou `sung` (le halo s'allume mot par mot) |
 | `box.enabled/color/opacity/padding` | off | Bandeau derrière le texte |
 | `position`, `margin_v` | bottom, 110 | `bottom`, `center` ou `top` |
+| `align`, `margin_h` | center, 90 | `center`, `left`, `right` ou `alternate` (une ligne à gauche, la suivante à droite) |
+| `tilt`, `tilt_alternate` | 0, false | Inclinaison en degrés, éventuellement alternée |
+| `palette` | `[]` | Couleurs d'accent qui changent à chaque ligne, ex. `["#FFE600", "#00E5FF"]` |
+| `echo.scale/italic/color` | 0.8, true, rose | Style des chœurs (lignes entre parenthèses) |
+| `active_box.enabled/color/size/text_color` | off | Pastille colorée derrière le mot chanté (`"color": "active"` = couleur active) |
+| `rgb_split.enabled/offset/opacity/colors` | off | Décalage RVB façon glitch |
 | `max_chars_per_line` | 32 | Les lignes plus longues sont coupées proprement |
 | `lines_on_screen` | 1 | 2 pour afficher la ligne suivante en aperçu |
 | `next_line.scale/opacity/color` | 0.8, 0.55 | Style de la ligne suivante |
@@ -182,32 +222,34 @@ Les tailles sont en pixels pour une vidéo de référence en 1080p. Elles s'adap
 | `--bg` | `green`, `blue`, `#FF00FF`, `transparent`, `fond.jpg`, `boucle.mp4` | Fond de la vidéo |
 | `--size` | `1920x1080`, `portrait`, `square`, `4k`, `720p` | Résolution |
 | `--fps` | `30` | Images par seconde |
+| `--offset` | `-0.3` | Décale tout le texte (secondes, négatif = plus tôt) |
 | `--format` | `mp4`, `mov`, `webm` | Force le conteneur (sinon `.mp4`, ou `.mov` si transparent) |
 | `--fonts-dir` | `./mes-polices` | Polices supplémentaires (le dossier `fonts/` est utilisé automatiquement) |
 | `--ass-only` | | Génère seulement le `.ass`, à importer dans Aegisub, VLC ou un logiciel de montage |
 | `--no-audio` | | Vidéo muette (sinon l'audio est inclus pour faciliter le calage au montage) |
 
-Options de synchronisation : `--model` (`tiny` → `large-v3`, plus gros = plus précis mais plus lent), `--language fr`, `--vocals` (Demucs), `--device cuda`.
+Options de synchronisation : `--engine` (`auto`, `align`, `whisper`), `--model` (`tiny` → `large-v3`, plus gros = plus précis mais plus lent ; défaut `medium` en alignement), `--language fr`, `--vocals` / `--no-vocals` (Demucs), `--device cuda`.
 
 ## Conseils pour un rendu propre
 
 - **Fond vert ou transparent ?** Préférez `--bg transparent` dès qu'il y a du **glow**, du **flou** ou de la **semi-transparence**. Un chroma key détoure mal ces pixels à moitié verts. Le fond vert convient aux styles à contour net (`pop`, `classic`, `tiktok`).
 - **Évitez le vert dans vos couleurs** avec `--bg green`, sinon il sera détouré. Utilisez `--bg blue` ou `--bg magenta` si votre style est vert.
-- **Précision** : pour une musique chargée, `--vocals` et `--model medium` (ou `large-v3`) améliorent nettement le calage. Fournir les paroles aide aussi Whisper, qui les reçoit comme contexte.
+- **Précision** : fournissez toujours les paroles (alignement forcé) et installez Demucs. Pour une musique chargée, `--model large-v3` améliore encore le calage.
 - Les timings restent **modifiables** dans le JSON. Relancez ensuite `render` : c'est instantané, sans nouvelle transcription.
 
 ## Structure du projet
 
 ```
 lyricfx/
-  cli.py        commandes sync / render / make / presets
-  asr.py        Whisper (faster-whisper ou openai-whisper) + Demucs
+  cli.py        commandes sync / render / make / gallery / editor / presets
+  asr.py        alignement forcé (stable-ts), Whisper (faster-whisper / openai-whisper), Demucs
   lyrics.py     lecture TXT / LRC / LRC enrichi, API LRCLIB
   align.py      alignement paroles ↔ mots reconnus, interpolation
   ass.py        génération des sous-titres animés (karaoké, pop, glow, bandeau…)
   render.py     rendu ffmpeg (vert, couleur, transparent, image/vidéo de fond)
   styles.py     valeurs par défaut, presets, surcharges
-  presets/      styles prêts à l'emploi (JSON)
+  presets/      14 styles prêts à l'emploi (JSON)
+  editor/       éditeur de calage manuel (page web hors ligne)
 fonts/          download_fonts.sh (polices libres OFL)
 examples/       paroles d'exemple (domaine public)
 ```

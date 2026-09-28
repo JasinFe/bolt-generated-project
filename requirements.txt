@@ -1,4 +1,6 @@
-# Synchronisation automatique (reconnaissance vocale avec horodatage par mot)
+# Reconnaissance vocale avec horodatage par mot
 faster-whisper>=1.0
-# Optionnel : isolation de la voix pour une meilleure précision (--vocals)
-# demucs>=4.0
+# Alignement forcé des paroles connues (le plus précis quand on fournit les paroles)
+stable-ts>=2.17
+# Recommandé : isole la voix avant l'alignement (beaucoup plus précis sur la musique)
+demucs>=4.0

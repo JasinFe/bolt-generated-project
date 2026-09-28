@@ -38,7 +38,18 @@ DEFAULTS: dict = {
              "opacity": 0.9, "when": "always"},  # when: always | sung
     "box": {"enabled": False, "color": "#000000", "opacity": 0.55, "padding": 18},
     "position": "bottom",  # bottom | center | top
+    "align": "center",  # center | left | right | alternate (gauche/droite une ligne sur deux)
     "margin_v": 110,
+    "margin_h": 90,
+    "tilt": 0,  # inclinaison du texte en degrés
+    "tilt_alternate": False,  # alterne +/− d'une ligne à l'autre
+    "palette": [],  # couleurs d'accent qui changent à chaque ligne, ex. ["#FFE600", "#00E5FF"]
+    # Chœurs / réponses (lignes entre parenthèses dans les paroles)
+    "echo": {"scale": 0.8, "italic": True, "color": "#FF6FB1"},
+    # Mot actif sur une pastille colorée (style CapCut) — modes highlight / word
+    "active_box": {"enabled": False, "color": "#7B2FF7", "size": 14, "text_color": "#FFFFFF"},
+    # Décalage RVB façon glitch
+    "rgb_split": {"enabled": False, "offset": 5, "opacity": 0.75, "colors": ["#FF1744", "#00E5FF"]},
     "max_chars_per_line": 32,
     "lines_on_screen": 1,  # 2 = affiche aussi la ligne suivante
     "next_line": {"scale": 0.8, "opacity": 0.55, "color": None},

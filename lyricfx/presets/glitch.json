@@ -1,0 +1,35 @@
+{
+  "description": "Glitch : décalage rouge/cyan, lettres espacées, mot actif cyan",
+  "mode": "highlight",
+  "font": "Bebas Neue",
+  "font_size": 110,
+  "uppercase": true,
+  "letter_spacing": 4,
+  "color_unsung": "#FFFFFF",
+  "color_sung": "#FFFFFF",
+  "color_active": "#00E5FF",
+  "outline": 2,
+  "outline_color": "#000000",
+  "rgb_split": {
+    "enabled": true,
+    "offset": 6,
+    "opacity": 0.7,
+    "colors": [
+      "#FF1744",
+      "#00E5FF"
+    ]
+  },
+  "position": "center",
+  "active_scale": 1.0,
+  "max_chars_per_line": 26,
+  "echo": {
+    "scale": 0.8,
+    "italic": false,
+    "color": "#FF1744"
+  },
+  "animation": {
+    "in": "zoom",
+    "out": "fade",
+    "duration": 0.12
+  }
+}

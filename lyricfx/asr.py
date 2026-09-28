@@ -65,6 +65,50 @@ def transcribe(audio: str, model: str = "small", language: str | None = None,
     return words, breaks
 
 
+def has_module(name: str) -> bool:
+    import importlib.util
+    return importlib.util.find_spec(name) is not None
+
+
+def force_align(audio: str, lines: list[list[str]], model: str = "medium", language: str = "fr",
+                device: str = "auto", denoise: bool | None = None) -> list[Word]:
+    """Alignement forcé des paroles connues sur l'audio (stable-ts).
+
+    Contrairement à la transcription, Whisper ne « devine » pas le texte : il cherche
+    où chaque mot fourni est chanté. Beaucoup plus fiable sur du rap / de la musique chargée.
+    Renvoie les mots horodatés (découpage de stable-ts, à reporter sur nos mots).
+    """
+    try:
+        import stable_whisper
+    except ImportError as exc:
+        raise SystemExit(
+            "Moteur d'alignement absent. Installez-le :\n  pip install stable-ts\n"
+            "(ou utilisez --engine whisper)"
+        ) from exc
+    if denoise is None:
+        denoise = has_module("demucs")
+    print(f"» Alignement forcé des paroles (stable-ts, modèle « {model} », langue {language}"
+          f"{', voix isolée par Demucs' if denoise else ''})…", file=sys.stderr)
+    if has_module("faster_whisper"):
+        opts = {"device": device, "compute_type": "int8" if device == "cpu" else "auto"}
+        wm = stable_whisper.load_faster_whisper(model, **opts)
+    else:
+        wm = stable_whisper.load_model(model, device=None if device == "auto" else device)
+    text = "\n".join(" ".join(tokens) for tokens in lines)
+    kwargs = {"language": language, "original_split": True}
+    if denoise:
+        kwargs["denoiser"] = "demucs"
+    result = wm.align(audio, text, **kwargs)
+    if result is None:
+        raise RuntimeError("stable-ts n'a pas réussi à aligner les paroles.")
+    words = []
+    for seg in result.segments:
+        for w in seg.words:
+            if w.word.strip():
+                words.append(Word(w.word.strip(), float(w.start), float(w.end)))
+    return words
+
+
 def audio_duration(path: str) -> float:
     if not shutil.which("ffprobe"):
         raise SystemExit("ffprobe introuvable : installez ffmpeg (https://ffmpeg.org).")
