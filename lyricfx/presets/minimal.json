@@ -1,0 +1,17 @@
+{
+  "description": "Minimaliste : fin, ombre douce, remplissage blanc sur gris",
+  "mode": "karaoke",
+  "font": "Poppins SemiBold",
+  "font_size": 64,
+  "bold": false,
+  "color_unsung": "#B0B0B0",
+  "unsung_opacity": 0.7,
+  "color_sung": "#FFFFFF",
+  "outline": 0,
+  "shadow": 3,
+  "shadow_opacity": 0.5,
+  "blur": 0.8,
+  "position": "bottom",
+  "margin_v": 90,
+  "animation": {"in": "slide", "out": "fade", "duration": 0.25}
+}

@@ -1,0 +1,24 @@
+{
+  "description": "Sous-titre sur bandeau semi-transparent, mot actif cyan (lisible partout)",
+  "mode": "highlight",
+  "font": "Poppins ExtraBold",
+  "font_size": 70,
+  "color_unsung": "#FFFFFF",
+  "color_sung": "#FFFFFF",
+  "color_active": "#00E5FF",
+  "box": {
+    "enabled": true,
+    "color": "#000000",
+    "opacity": 0.6,
+    "padding": 16
+  },
+  "position": "bottom",
+  "active_scale": 1.0,
+  "animation": {
+    "in": "fade",
+    "out": "fade",
+    "duration": 0.15
+  },
+  "outline": 0,
+  "shadow": 0
+}

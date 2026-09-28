@@ -1,0 +1,24 @@
+{
+  "description": "Style Reels/TikTok : 3 mots max, énormes, au centre, mot actif rose vif",
+  "mode": "word",
+  "words_per_screen": 3,
+  "font": "Anton",
+  "font_size": 130,
+  "uppercase": true,
+  "color_unsung": "#FFFFFF",
+  "color_sung": "#FFFFFF",
+  "color_active": "#FF2D95",
+  "outline": 9,
+  "outline_color": "#000000",
+  "shadow": 6,
+  "position": "center",
+  "lead_in": 0.1,
+  "tail": 0.25,
+  "hold_gap": 0.5,
+  "active_scale": 1.12,
+  "animation": {
+    "in": "pop",
+    "out": "none",
+    "duration": 0.12
+  }
+}

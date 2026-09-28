@@ -1,0 +1,4 @@
+# Synchronisation automatique (reconnaissance vocale avec horodatage par mot)
+faster-whisper>=1.0
+# Optionnel : isolation de la voix pour une meilleure précision (--vocals)
+# demucs>=4.0

@@ -1,0 +1,18 @@
+{
+  "description": "Écriture élégante : les mots apparaissent au fil du chant, halo doux doré",
+  "mode": "reveal",
+  "font": "Pacifico",
+  "font_size": 90,
+  "bold": false,
+  "color_unsung": "#FFFFFF",
+  "color_sung": "#FFFFFF",
+  "color_active": "#FFD27F",
+  "outline": 2,
+  "outline_color": "#3A2A00",
+  "glow": {"enabled": true, "color": "#FFB84D", "size": 6, "blur": 12, "opacity": 0.7, "when": "sung"},
+  "position": "center",
+  "active_scale": 1.08,
+  "lead_in": 0.2,
+  "tail": 0.8,
+  "animation": {"in": "fade", "out": "fade", "duration": 0.3}
+}

@@ -1,0 +1,19 @@
+{
+  "description": "Style clip : majuscules, mot chanté en jaune qui « pop », contour épais",
+  "mode": "highlight",
+  "font": "Anton",
+  "font_size": 92,
+  "uppercase": true,
+  "letter_spacing": 1,
+  "color_unsung": "#FFFFFF",
+  "color_sung": "#FFFFFF",
+  "color_active": "#FFE600",
+  "outline": 7,
+  "outline_color": "#000000",
+  "shadow": 5,
+  "shadow_opacity": 0.7,
+  "position": "bottom",
+  "max_chars_per_line": 28,
+  "active_scale": 1.18,
+  "animation": {"in": "zoom", "out": "fade", "duration": 0.16}
+}

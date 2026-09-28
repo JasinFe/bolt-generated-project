@@ -1,0 +1,14 @@
+{
+  "description": "Karaoké classique : texte blanc qui se remplit en bleu, ligne suivante en aperçu",
+  "mode": "karaoke",
+  "font": "DejaVu Sans",
+  "font_size": 76,
+  "color_unsung": "#FFFFFF",
+  "color_sung": "#1E90FF",
+  "outline": 5,
+  "outline_color": "#000000",
+  "shadow": 3,
+  "position": "bottom",
+  "lines_on_screen": 2,
+  "animation": {"in": "fade", "out": "fade", "duration": 0.15}
+}

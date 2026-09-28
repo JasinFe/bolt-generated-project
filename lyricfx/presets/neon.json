@@ -1,0 +1,30 @@
+{
+  "description": "Karaoké néon : balayage rose, halo lumineux qui s'allume sur les mots chantés",
+  "mode": "karaoke",
+  "font": "Poppins Black",
+  "font_size": 86,
+  "color_unsung": "#FFFFFF",
+  "unsung_opacity": 0.85,
+  "color_sung": "#FF3CF0",
+  "outline": 2,
+  "outline_color": "#2B0033",
+  "glow": {
+    "enabled": true,
+    "color": "#FF3CF0",
+    "size": 10,
+    "blur": 14,
+    "opacity": 0.85,
+    "when": "sung"
+  },
+  "position": "center",
+  "lines_on_screen": 2,
+  "next_line": {
+    "scale": 0.72,
+    "opacity": 0.45
+  },
+  "animation": {
+    "in": "slide",
+    "out": "fade",
+    "duration": 0.22
+  }
+}
