@@ -494,7 +494,17 @@ function exportText(kind, download) {
   const text = kind === "lrc" ? toLrc() : toJson();
   const out = $("out"); out.hidden = false; out.value = text;
   const warn = untimed ? ` (${untimed} ligne(s) non calée(s) ignorée(s))` : "";
-  if (download) {
+  if (download && downloadsApi) {
+    // Page publiée sur claude.ai : l'enregistrement passe par la plateforme (.lrc non autorisé → .txt, lu pareil par lyricfx)
+    const filename = `${baseName()}.${kind === "lrc" ? "txt" : "json"}`;
+    downloadsApi.save({ filename, data: text }).then(
+      () => toast(`${filename} enregistré${warn}.`),
+      (err) => {
+        if (err && err.code === "declined") return;
+        if (err && err.code === "rate_limited") return toast("Une demande d'enregistrement est déjà ouverte.");
+        out.focus(); out.select(); toast("Enregistrement impossible ici : copiez le texte ci-dessous.");
+      });
+  } else if (download) {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
     a.download = `${baseName()}.${kind}`;
@@ -506,6 +516,10 @@ function exportText(kind, download) {
       () => { out.focus(); out.select(); toast("Copie refusée : le texte est sélectionné ci-dessous, faites Ctrl+C."); });
   }
 }
+
+// Enregistrement de fichiers quand la page est publiée sur claude.ai (sinon lien de téléchargement classique)
+let downloadsApi = null;
+try { window.claude?.use?.("downloads").then((d) => { downloadsApi = d; }, () => {}); } catch (e) {}
 
 // ---------------------------------------------------------------- chargement des fichiers
 async function loadAudio(file) {
