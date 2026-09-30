@@ -1,0 +1,180 @@
+/* ============================================================
+   KM FAMILY — Publication artiste (préfixe .kmfp-)
+   ============================================================ */
+
+.kmfp-section { margin-top: 26px; }
+
+.kmfp-dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: #00D67F;
+    margin-right: 7px;
+    box-shadow: 0 0 0 4px rgba(0, 214, 127, .15);
+}
+
+.kmfp-quota {
+    text-align: center;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 12px;
+    padding: 8px 16px;
+    line-height: 1.25;
+}
+.kmfp-quota strong { display: block; font-size: 20px; font-weight: 800; }
+.kmfp-quota small  { font-size: 9.5px; opacity: .55; text-transform: uppercase; letter-spacing: .05em; }
+
+/* ── Alertes ───────────────────────────────────────────────── */
+.kmfp-alert {
+    border-radius: 11px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    margin: 16px 0;
+    border: 1px solid;
+}
+.kmfp-alert--ok   { background: rgba(0, 214, 127, .09); border-color: rgba(0, 214, 127, .35); }
+.kmfp-alert--err  { background: rgba(255, 77, 77, .09);  border-color: rgba(255, 77, 77, .38); }
+.kmfp-alert--info { background: rgba(255, 255, 255, .04); border-color: rgba(255, 255, 255, .12); }
+
+/* ── Formulaire ────────────────────────────────────────────── */
+.kmfp-form { margin-top: 16px; }
+
+.kmfp-formats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+.kmfp-format input { position: absolute; opacity: 0; pointer-events: none; }
+.kmfp-format-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 8px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .025);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    text-align: center;
+}
+.kmfp-format-box:hover { border-color: rgba(255, 255, 255, .22); }
+.kmfp-format input:checked + .kmfp-format-box {
+    border-color: #00D67F;
+    background: rgba(0, 214, 127, .08);
+}
+.kmfp-format input:focus-visible + .kmfp-format-box { outline: 2px solid #00D67F; outline-offset: 2px; }
+.kmfp-format-icon  { font-size: 22px; line-height: 1; }
+.kmfp-format-label { font-size: 12px; font-weight: 600; }
+
+.kmfp-row {
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 12px;
+}
+
+.kmfp-field { display: block; margin-bottom: 14px; }
+.kmfp-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    opacity: .6;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.kmfp-label em { text-transform: none; letter-spacing: 0; font-style: normal; opacity: .75; }
+
+.kmfp-field input[type="text"],
+.kmfp-field select,
+.kmfp-field textarea,
+.kmfp-field input[type="file"] {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 10px;
+    color: inherit;
+    font: inherit;
+    font-size: 14px;
+    padding: 11px 13px;
+}
+.kmfp-field textarea { resize: vertical; min-height: 92px; line-height: 1.5; }
+.kmfp-field input[type="file"] { padding: 9px 11px; font-size: 12.5px; }
+.kmfp-field input:focus,
+.kmfp-field select:focus,
+.kmfp-field textarea:focus {
+    outline: none;
+    border-color: #00D67F;
+    background: rgba(0, 214, 127, .05);
+}
+.kmfp-field select option { background: #16181d; color: #e9edf3; }
+
+.kmfp-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+.kmfp-note { font-size: 11.5px; opacity: .5; margin: 0; flex: 1 1 240px; line-height: 1.5; }
+
+.kmfp-submit {
+    background: linear-gradient(135deg, #00D67F 0%, #00a862 100%);
+    color: #06231a;
+    border: none;
+    border-radius: 11px;
+    padding: 13px 30px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .03em;
+    cursor: pointer;
+    transition: transform .12s, filter .12s;
+}
+.kmfp-submit:hover  { filter: brightness(1.08); }
+.kmfp-submit:active { transform: translateY(1px); }
+
+/* ── Publications récentes ─────────────────────────────────── */
+.kmfp-recent { margin-top: 24px; }
+.kmfp-recent-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    opacity: .72;
+    margin-bottom: 10px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid rgba(255, 255, 255, .07);
+}
+.kmfp-list { list-style: none; margin: 0; padding: 0; }
+.kmfp-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, .045);
+    font-size: 13.5px;
+}
+.kmfp-item-title { flex: 1 1 auto; font-weight: 600; }
+.kmfp-item-meta  { font-size: 11.5px; opacity: .5; white-space: nowrap; }
+.kmfp-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border: 1px solid;
+    border-radius: 20px;
+    padding: 3px 10px;
+    white-space: nowrap;
+}
+
+/* ── Mobile ────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .kmfp-row { grid-template-columns: 1fr; }
+    .kmfp-formats { grid-template-columns: repeat(2, 1fr); }
+    .kmfp-submit { width: 100%; }
+    .kmfp-item { flex-wrap: wrap; }
+    .kmfp-item-title { flex: 1 1 100%; }
+}

@@ -1,0 +1,262 @@
+/* ============================================================
+   KM FAMILY BRIDGE — styles isolés (préfixe .kmfb-)
+   Reprend les variables/teintes du dashboard sans en dépendre :
+   toutes les couleurs ont un repli en dur, pour que la section
+   reste lisible même si dashboard.css évolue.
+   ============================================================ */
+
+.kmfb-section {
+    margin-top: 26px;
+}
+
+.kmfb-heart {
+    color: #ff4d7d;
+    font-size: 1.05em;
+    margin-right: 4px;
+}
+
+/* ── Badge taux de partage ─────────────────────────────────── */
+.kmfb-split-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    background: rgba(255, 77, 125, .08);
+    border: 1px solid rgba(255, 77, 125, .28);
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-family: 'Outfit', system-ui, sans-serif;
+}
+.kmfb-split-badge small {
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    opacity: .6;
+}
+.kmfb-split-me    { color: #00D67F; font-weight: 800; font-size: 17px; }
+.kmfb-split-label { color: #F5A623; font-weight: 800; font-size: 17px; }
+.kmfb-split-sep   { opacity: .35; font-weight: 300; }
+
+/* ── Carte KPI insérée dans la grille existante ────────────── */
+.km-kpi-card.kmfb-kpi {
+    border-color: rgba(255, 77, 125, .30);
+}
+.km-kpi-card.kmfb-kpi .km-kpi-icon-wrap.kmfb-icon {
+    background: rgba(255, 77, 125, .12);
+    color: #ff4d7d;
+}
+.km-kpi-card.kmfb-kpi .km-kpi-value small {
+    font-size: .48em;
+    font-weight: 600;
+    opacity: .65;
+    margin-left: 5px;
+}
+
+/* ── Grille de cartes ──────────────────────────────────────── */
+.kmfb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+    margin: 18px 0 6px;
+}
+.kmfb-card {
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    position: relative;
+    overflow: hidden;
+}
+.kmfb-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: #ff4d7d;
+}
+.kmfb-card--people::before { background: #ff4d7d; }
+.kmfb-card--gross::before  { background: #6c8cff; }
+.kmfb-card--mine::before   { background: #00D67F; }
+.kmfb-card--label::before  { background: #F5A623; }
+
+.kmfb-card-label {
+    font-size: 11px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    opacity: .62;
+    font-weight: 600;
+}
+.kmfb-card-value {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 27px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+.kmfb-card-value small {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: .6;
+    margin-left: 5px;
+}
+.kmfb-card-sub {
+    font-size: 11.5px;
+    opacity: .55;
+}
+
+/* ── Barre de répartition ──────────────────────────────────── */
+.kmfb-splitbar-wrap { margin: 18px 0 4px; }
+.kmfb-splitbar {
+    display: flex;
+    height: 40px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .08);
+}
+.kmfb-splitbar-me,
+.kmfb-splitbar-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 0 6px;
+}
+.kmfb-splitbar-me    { background: linear-gradient(135deg, #00D67F 0%, #00a862 100%); color: #06231a; }
+.kmfb-splitbar-label { background: linear-gradient(135deg, #F5A623 0%, #c97f10 100%); color: #2a1c02; }
+
+.kmfb-note {
+    font-size: 11px;
+    opacity: .5;
+    margin: 8px 0 0;
+    line-height: 1.5;
+}
+
+/* ── Blocs ─────────────────────────────────────────────────── */
+.kmfb-block { margin-top: 22px; }
+.kmfb-block-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    opacity: .72;
+    margin-bottom: 12px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid rgba(255, 255, 255, .07);
+}
+
+/* ── Histogramme mensuel (CSS pur, aucune dépendance JS) ───── */
+.kmfb-months {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    overflow-x: auto;
+    padding-bottom: 6px;
+}
+.kmfb-month {
+    flex: 1 0 54px;
+    min-width: 54px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.kmfb-month-barwrap {
+    width: 100%;
+    height: 96px;
+    display: flex;
+    align-items: flex-end;
+    background: rgba(255, 255, 255, .03);
+    border-radius: 7px;
+    overflow: hidden;
+}
+.kmfb-month-bar {
+    width: 100%;
+    background: linear-gradient(180deg, #ff4d7d 0%, #b32d55 100%);
+    border-radius: 7px 7px 0 0;
+    min-height: 4px;
+}
+.kmfb-month-val  { font-size: 11.5px; font-weight: 700; }
+.kmfb-month-name { font-size: 10.5px; opacity: .6; text-transform: capitalize; }
+.kmfb-month-nb   { font-size: 10px; opacity: .4; }
+
+/* ── Tableaux ──────────────────────────────────────────────── */
+.kmfb-table-wrap { overflow-x: auto; }
+.kmfb-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.kmfb-table th {
+    text-align: left;
+    font-size: 10.5px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    opacity: .55;
+    font-weight: 700;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, .09);
+    white-space: nowrap;
+}
+.kmfb-table td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, .045);
+    white-space: nowrap;
+}
+.kmfb-table tbody tr:hover td { background: rgba(255, 255, 255, .025); }
+.kmfb-table tfoot td {
+    padding: 11px 10px;
+    border-top: 2px solid rgba(255, 255, 255, .12);
+    border-bottom: none;
+}
+.kmfb-num    { text-align: right; font-variant-numeric: tabular-nums; }
+.kmfb-strong { color: #00D67F; font-weight: 700; }
+.kmfb-table small { opacity: .5; font-weight: 400; margin-left: 3px; }
+
+.kmfb-pastille {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 7px;
+    vertical-align: middle;
+}
+
+/* ── État vide ─────────────────────────────────────────────── */
+.kmfb-empty {
+    text-align: center;
+    padding: 36px 20px;
+    opacity: .6;
+}
+.kmfb-empty-icon {
+    font-size: 34px;
+    color: #ff4d7d;
+    display: block;
+    margin-bottom: 10px;
+    opacity: .5;
+}
+.kmfb-empty p     { margin: 0 0 5px; font-weight: 600; }
+.kmfb-empty small { font-size: 12px; opacity: .75; }
+
+/* ── Mobile ────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .kmfb-grid { grid-template-columns: repeat(2, 1fr); }
+    .kmfb-card-value { font-size: 22px; }
+    .kmfb-splitbar { height: 34px; }
+    .kmfb-splitbar-me span,
+    .kmfb-splitbar-label span { font-size: 10px; }
+}
+
+/* ── Impression / export PDF du relevé ─────────────────────── */
+@media print {
+    .kmfb-card,
+    .kmfb-table th,
+    .kmfb-table td { color: #111 !important; }
+    .kmfb-months { display: none; }
+}

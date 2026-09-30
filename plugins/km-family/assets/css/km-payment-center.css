@@ -1,0 +1,158 @@
+/* ==========================================================================
+   KM Family — Smart Payment Center
+   ========================================================================== */
+
+.kmfamily-spc {
+    --spc-gold: #d4af37;
+    --spc-gold-light: #f0d878;
+    --spc-bg: #0d0d0f;
+    --spc-card: #17171a;
+    --spc-card-border: rgba(212,175,55,.18);
+    --spc-text: #f5f2ea;
+    --spc-text-dim: #a9a49a;
+    --spc-green: #3ecf8e;
+    --spc-red: #e0576b;
+    --spc-radius: 16px;
+
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 20px 60px;
+    color: var(--spc-text);
+    font-family: inherit;
+}
+
+.kmfamily-spc__header { text-align: center; margin-bottom: 28px; }
+.kmfamily-spc__eyebrow {
+    display: inline-block; font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--spc-gold); background: rgba(212,175,55,.1); border: 1px solid var(--spc-card-border);
+    padding: 5px 14px; border-radius: 999px; margin-bottom: 14px;
+}
+.kmfamily-spc__title { font-size: 26px; font-weight: 700; margin: 0 0 6px; }
+.kmfamily-spc__subtitle { color: var(--spc-text-dim); font-size: 15px; margin: 0; }
+
+/* ---- Timeline (En attente -> Initié -> Confirmé -> Actif) ---- */
+.kmfamily-spc__timeline {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--spc-card); border: 1px solid var(--spc-card-border);
+    border-radius: var(--spc-radius); padding: 22px 18px; margin-bottom: 24px;
+}
+.kmfamily-spc__step { flex: 1; text-align: center; position: relative; }
+.kmfamily-spc__step:not(:last-child)::after {
+    /* BUGFIX : left:55%/width:90% désalignait la ligne par rapport aux points (chevauchement
+       du point suivant + espace vide après le point courant). Centre-à-centre exact : 50%/100%. */
+    content: ''; position: absolute; top: 13px; left: 50%; width: 100%; height: 2px;
+    background: rgba(212,175,55,.15); z-index: 0;
+}
+.kmfamily-spc__step.is-done:not(:last-child)::after { background: var(--spc-gold); }
+.kmfamily-spc__step-dot {
+    width: 26px; height: 26px; border-radius: 50%; margin: 0 auto 8px; position: relative; z-index: 1;
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
+    background: #26262a; border: 2px solid rgba(212,175,55,.3); color: var(--spc-text-dim);
+}
+.kmfamily-spc__step.is-done .kmfamily-spc__step-dot { background: var(--spc-gold); border-color: var(--spc-gold); color: #17171a; }
+.kmfamily-spc__step.is-current .kmfamily-spc__step-dot { border-color: var(--spc-gold); color: var(--spc-gold); animation: kmfamily-pulse 1.6s infinite; }
+.kmfamily-spc__step-label { font-size: 11px; color: var(--spc-text-dim); }
+.kmfamily-spc__step.is-done .kmfamily-spc__step-label,
+.kmfamily-spc__step.is-current .kmfamily-spc__step-label { color: var(--spc-text); }
+
+@keyframes kmfamily-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,.4); }
+    50% { box-shadow: 0 0 0 6px rgba(212,175,55,0); }
+}
+
+/* ---- Order summary card ---- */
+.kmfamily-spc__summary {
+    background: var(--spc-card); border: 1px solid var(--spc-card-border); border-radius: var(--spc-radius);
+    padding: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+}
+.kmfamily-spc__summary-item .kmfamily-spc__summary-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--spc-text-dim); display: block; margin-bottom: 3px; }
+.kmfamily-spc__summary-item .kmfamily-spc__summary-value { font-size: 16px; font-weight: 600; }
+.kmfamily-spc__amount { font-size: 28px; font-weight: 800; color: var(--spc-gold); }
+
+/* ---- Method tabs ---- */
+.kmfamily-spc__methods-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.kmfamily-spc__method-tab {
+    display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px;
+    background: var(--spc-card); border: 1px solid var(--spc-card-border); color: var(--spc-text-dim);
+    cursor: pointer; font-size: 14px; font-weight: 600; transition: all .15s ease;
+}
+.kmfamily-spc__method-tab:hover:not(.is-active) { border-color: var(--spc-text-dim); color: var(--spc-text); }
+.kmfamily-spc__method-tab.is-active { background: var(--spc-gold); border-color: var(--spc-gold); color: #17171a; }
+.kmfamily-spc__method-tab .kmfamily-spc__badge-auto {
+    font-size: 10px; background: rgba(62,207,142,.18); color: var(--spc-green); padding: 1px 7px; border-radius: 999px; margin-left: 2px;
+}
+.kmfamily-spc__method-tab.is-active .kmfamily-spc__badge-auto { background: rgba(23,23,26,.25); color: #17171a; }
+
+/* ---- Method panel ---- */
+.kmfamily-spc__panel {
+    background: var(--spc-card); border: 1px solid var(--spc-card-border); border-radius: var(--spc-radius);
+    padding: 26px; text-align: center;
+}
+.kmfamily-spc__panel-instructions { color: var(--spc-text-dim); font-size: 14px; margin: 0 0 20px; }
+
+.kmfamily-spc__qr-wrap {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 22px;
+}
+.kmfamily-spc__qr-box {
+    background: #fff; padding: 14px; border-radius: 12px; display: inline-block; line-height: 0;
+    box-shadow: 0 6px 24px rgba(0,0,0,.35);
+}
+.kmfamily-spc__qr-hint { font-size: 12px; color: var(--spc-text-dim); }
+.kmfamily-spc__qr-toggle {
+    background: none; border: 1px dashed var(--spc-card-border); color: var(--spc-gold);
+    padding: 8px 16px; border-radius: 999px; font-size: 13px; cursor: pointer; margin-bottom: 18px;
+}
+
+.kmfamily-spc__actions { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.kmfamily-spc__btn-pay {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(135deg, var(--spc-gold-light), var(--spc-gold));
+    color: #17171a; font-weight: 700; font-size: 16px; padding: 14px 32px; border-radius: 999px;
+    border: none; cursor: pointer; text-decoration: none; width: 100%; max-width: 340px;
+    box-shadow: 0 8px 24px rgba(212,175,55,.25); transition: transform .15s ease;
+}
+.kmfamily-spc__btn-pay:hover { transform: translateY(-1px); }
+.kmfamily-spc__btn-pay:focus-visible,
+.kmfamily-spc__btn-copy:focus-visible,
+.kmfamily-spc__method-tab:focus-visible { outline: 2px solid var(--spc-gold-light); outline-offset: 2px; }
+/* BUGFIX : le bouton "Payer" passe en disabled via JS pendant la connexion à la passerelle
+   (CinetPay/Paystack), mais rien ne le distinguait visuellement d'un bouton actif. */
+.kmfamily-spc__btn-pay:disabled {
+    opacity: .6; cursor: not-allowed; transform: none; box-shadow: none;
+}
+.kmfamily-spc__btn-copy {
+    display: inline-flex; align-items: center; gap: 6px; background: transparent; color: var(--spc-text-dim);
+    border: 1px solid var(--spc-card-border); padding: 9px 18px; border-radius: 999px; font-size: 13px; cursor: pointer;
+    transition: color .15s ease, border-color .15s ease;
+}
+.kmfamily-spc__btn-copy:hover { color: var(--spc-text); border-color: var(--spc-text-dim); }
+.kmfamily-spc__btn-copy.is-copied { color: var(--spc-green); border-color: var(--spc-green); }
+
+/* ---- Declare payment (manual gateways) ---- */
+.kmfamily-spc__declare { margin-top: 24px; padding-top: 22px; border-top: 1px dashed var(--spc-card-border); text-align: left; }
+.kmfamily-spc__declare summary { cursor: pointer; color: var(--spc-gold); font-weight: 600; font-size: 14px; text-align: center; }
+.kmfamily-spc__declare-form { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.kmfamily-spc__declare-form input, .kmfamily-spc__declare-form textarea {
+    /* BUGFIX : sans box-sizing:border-box, le padding s'ajoutait à la largeur "stretch" du flex
+       item (align-items:stretch par défaut), débordant légèrement du panel sur mobile. */
+    box-sizing: border-box; width: 100%;
+    background: #0d0d0f; border: 1px solid var(--spc-card-border); border-radius: 10px; padding: 10px 14px;
+    color: var(--spc-text); font-size: 14px; font-family: inherit;
+}
+.kmfamily-spc__declare-form input:focus, .kmfamily-spc__declare-form textarea:focus {
+    outline: none; border-color: var(--spc-gold);
+}
+.kmfamily-spc__declare-submit {
+    background: var(--spc-gold); color: #17171a; border: none; border-radius: 999px; padding: 10px; font-weight: 700; cursor: pointer;
+}
+
+/* ---- Status banner ---- */
+.kmfamily-spc__banner { border-radius: 12px; padding: 14px 18px; font-size: 14px; margin-bottom: 20px; text-align: center; }
+.kmfamily-spc__banner--success { background: rgba(62,207,142,.12); border: 1px solid rgba(62,207,142,.4); color: var(--spc-green); }
+.kmfamily-spc__banner--pending { background: rgba(212,175,55,.1); border: 1px solid var(--spc-card-border); color: var(--spc-gold); }
+.kmfamily-spc__banner--error { background: rgba(224,87,107,.12); border: 1px solid rgba(224,87,107,.4); color: var(--spc-red); }
+
+@media (max-width: 560px) {
+    .kmfamily-spc__step-label { font-size: 9.5px; }
+    .kmfamily-spc__summary { flex-direction: column; align-items: flex-start; }
+}

@@ -1,0 +1,998 @@
+/* ================================================================
+   KOPHI'S MUSIC — Auth Pages Premium v5.2
+   Glassmorphism · Animations · Responsive
+================================================================ */
+
+.km-auth *,
+.km-auth *::before,
+.km-auth *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.km-auth {
+  --km-primary: #F5A623;
+  --km-primary-glow: rgba(245, 166, 35, 0.4);
+  --km-accent: #00D67F;
+  --km-danger: #FF4E6A;
+  --km-bg-deep: #050710;
+  --km-bg: #0A0F1E;
+  --km-bg-card: rgba(18, 24, 40, 0.7);
+  --km-border: rgba(255, 255, 255, 0.08);
+  --km-border-hover: rgba(245, 166, 35, 0.3);
+  --km-text: #F5F8FF;
+  --km-text-dim: #8A9AB8;
+  --km-text-soft: #C8D1E0;
+
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--km-bg-deep);
+  color: var(--km-text);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+/* ── BACKGROUND ANIMÉ ─────────────────────── */
+.km-auth-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.km-auth-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  animation: kmFloat 20s ease-in-out infinite;
+}
+
+.km-orb-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #F5A623 0%, transparent 70%);
+  top: -200px; left: -150px;
+  animation-delay: 0s;
+}
+
+.km-orb-2 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #00D67F 0%, transparent 70%);
+  bottom: -250px; right: -200px;
+  animation-delay: -7s;
+}
+
+.km-orb-3 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, #4C9FFF 0%, transparent 70%);
+  top: 40%; left: 50%;
+  animation-delay: -14s;
+}
+
+@keyframes kmFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(60px, -40px) scale(1.1); }
+  66%      { transform: translate(-40px, 50px) scale(0.95); }
+}
+
+.km-auth-grid-pattern {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
+
+/* ── CONTAINER GRID ─────────────────────── */
+.km-auth-container {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  gap: 0;
+}
+
+/* ═══ PANNEAU GAUCHE — BRAND ═══ */
+.km-auth-brand {
+  position: relative;
+  padding: 56px 56px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+  background: linear-gradient(135deg,
+    rgba(245, 166, 35, 0.08) 0%,
+    rgba(0, 214, 127, 0.04) 50%,
+    rgba(76, 159, 255, 0.06) 100%);
+  border-right: 1px solid var(--km-border);
+  overflow: hidden;
+}
+
+.km-auth-brand::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(245,166,35,.12), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(0,214,127,.08), transparent 40%);
+  pointer-events: none;
+}
+
+.km-brand-float {
+  position: absolute;
+  font-size: 40px;
+  color: rgba(245, 166, 35, 0.15);
+  pointer-events: none;
+  animation: kmFloatNote 15s ease-in-out infinite;
+}
+
+.km-brand-float-1 { top: 15%; right: 20%; animation-delay: 0s; }
+.km-brand-float-2 { top: 45%; left: 10%; animation-delay: -5s; font-size: 60px; color: rgba(0,214,127,0.1); }
+.km-brand-float-3 { bottom: 25%; right: 15%; animation-delay: -10s; font-size: 50px; }
+
+@keyframes kmFloatNote {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.15; }
+  50%      { transform: translate(15px, -20px) rotate(10deg); opacity: 0.25; }
+}
+
+.km-brand-top { position: relative; z-index: 2; }
+
+.km-brand-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.km-brand-logo-img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 16px rgba(245, 166, 35, 0.3));
+}
+
+.km-brand-logo-fallback {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, var(--km-primary), #FFB940);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  color: #000;
+  box-shadow: 0 8px 24px rgba(245,166,35,0.4);
+}
+
+.km-brand-name {
+  display: block;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--km-text);
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+
+.km-brand-tag {
+  display: block;
+  font-size: 12px;
+  color: var(--km-primary);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.km-brand-middle {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.km-brand-vinyl {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 40px;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle, rgba(255,255,255,.03) 0, rgba(255,255,255,.03) 2px, transparent 2px, transparent 5px),
+    radial-gradient(circle, #1a1f2e 0%, #0a0f1e 100%);
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.5),
+    inset 0 0 40px rgba(245,166,35,0.1);
+  animation: kmSpin 20s linear infinite;
+}
+
+.km-brand-vinyl-inner {
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--km-primary), #FFB940);
+  box-shadow: 0 0 20px rgba(245,166,35,0.5);
+}
+
+.km-brand-vinyl-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 12px; height: 12px;
+  background: #0a0f1e;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes kmSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.km-brand-hero {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 40px;
+  line-height: 1.1;
+  color: var(--km-text);
+  margin-bottom: 28px;
+  letter-spacing: -0.02em;
+}
+
+.km-brand-hero em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--km-primary), #FFB940);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.km-brand-chips {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.km-brand-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--km-border);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--km-text-soft);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.km-brand-chip:hover {
+  border-color: var(--km-border-hover);
+  background: rgba(245, 166, 35, 0.05);
+  transform: translateY(-1px);
+}
+
+.km-brand-chip svg { color: var(--km-primary); }
+
+.km-brand-bottom { position: relative; z-index: 2; }
+
+.km-brand-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 24px 0;
+  margin-bottom: 20px;
+  border-top: 1px solid var(--km-border);
+  border-bottom: 1px solid var(--km-border);
+}
+
+.km-brand-stat { text-align: center; }
+
+.km-brand-stat strong {
+  display: block;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--km-primary);
+  line-height: 1;
+}
+
+.km-brand-stat span {
+  display: block;
+  font-size: 11px;
+  color: var(--km-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 6px;
+}
+
+.km-brand-copyright {
+  text-align: center;
+  font-size: 11px;
+  color: var(--km-text-dim);
+  letter-spacing: 0.5px;
+}
+
+/* ═══ PANNEAU DROIT — FORMULAIRES ═══ */
+.km-auth-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 56px;
+  min-height: 100vh;
+}
+
+.km-auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 44px 40px;
+  background: rgba(18, 24, 40, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--km-border);
+  border-radius: 24px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  animation: kmFadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes kmFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.km-auth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(245, 166, 35, 0.1);
+  border: 1px solid rgba(245, 166, 35, 0.2);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--km-primary);
+  letter-spacing: 1.5px;
+  margin-bottom: 24px;
+}
+
+.km-auth-badge-success {
+  background: rgba(0, 214, 127, 0.1);
+  border-color: rgba(0, 214, 127, 0.3);
+  color: var(--km-accent);
+}
+
+.km-auth-dot {
+  width: 6px; height: 6px;
+  background: currentColor;
+  border-radius: 50%;
+  animation: kmPulse 2s ease-in-out infinite;
+}
+
+@keyframes kmPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(1.3); }
+}
+
+.km-auth-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.1;
+  color: var(--km-text);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.km-auth-sub {
+  font-size: 14px;
+  color: var(--km-text-dim);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.km-auth-sub strong {
+  color: var(--km-primary);
+  font-weight: 600;
+}
+
+.km-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.km-auth-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--km-text-soft);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+.km-auth-input-wrap { position: relative; }
+
+.km-auth-icon {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%);
+  color: var(--km-text-dim);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.km-auth-input-wrap input {
+  width: 100%;
+  padding: 14px 16px 14px 46px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--km-border);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--km-text);
+  transition: all 0.2s ease;
+}
+
+.km-auth-input-wrap input::placeholder {
+  color: var(--km-text-dim);
+  opacity: 0.7;
+}
+
+.km-auth-input-wrap input:focus {
+  outline: none;
+  border-color: var(--km-primary);
+  background: rgba(245, 166, 35, 0.05);
+  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
+}
+
+.km-auth-input-wrap:focus-within .km-auth-icon { color: var(--km-primary); }
+
+.km-auth-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--km-text-dim);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.km-auth-toggle:hover, .km-auth-toggle-on { color: var(--km-primary); }
+
+.km-auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -4px 0 4px;
+}
+
+.km-auth-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--km-text-soft);
+  user-select: none;
+}
+
+.km-auth-check input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.km-auth-check-box {
+  width: 18px; height: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--km-border);
+  border-radius: 5px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.km-auth-check input:checked ~ .km-auth-check-box {
+  background: var(--km-primary);
+  border-color: var(--km-primary);
+}
+
+.km-auth-check input:checked ~ .km-auth-check-box::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 5px;
+  width: 5px; height: 10px;
+  border: solid #000;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.km-auth-link {
+  font-size: 13px;
+  color: var(--km-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.km-auth-link:hover { opacity: 0.8; }
+
+.km-auth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 24px;
+  background: linear-gradient(135deg, var(--km-primary), #FFB940);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 8px 24px rgba(245, 166, 35, 0.3);
+  margin-top: 8px;
+}
+
+.km-auth-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(245, 166, 35, 0.4);
+}
+
+.km-auth-btn:active { transform: translateY(0); }
+
+.km-auth-btn-block { margin-top: 24px; }
+
+.km-auth-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 18px;
+  line-height: 1.4;
+}
+
+.km-auth-alert svg { flex-shrink: 0; margin-top: 1px; }
+
+.km-auth-alert-error {
+  background: rgba(255, 78, 106, 0.1);
+  border: 1px solid rgba(255, 78, 106, 0.25);
+  color: #FF7590;
+}
+
+.km-auth-alert-success {
+  background: rgba(0, 214, 127, 0.08);
+  border: 1px solid rgba(0, 214, 127, 0.25);
+  color: var(--km-accent);
+}
+
+.km-auth-strength { margin-top: 10px; }
+
+.km-auth-strength-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.km-auth-strength-bar span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--km-danger);
+  border-radius: 100px;
+  transition: all 0.3s ease;
+}
+
+.km-auth-strength-label {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.km-auth-match {
+  font-size: 12px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.km-auth-success-icon,
+.km-auth-error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  animation: kmPopIn 0.5s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.km-auth-success-icon {
+  background: rgba(0, 214, 127, 0.15);
+  color: var(--km-accent);
+  box-shadow: 0 0 0 8px rgba(0, 214, 127, 0.05);
+}
+
+.km-auth-error-icon {
+  background: rgba(255, 78, 106, 0.15);
+  color: var(--km-danger);
+  box-shadow: 0 0 0 8px rgba(255, 78, 106, 0.05);
+}
+
+@keyframes kmPopIn {
+  0%   { opacity: 0; transform: scale(0.5); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.km-auth-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--km-border);
+  font-size: 11px;
+  color: var(--km-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.km-auth-footer strong {
+  color: var(--km-primary);
+  font-weight: 700;
+}
+
+.km-auth-footer-links { margin-top: 20px; text-align: center; }
+
+.km-auth-link-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--km-text-soft);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.km-auth-link-back:hover { color: var(--km-primary); }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 1100px) {
+  .km-auth-brand  { padding: 48px 40px 40px; }
+  .km-auth-panel  { padding: 40px; }
+  .km-brand-hero  { font-size: 32px; }
+  .km-brand-vinyl { width: 180px; height: 180px; }
+}
+
+@media (max-width: 900px) {
+  .km-auth-container { grid-template-columns: 1fr; }
+  .km-auth-brand    {
+    min-height: auto;
+    padding: 40px 32px;
+    border-right: none;
+    border-bottom: 1px solid var(--km-border);
+  }
+  .km-brand-middle { padding: 30px 0; }
+  .km-brand-vinyl  { width: 140px; height: 140px; margin-bottom: 28px; }
+  .km-brand-hero   { font-size: 28px; }
+  .km-auth-panel   { min-height: auto; padding: 40px 32px; }
+}
+
+@media (max-width: 600px) {
+  .km-auth-brand  { padding: 32px 20px; }
+  .km-auth-panel  { padding: 32px 16px 48px; }
+  .km-auth-card   { padding: 32px 24px; border-radius: 20px; }
+  .km-brand-logo-img  { height: 44px; }
+  .km-brand-name      { font-size: 17px; }
+  .km-brand-vinyl     { width: 120px; height: 120px; margin-bottom: 24px; }
+  .km-brand-hero      { font-size: 24px; margin-bottom: 20px; }
+  .km-brand-chips     { gap: 6px; }
+  .km-brand-chip      { padding: 6px 10px; font-size: 11px; }
+  .km-brand-stats     { gap: 12px; padding: 18px 0; }
+  .km-brand-stat strong { font-size: 20px; }
+  .km-auth-title      { font-size: 26px; }
+  .km-auth-sub        { font-size: 13px; margin-bottom: 20px; }
+  .km-auth-btn        { padding: 13px 20px; font-size: 13px; }
+  .km-auth-row        { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+
+@media (max-width: 380px) {
+  .km-auth-card  { padding: 28px 20px; }
+  .km-auth-title { font-size: 22px; }
+  .km-brand-hero { font-size: 22px; }
+  .km-brand-stats { gap: 8px; }
+  .km-brand-stat strong { font-size: 18px; }
+  .km-brand-stat span { font-size: 10px; }
+}
+
+/* ══════════════════════════════════════════════════
+   BUG FIX — LOGIN PAGE RESPONSIVE SUPPLÉMENTAIRE
+   Panneau brand trop haut sur mobile,
+   bouton login trop petit sur petits écrans
+═══════════════════════════════════════════════════ */
+
+/* Masquer le panneau brand sur très petits écrans (< 480px)
+   pour n'afficher que le formulaire */
+@media (max-width: 480px) {
+  .km-auth-brand {
+    display: none !important;
+  }
+  .km-auth-container {
+    grid-template-columns: 1fr !important;
+  }
+  .km-auth-panel {
+    min-height: 100vh;
+    padding: 24px 16px 40px;
+    align-items: flex-start;
+    padding-top: 40px;
+  }
+  .km-auth-card {
+    padding: 28px 20px;
+    border-radius: 16px;
+  }
+  .km-auth-title { font-size: 24px; }
+  .km-auth-btn   { padding: 14px 20px; min-height: 48px; }
+}
+
+/* Sur mobile, s'assurer que le formulaire de connexion
+   est toujours visible en plein écran (pas de scroll inutile) */
+@media (max-width: 900px) {
+  .km-auth {
+    min-height: 100dvh; /* dynamic viewport height : évite le bug barre navigateur mobile */
+  }
+  .km-auth-panel {
+    min-height: unset;
+    padding-bottom: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .km-auth-orb, .km-brand-float, .km-brand-vinyl,
+  .km-auth-card, .km-auth-dot { animation: none; }
+}
+
+/* ── Fix navigateur autofill — empêche le fond blanc Chrome/Safari ── */
+.km-auth-input-wrap input:-webkit-autofill,
+.km-auth-input-wrap input:-webkit-autofill:hover,
+.km-auth-input-wrap input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px rgba(15, 20, 40, 0.98) inset;
+  -webkit-text-fill-color: var(--km-text);
+  border-color: rgba(245, 166, 35, 0.4);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ── Accessibilité focus-visible ── */
+.km-auth-btn:focus-visible,
+.km-auth-toggle:focus-visible,
+.km-auth-link:focus-visible,
+.km-auth-link-back:focus-visible {
+  outline: 2px solid var(--km-primary);
+  outline-offset: 2px;
+}
+
+.km-auth-check input:focus-visible ~ .km-auth-check-box {
+  outline: 2px solid var(--km-primary);
+  outline-offset: 2px;
+}
+
+/* ── Vinyl — vitesse de rotation légèrement réduite pour plus d'élégance ── */
+@keyframes kmSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.km-brand-vinyl { animation-duration: 28s; }
+
+/* ── Amélioration card shadow — plus profond ── */
+.km-auth-card {
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
+/* ── Input padding right quand toggle visible ── */
+.km-auth-input-wrap:has(.km-auth-toggle) input {
+  padding-right: 48px;
+}
+
+/* ── État de chargement du bouton ── */
+.km-auth-btn[disabled],
+.km-auth-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Lien "retour à la connexion" — hover plus visible ── */
+.km-auth-link-back:hover {
+  color: var(--km-primary);
+  gap: 8px;
+}
+
+/* ══════════════════════════════════════════════════
+   CORRECTIFS MOBILE / TOUCH — v5.4.1
+   Résout : boutons/liens inactifs sur iOS/Android
+═══════════════════════════════════════════════════ */
+
+/* touch-action: manipulation → tap immédiat, sans délai 300ms */
+.km-auth-btn,
+.km-auth-toggle,
+.km-auth-link,
+.km-auth-link-back,
+.km-auth-check,
+.km-auth-input-wrap input,
+a[href],
+button { touch-action: manipulation; }
+
+/* Supprimer le flash bleu au tap */
+.km-auth-btn,
+.km-auth-toggle,
+.km-auth-link,
+.km-auth-link-back,
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+}
+
+/* Taille minimale des zones tactiles sur écrans tactiles */
+@media (pointer: coarse) {
+  .km-auth-btn {
+    min-height: 48px;
+  }
+  .km-auth-toggle {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px;
+  }
+  .km-auth-link,
+  .km-auth-link-back {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  /* Sur touch : pas de transform hover (évite le double-tap Safari) */
+  .km-auth-btn:hover {
+    transform: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   CORRECTIF PAGE NOIRE SUR MOBILE — v5.4.2
+   Même cause que dashboard.css : backdrop-filter
+   sur fond semi-transparent → noir sur GPU faible
+═══════════════════════════════════════════════════ */
+
+/* Fallback navigateurs sans support backdrop-filter */
+@supports not (backdrop-filter: blur(1px)) {
+  .km-auth-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #121828 !important;
+  }
+  .km-brand-chip {
+    backdrop-filter: none !important;
+    background: rgba(255,255,255,.06) !important;
+  }
+}
+
+/* Mobile/tablette : fond solide pour éviter le GPU noir */
+@media (max-width: 1024px) {
+  .km-auth-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #111726 !important;
+  }
+  .km-brand-chip {
+    backdrop-filter: none !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   CORRECTIF MOBILE DÉFINITIF v5.4.4
+   Approche radicale : fond décoratif masqué sur mobile,
+   tout en couleurs solides, zéro filter/animation/blur.
+   Garantit le rendu sur tous les navigateurs mobiles.
+═══════════════════════════════════════════════════ */
+
+/* Priorité 1 : .km-auth ne doit PAS avoir overflow:hidden
+   car combiné à filter:blur() enfants = page noire sur iOS */
+.km-auth {
+  overflow: visible;
+}
+
+@media (max-width: 1024px) {
+
+  /* ── Cacher TOUT le fond décoratif (orbes, grille, blur) ── */
+  /* C'est la cause directe de la page noire : filter:blur(80px)
+     sur 3 éléments de 400-600px dans un parent overflow:hidden */
+  .km-auth-bg {
+    display: none !important;
+  }
+
+  /* ── .km-auth : fond solide simple, pas d'overflow complexe ── */
+  .km-auth {
+    overflow: visible !important;
+    background: #080d1a !important;
+  }
+
+  /* ── Fond dégradé doux en remplacement des orbes ──
+     position:absolute (pas fixed) : évite la couche GPU
+     composite que position:fixed crée sur mobile         */
+  .km-auth::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 5%, rgba(245,166,35,0.07), transparent 55%),
+      radial-gradient(ellipse 70% 50% at 90% 95%, rgba(0,214,127,0.05), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Panneau brand : fond solide opaque ── */
+  .km-auth-brand {
+    background: #0c1120 !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  }
+  .km-auth-brand::before {
+    display: none !important;
+  }
+
+  /* ── Vinyle : stopper la rotation (pas d'utilité sur mobile) ── */
+  .km-brand-vinyl {
+    animation: none !important;
+  }
+
+  /* ── Notes musicales : statiques ── */
+  .km-brand-float {
+    animation: none !important;
+    opacity: 0.06 !important;
+  }
+
+  /* ── Carte de connexion : fond solide (pas de backdrop-filter) ── */
+  .km-auth-card {
+    background: #111726 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
+  }
+
+  /* ── Chips de la marque ── */
+  .km-brand-chip {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255,255,255,0.06) !important;
+  }
+}

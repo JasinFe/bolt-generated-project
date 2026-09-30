@@ -1,0 +1,2474 @@
+/* ================================================================
+   KOPHI'S MUSIC — Dashboard Premium XXL v5.4.8 (fix mobile noir)
+   Design complet couvrant les vraies classes utilisées
+================================================================ */
+
+/* ── VARIABLES ROOT ─────────────────────────────── */
+.km-db-wrap {
+  --km-primary: #F5A623;
+  --km-primary-rgb: 245, 166, 35;
+  --km-primary-2: #FFB940;
+  --km-accent: #00D67F;
+  --km-accent-rgb: 0, 214, 127;
+  --km-cyan: #4C9FFF;
+  --km-cyan-rgb: 76, 159, 255;
+  --km-pink: #FF6B9E;
+  --km-purple: #A64FFF;
+  --km-danger: #FF4E6A;
+  --km-danger-rgb: 255, 78, 106;
+
+  --km-bg-deep: #050710;
+  --km-bg: #0A0F1E;
+  --km-bg-card: rgba(18, 24, 40, 0.55);
+  --km-bg-card-solid: #121828;
+  --km-bg-card-hover: rgba(22, 28, 48, 0.75);
+  --km-bg-input: rgba(255, 255, 255, 0.03);
+
+  --km-border: rgba(255, 255, 255, 0.08);
+  --km-border-active: rgba(245, 166, 35, 0.35);
+  --km-border-hover: rgba(255, 255, 255, 0.14);
+
+  --km-text: #F5F8FF;
+  --km-text-soft: #C8D1E0;
+  --km-text-dim: #8A9AB8;
+  --km-text-muted: #5A6A8A;
+
+  --km-radius-sm: 10px;
+  --km-radius: 16px;
+  --km-radius-lg: 24px;
+
+  --km-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --km-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --km-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.45);
+
+  --km-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--km-text);
+  line-height: 1.45;
+  font-size: 13px;
+  min-height: 100vh;
+  background: var(--km-bg-deep);
+  position: relative;
+  overflow-x: clip; /* clip au lieu de hidden : évite le bug iOS où overflow:hidden tue les événements touch sur les enfants sticky/fixed */
+}
+
+.km-db-wrap *,
+.km-db-wrap *::before,
+.km-db-wrap *::after { box-sizing: border-box; }
+
+/* Background pattern global */
+.km-db-wrap::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(245, 166, 35, 0.08), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 15%, rgba(0, 214, 127, 0.06), transparent 60%),
+    radial-gradient(ellipse 50% 35% at 50% 90%, rgba(76, 159, 255, 0.05), transparent 60%);
+}
+
+.km-db-wrap > * { position: relative; z-index: 1; }
+
+/* ══════════════════════════════════════════════════
+   HEADER (classes km-db-header + km-header-*)
+═══════════════════════════════════════════════════ */
+.km-db-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 32px;
+  background: rgba(10, 15, 30, 0.8);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--km-border);
+}
+
+.km-db-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    rgba(var(--km-primary-rgb), 0.03),
+    transparent 50%,
+    rgba(var(--km-accent-rgb), 0.03));
+  pointer-events: none;
+}
+
+.km-db-header > * { position: relative; z-index: 1; }
+
+.km-db-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.km-db-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Logo */
+.km-header-logo,
+.km-header-logo-wrap {
+  flex-shrink: 0;
+}
+
+.km-header-logo img,
+.km-header-logo-wrap img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(var(--km-primary-rgb), 0.25));
+}
+
+.km-header-logo-fallback {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--km-primary), var(--km-primary-2));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 15px;
+  color: #000;
+}
+
+.km-db-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.1;
+  min-width: 0;
+}
+
+.km-db-label-tag {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--km-primary);
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
+.km-db-user-info strong,
+.km-db-artist-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--km-text);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.km-db-role-tag,
+.km-db-artist-meta {
+  font-size: 11px;
+  color: var(--km-text-dim);
+  font-weight: 500;
+}
+
+.km-db-genre-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--km-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  background: rgba(var(--km-primary-rgb), 0.1);
+  border-radius: 100px;
+}
+
+.km-db-avatar {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(var(--km-primary-rgb), 0.15), rgba(var(--km-accent-rgb), 0.15));
+  border: 2px solid var(--km-border-active);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--km-primary);
+}
+
+.km-db-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.km-avatar-online {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  background: var(--km-accent);
+  border: 2px solid var(--km-bg);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--km-accent);
+}
+
+/* Boutons */
+.km-btn-icon,
+.km-btn-logout,
+.km-btn-pdf,
+.km-btn-releve,
+.km-btn-releve-pdf,
+.km-btn-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  background: var(--km-bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius-sm);
+  color: var(--km-text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s var(--km-ease);
+  white-space: nowrap;
+}
+
+.km-btn-icon:hover,
+.km-btn-pdf:hover,
+.km-btn-releve:hover,
+.km-btn-releve-pdf:hover,
+.km-btn-reset:hover {
+  background: var(--km-bg-card-hover);
+  border-color: var(--km-border-active);
+  color: var(--km-text);
+  transform: translateY(-1px);
+}
+
+.km-btn-icon {
+  padding: 10px;
+  min-width: 40px;
+  justify-content: center;
+}
+
+.km-btn-releve,
+.km-btn-releve-pdf {
+  color: var(--km-accent);
+  border-color: rgba(var(--km-accent-rgb), 0.3);
+}
+
+.km-btn-releve:hover,
+.km-btn-releve-pdf:hover {
+  background: rgba(var(--km-accent-rgb), 0.1);
+  border-color: var(--km-accent);
+  color: var(--km-accent);
+}
+
+.km-btn-pdf {
+  background: linear-gradient(135deg, var(--km-primary), var(--km-primary-2));
+  border-color: transparent;
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(var(--km-primary-rgb), 0.25);
+}
+
+.km-btn-pdf:hover {
+  color: #000;
+  box-shadow: 0 8px 24px rgba(var(--km-primary-rgb), 0.35);
+  transform: translateY(-2px);
+}
+
+.km-btn-logout {
+  color: var(--km-danger);
+  border-color: rgba(var(--km-danger-rgb), 0.3);
+}
+
+.km-btn-logout:hover {
+  background: rgba(var(--km-danger-rgb), 0.1);
+  border-color: var(--km-danger);
+  color: var(--km-danger);
+}
+
+/* ══════════════════════════════════════════════════
+   FILTRES (km-filters-bar, km-filter-group)
+═══════════════════════════════════════════════════ */
+.km-filters-bar,
+.km-filters-row {
+  max-width: 1600px;
+  margin: 18px auto 0;
+  padding: 14px 16px;
+  background: var(--km-bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.km-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.km-filter-group label,
+.km-filter-group > .km-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--km-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.km-filter-group select,
+.km-filter-group input,
+.km-catalog-filter-select,
+.km-tf-select {
+  width: 100%;
+  padding: 9px 32px 9px 12px;
+  background: var(--km-bg-input);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius-sm);
+  color: var(--km-text);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A9AB8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: all 0.2s var(--km-ease);
+}
+
+.km-filter-group select:focus,
+.km-filter-group input:focus,
+.km-catalog-filter-select:focus,
+.km-tf-select:focus {
+  outline: none;
+  border-color: var(--km-primary);
+  background-color: rgba(var(--km-primary-rgb), 0.05);
+  box-shadow: 0 0 0 3px rgba(var(--km-primary-rgb), 0.12);
+}
+
+.km-filter-reset,
+.km-tf-reset {
+  padding: 11px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius-sm);
+  color: var(--km-text-dim);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s var(--km-ease);
+}
+
+.km-filter-reset:hover,
+.km-tf-reset:hover {
+  color: var(--km-text);
+  border-color: var(--km-border-hover);
+}
+
+.km-filter-summary,
+.km-summary-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 11px 16px;
+  background: linear-gradient(135deg, rgba(var(--km-primary-rgb), 0.08), rgba(var(--km-accent-rgb), 0.04));
+  border: 1px solid rgba(var(--km-primary-rgb), 0.2);
+  border-radius: var(--km-radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--km-text-soft);
+}
+
+.km-summary-val,
+.km-summary-streams,
+.km-summary-gains {
+  color: var(--km-primary);
+  font-weight: 800;
+}
+
+.km-summary-gains { color: var(--km-accent); }
+.km-summary-sep { color: var(--km-text-muted); opacity: 0.5; }
+
+/* ══════════════════════════════════════════════════
+   KPI CARDS (km-kpi-grid, km-kpi-card)
+═══════════════════════════════════════════════════ */
+.km-section {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 18px 32px;
+}
+
+.km-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.km-section-header h2,
+.km-section-header > h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--km-text);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.km-section-sub {
+  font-size: 12px;
+  color: var(--km-text-dim);
+  font-weight: 500;
+}
+
+.km-kpi-grid,
+.km-kpi-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.km-kpi-grid-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.km-kpi-card {
+  position: relative;
+  padding: 18px 18px;
+  background: var(--km-bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius);
+  overflow: hidden;
+  transition: all 0.3s var(--km-ease);
+  animation: kmFadeInUp 0.5s var(--km-ease) backwards;
+}
+
+.km-kpi-card:nth-child(1) { animation-delay: 0.05s; }
+.km-kpi-card:nth-child(2) { animation-delay: 0.1s; }
+.km-kpi-card:nth-child(3) { animation-delay: 0.15s; }
+.km-kpi-card:nth-child(4) { animation-delay: 0.2s; }
+.km-kpi-card:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes kmFadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.km-kpi-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--km-border-hover);
+  background: var(--km-bg-card-hover);
+  box-shadow: var(--km-shadow);
+}
+
+.km-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--km-primary), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.km-kpi-card:hover::before { opacity: 1; }
+
+.km-kpi-card.km-kpi-gold::before {
+  background: linear-gradient(90deg, transparent, var(--km-primary), transparent);
+}
+
+.km-kpi-card.km-kpi-green::before {
+  background: linear-gradient(90deg, transparent, var(--km-accent), transparent);
+}
+
+.km-kpi-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(var(--km-primary-rgb), 0.15), rgba(var(--km-primary-rgb), 0.05));
+  color: var(--km-primary);
+  font-size: 17px;
+  margin-bottom: 10px;
+}
+
+.km-kpi-card.km-kpi-green .km-kpi-icon-wrap {
+  background: linear-gradient(135deg, rgba(var(--km-accent-rgb), 0.15), rgba(var(--km-accent-rgb), 0.05));
+  color: var(--km-accent);
+}
+
+.km-kpi-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.km-kpi-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--km-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  margin-bottom: 4px;
+}
+
+.km-kpi-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--km-text);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.km-kpi-gold .km-kpi-value { color: var(--km-primary); }
+.km-kpi-green .km-kpi-value { color: var(--km-accent); }
+
+.km-kpi-xof {
+  font-size: 11px;
+  color: var(--km-text-dim);
+  font-weight: 600;
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.km-kpi-sub {
+  font-size: 10px;
+  color: var(--km-text-muted);
+  font-weight: 500;
+  margin-top: 5px;
+  line-height: 1.4;
+}
+
+.km-kpi-trend {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  background: rgba(var(--km-accent-rgb), 0.1);
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--km-accent);
+}
+
+.km-kpi-donut-mini {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+}
+
+/* ══════════════════════════════════════════════════
+   PLATFORM STRIP (km-platform-strip, km-plat-*)
+═══════════════════════════════════════════════════ */
+.km-platform-strip {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 32px 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.km-platform-strip > * {
+  position: relative;
+  padding: 12px 14px;
+  background: var(--km-bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius);
+  overflow: hidden;
+  transition: all 0.3s var(--km-ease);
+}
+
+.km-platform-strip > *:hover {
+  transform: translateY(-2px);
+  border-color: var(--km-border-hover);
+}
+
+.km-platform-strip > *::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--km-plat-bg, transparent), transparent 50%);
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.km-platform-strip > *[data-platform="spotify"]   { --km-plat-bg: #1DB954; }
+.km-platform-strip > *[data-platform="apple"]     { --km-plat-bg: #FC3C44; }
+.km-platform-strip > *[data-platform="youtube"]   { --km-plat-bg: #FF0000; }
+.km-platform-strip > *[data-platform="deezer"]    { --km-plat-bg: #A238FF; }
+.km-platform-strip > *[data-platform="tidal"]     { --km-plat-bg: #00CFFF; }
+
+.km-plat-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.km-plat-name {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--km-text);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.km-plat-name svg,
+.km-plat-name img {
+  width: 16px;
+  height: 16px;
+}
+
+.km-plat-gains,
+.km-plat-value {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--km-plat-bg, var(--km-primary));
+  font-variant-numeric: tabular-nums;
+}
+
+.km-plat-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.km-plat-bar-fill {
+  height: 100%;
+  background: var(--km-plat-bg, var(--km-primary));
+  border-radius: 100px;
+  box-shadow: 0 0 12px currentColor;
+  opacity: 0.9;
+  transition: width 0.8s var(--km-ease);
+}
+
+/* ══════════════════════════════════════════════════
+   CHARTS (km-charts-row-main, km-chart-card)
+═══════════════════════════════════════════════════ */
+.km-charts-row-main,
+.km-charts-row-secondary,
+.km-charts-row-3 {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 32px 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.km-charts-row-main {
+  grid-template-columns: 2fr 1fr;
+}
+
+.km-charts-row-secondary {
+  grid-template-columns: 1fr 1fr;
+}
+
+.km-charts-row-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.km-chart-card,
+.km-monthly-card {
+  position: relative;
+  padding: 20px 22px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(var(--km-primary-rgb), 0.05), transparent 55%),
+    var(--km-bg-card);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius);
+  overflow: hidden;
+  isolation: isolate;
+  transition: border-color 0.35s var(--km-ease), box-shadow 0.35s var(--km-ease), transform 0.35s var(--km-ease);
+  animation: kmChartReveal 0.6s var(--km-ease) backwards;
+}
+
+/* Apparition séquencée des cartes de graphiques au chargement */
+.km-charts-row-main .km-chart-card:nth-of-type(1)    { animation-delay: 0.05s; }
+.km-charts-row-main .km-chart-col-right              { animation-delay: 0.12s; }
+.km-charts-row-secondary .km-chart-card:nth-of-type(1) { animation-delay: 0.08s; }
+.km-charts-row-secondary .km-chart-card:nth-of-type(2) { animation-delay: 0.14s; }
+.km-charts-row-3 .km-chart-card:nth-of-type(1) { animation-delay: 0.08s; }
+.km-charts-row-3 .km-chart-card:nth-of-type(2) { animation-delay: 0.14s; }
+.km-charts-row-3 .km-chart-card:nth-of-type(3) { animation-delay: 0.2s; }
+
+@keyframes kmChartReveal {
+  from { opacity: 0; transform: translateY(16px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Liseré dégradé animé en haut de carte, dans l'esprit des KPI mais plus discret */
+.km-chart-card::before,
+.km-monthly-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(var(--km-primary-rgb), 0.7), transparent);
+  opacity: 0;
+  transition: opacity 0.4s var(--km-ease);
+  z-index: 2;
+}
+
+.km-chart-card:hover,
+.km-monthly-card:hover {
+  border-color: var(--km-border-hover);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(var(--km-primary-rgb), 0.06);
+  transform: translateY(-2px);
+}
+
+.km-chart-card:hover::before,
+.km-monthly-card:hover::before { opacity: 1; }
+
+/* La carte "Performance Globale" est la pièce signature : halo ambiant doux,
+   bordure légèrement dorée même au repos, pour la distinguer du reste. */
+.km-chart-main {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  border-color: rgba(var(--km-primary-rgb), 0.16);
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 0%, rgba(var(--km-primary-rgb), 0.09), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(var(--km-accent-rgb), 0.06), transparent 60%),
+    var(--km-bg-card);
+}
+
+/* Le graphique principal occupe tout l'espace vertical disponible de sa
+   carte (qui s'étire pour matcher la hauteur de la colonne de droite),
+   au lieu de rester petit avec un grand vide sous lui. */
+.km-chart-main .km-chart-canvas-wrap {
+  flex: 1;
+  min-height: 320px;
+}
+
+.km-chart-main::before {
+  opacity: 0.55;
+}
+
+.km-chart-main:hover::before { opacity: 1; }
+
+.km-chart-donut-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.km-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.km-chart-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--km-text);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  letter-spacing: -0.01em;
+}
+
+.km-chart-sub {
+  font-size: 10px;
+  color: var(--km-text-dim);
+  font-weight: 500;
+}
+
+.km-chart-legend-row,
+.km-chart-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--km-text-dim);
+  font-weight: 500;
+}
+
+.km-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--km-border);
+  transition: background 0.25s var(--km-ease), border-color 0.25s var(--km-ease);
+}
+
+.km-legend-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--km-border-hover);
+}
+
+.km-legend-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.km-chart-canvas-wrap {
+  position: relative;
+  min-height: 260px;
+}
+
+.km-donut-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+}
+
+.km-chart-canvas-wrap canvas,
+.km-donut-wrap canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+.km-chart-empty,
+.km-chart-empty-sm,
+.km-empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--km-text-muted);
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--km-border);
+  border-radius: var(--km-radius-sm);
+}
+
+.km-chart-empty-sm { padding: 24px 16px; font-size: 12px; }
+
+.km-chart-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ══════════════════════════════════════════════════
+   MONTHLY CARD (rapport mensuel/label)
+═══════════════════════════════════════════════════ */
+.km-monthly-card {
+  background: linear-gradient(145deg,
+    rgba(var(--km-primary-rgb), 0.12),
+    rgba(var(--km-accent-rgb), 0.05));
+  border-color: rgba(var(--km-primary-rgb), 0.2);
+}
+
+.km-monthly-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--km-primary), var(--km-accent));
+}
+
+.km-monthly-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--km-primary);
+  text-transform: uppercase;
+  letter-spacing: 1.3px;
+  margin-bottom: 3px;
+}
+
+.km-monthly-periode {
+  font-size: 12px;
+  color: var(--km-text-soft);
+  margin-bottom: 12px;
+}
+
+.km-monthly-gains {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--km-accent);
+  letter-spacing: -0.02em;
+  margin-bottom: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Texte composite "Part artistes : X € | Marge label : Y €" — c'est une
+   PHRASE, pas une valeur isolée comme .km-monthly-gains : elle ne doit
+   jamais partager la même très grande taille, sous peine de déborder
+   de la carte (constaté avec des montants à 4 décimales). */
+.km-monthly-brut {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-family: 'Outfit', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--km-text-soft);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+
+.km-monthly-brut span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.km-monthly-brut span::before {
+  content: '';
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 100px;
+  background: var(--km-accent);
+  box-shadow: 0 0 6px rgba(var(--km-accent-rgb), 0.6);
+}
+
+.km-monthly-brut span:last-child::before {
+  background: var(--km-primary);
+  box-shadow: 0 0 6px rgba(var(--km-primary-rgb), 0.6);
+}
+
+.km-monthly-streams {
+  font-size: 11px;
+  color: var(--km-text-dim);
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--km-border);
+  font-variant-numeric: tabular-nums;
+}
+
+.km-monthly-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 12px;
+}
+
+.km-mtag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  background: rgba(var(--km-primary-rgb), 0.1);
+  border: 1px solid rgba(var(--km-primary-rgb), 0.2);
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--km-primary);
+}
+
+/* ══════════════════════════════════════════════════
+   TABS (km-tab-bar, km-tab-btn)
+═══════════════════════════════════════════════════ */
+.km-section-tabs-wrapper {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 32px 18px;
+}
+
+.km-tab-bar {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius-sm);
+  margin-bottom: 16px;
+}
+
+.km-tab-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  color: var(--km-text-dim);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s var(--km-ease);
+}
+
+.km-tab-btn:hover { color: var(--km-text-soft); }
+
+.km-tab-btn.km-tab-active,
+.km-tab-active {
+  background: linear-gradient(135deg, var(--km-primary), var(--km-primary-2));
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(var(--km-primary-rgb), 0.25);
+}
+
+.km-tab-panel {
+  background: var(--km-bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius);
+  padding: 18px 20px;
+  overflow: hidden;
+}
+
+.km-tab-block {
+  padding: 12px 0;
+}
+
+.km-tab-block-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--km-text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* ══════════════════════════════════════════════════
+   TABLES (km-reports-table)
+═══════════════════════════════════════════════════ */
+.km-reports-table-wrap {
+  overflow-x: auto;
+  margin: -4px 0;
+}
+
+.km-reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.km-reports-table thead th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--km-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--km-border);
+  background: rgba(255, 255, 255, 0.02);
+  white-space: nowrap;
+}
+
+.km-reports-table tbody td {
+  padding: 10px 12px;
+  color: var(--km-text-soft);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.km-reports-table tbody tr {
+  transition: background 0.15s;
+}
+
+.km-reports-table tbody tr:hover {
+  background: rgba(var(--km-primary-rgb), 0.04);
+}
+
+.km-reports-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.km-reports-table tbody tr:nth-child(even):hover {
+  background: rgba(var(--km-primary-rgb), 0.06);
+}
+
+.km-reports-table td strong { color: var(--km-text); font-weight: 700; }
+
+.km-num,
+.km-gains-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--km-text);
+  font-family: 'Outfit', sans-serif;
+}
+
+.km-num-zero { color: var(--km-text-muted); opacity: 0.5; }
+.km-gains-cell { color: var(--km-accent); }
+
+.km-cell-track {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.km-track-num,
+.km-track-num-sm {
+  width: 24px;
+  height: 24px;
+  background: rgba(var(--km-primary-rgb), 0.1);
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--km-primary);
+  font-family: 'Outfit', sans-serif;
+  flex-shrink: 0;
+}
+
+.km-track-num-sm { width: 20px; height: 20px; font-size: 10px; }
+
+.km-track-title { font-weight: 600; color: var(--km-text); }
+
+.km-track-play,
+.km-track-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius-sm);
+  margin-bottom: 6px;
+  transition: all 0.2s var(--km-ease);
+}
+
+.km-track-row:hover {
+  background: rgba(var(--km-primary-rgb), 0.05);
+  border-color: var(--km-border-hover);
+}
+
+.km-tracks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.km-td-artist { color: var(--km-primary); font-weight: 700; }
+
+/* Artist ranking */
+.km-artist-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.km-rank-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(var(--km-primary-rgb), 0.15), rgba(var(--km-accent-rgb), 0.15));
+  border: 1px solid var(--km-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--km-primary);
+}
+
+.km-rank-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.km-rank-badge {
+  width: 26px;
+  height: 26px;
+  background: var(--km-bg-card-solid);
+  border: 1px solid var(--km-border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--km-text-dim);
+  font-family: 'Outfit', sans-serif;
+  flex-shrink: 0;
+}
+
+.km-country-rank.top .km-rank-badge,
+.km-rank-badge[data-top="1"] {
+  background: linear-gradient(135deg, var(--km-primary), var(--km-primary-2));
+  color: #000;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(var(--km-primary-rgb), 0.3);
+}
+
+.km-rank-info { flex: 1; min-width: 0; }
+.km-rank-name { font-weight: 700; color: var(--km-text); font-size: 13px; }
+.km-rank-meta { font-size: 11px; color: var(--km-text-dim); font-weight: 500; }
+.km-rank-stats { text-align: right; font-variant-numeric: tabular-nums; }
+.km-rank-streams { font-weight: 700; color: var(--km-text); font-size: 13px; }
+.km-rank-gains { font-weight: 700; color: var(--km-accent); font-size: 12px; margin-top: 2px; }
+.km-rank-pct { font-size: 11px; color: var(--km-text-dim); margin-top: 2px; }
+.km-rank-sep { margin: 0 4px; color: var(--km-text-muted); opacity: 0.5; }
+
+.km-rank-bar-wrap {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.km-rank-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--km-primary), var(--km-primary-2));
+  border-radius: 100px;
+  transition: width 0.8s var(--km-ease);
+}
+
+/* ══════════════════════════════════════════════════
+   COUNTRIES (km-countries-grid, km-country-card)
+═══════════════════════════════════════════════════ */
+.km-countries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.km-country-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--km-bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius-sm);
+  transition: all 0.2s var(--km-ease);
+}
+
+.km-country-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--km-border-hover);
+}
+
+.km-country-code,
+.km-country-flag-code {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--km-primary);
+  min-width: 44px;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.km-country-info { flex: 1; min-width: 0; }
+.km-country-name { font-weight: 700; color: var(--km-text); font-size: 13px; }
+.km-country-streams-val { font-size: 12px; color: var(--km-accent); font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+.km-country-bar-wrap {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.km-country-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--km-accent), var(--km-cyan));
+  border-radius: 100px;
+  box-shadow: 0 0 8px rgba(var(--km-accent-rgb), 0.4);
+  transition: width 0.8s var(--km-ease);
+}
+
+/* ══════════════════════════════════════════════════
+   CATALOGUE (km-catalog-*)
+═══════════════════════════════════════════════════ */
+.km-section-catalog {
+  padding-top: 30px;
+}
+
+.km-catalog-count {
+  font-size: 13px;
+  color: var(--km-text-dim);
+  font-weight: 500;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 100px;
+}
+
+.km-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.km-catalog-card {
+  cursor: pointer;
+  transition: all 0.3s var(--km-ease);
+  background: var(--km-bg-card);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius);
+  overflow: hidden;
+}
+
+.km-catalog-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--km-border-hover);
+  box-shadow: var(--km-shadow);
+}
+
+.km-catalog-artwork,
+.km-catalog-artwork-placeholder {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(var(--km-primary-rgb), 0.08), rgba(var(--km-accent-rgb), 0.05));
+}
+
+.km-catalog-artwork img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s var(--km-ease);
+}
+
+.km-catalog-card:hover .km-catalog-artwork img {
+  transform: scale(1.06);
+}
+
+.km-catalog-artwork-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.km-cover-expand-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.25s var(--km-ease);
+}
+
+.km-catalog-card:hover .km-cover-expand-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.km-cover-type-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  padding: 3px 8px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  border-radius: 100px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--km-primary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.km-catalog-info {
+  padding: 12px 14px;
+}
+
+.km-catalog-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--km-text);
+  line-height: 1.3;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.km-catalog-artist {
+  font-size: 11px;
+  color: var(--km-primary);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.km-catalog-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--km-text-muted);
+  margin-top: 4px;
+}
+
+.km-catalog-upc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--km-text-muted);
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+
+.km-catalog-tracks {
+  max-height: 0;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+  transition: max-height 0.3s var(--km-ease);
+}
+
+.km-catalog-card.expanded .km-catalog-tracks {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* ══════════════════════════════════════════════════
+   BADGES & DIVERS
+═══════════════════════════════════════════════════ */
+.km-badge,
+.km-badge-type,
+.km-link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  background: rgba(var(--km-primary-rgb), 0.12);
+  border: 1px solid rgba(var(--km-primary-rgb), 0.25);
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--km-primary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.km-counter,
+.km-counter-float {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 7px;
+  background: var(--km-primary);
+  color: #000;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.km-counter-float {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+}
+
+.km-pdf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: rgba(var(--km-primary-rgb), 0.08);
+  border: 1px solid rgba(var(--km-primary-rgb), 0.2);
+  border-radius: 6px;
+  color: var(--km-primary);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.km-pdf-link:hover {
+  background: rgba(var(--km-primary-rgb), 0.15);
+  transform: translateY(-1px);
+}
+
+.km-release-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--km-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--km-accent);
+}
+
+.km-th-plat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ══════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════ */
+.km-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 16, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: kmFadeIn 0.25s var(--km-ease);
+}
+
+@keyframes kmFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.km-modal-box {
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--km-bg-card-solid);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius-lg);
+  box-shadow: var(--km-shadow-lg);
+  overflow: hidden;
+  animation: kmModalIn 0.3s var(--km-ease);
+}
+
+@keyframes kmModalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.km-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--km-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.km-modal-close {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--km-border);
+  border-radius: 10px;
+  color: var(--km-text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.km-modal-close:hover {
+  background: rgba(var(--km-danger-rgb), 0.1);
+  border-color: var(--km-danger);
+  color: var(--km-danger);
+}
+
+.km-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.km-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--km-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.km-modal-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--km-text-dim);
+}
+
+/* ══════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════ */
+.km-db-footer {
+  display: block;
+  text-align: center;
+  padding: 30px 20px;
+  font-size: 11px;
+  color: var(--km-text-muted);
+  border-top: 1px solid var(--km-border);
+  margin-top: 40px;
+  letter-spacing: 0.5px;
+  background: rgba(5, 7, 16, 0.4);
+}
+
+.km-db-footer strong { color: var(--km-primary); font-weight: 700; }
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════ */
+@media (max-width: 1400px) {
+  .km-section,
+  .km-platform-strip,
+  .km-charts-row-main,
+  .km-charts-row-secondary,
+  .km-charts-row-3,
+  .km-section-tabs-wrapper,
+  .km-filters-bar,
+  .km-filters-row {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .km-charts-row-main,
+  .km-charts-row-secondary,
+  .km-charts-row-3 {
+    grid-template-columns: 1fr;
+  }
+  .km-kpi-grid-5 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .km-db-header {
+    flex-wrap: wrap;
+    padding: 14px 20px;
+    gap: 12px;
+  }
+  .km-db-header-right {
+    width: 100%;
+    justify-content: flex-end;
+    margin-left: 0;
+  }
+  .km-db-user-info strong,
+  .km-db-artist-name { font-size: 18px; }
+  .km-db-avatar { width: 48px; height: 48px; font-size: 18px; }
+
+  .km-section,
+  .km-platform-strip,
+  .km-section-tabs-wrapper,
+  .km-filters-bar,
+  .km-filters-row {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  /* Graphiques larges : défilement horizontal plutôt qu'écrasement.
+     Chaque carte garde une largeur lisible (min-width) ; un indice de
+     défilement (ombre + scroll-snap) guide le doigt. */
+  .km-charts-row-main,
+  .km-charts-row-secondary,
+  .km-charts-row-3 {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(86%, 360px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 22px;
+    /* masque la scrollbar tout en gardant le scroll fonctionnel */
+    scrollbar-width: thin;
+  }
+
+  .km-charts-row-main > *,
+  .km-charts-row-secondary > *,
+  .km-charts-row-3 > * {
+    scroll-snap-align: start;
+  }
+
+  .km-chart-col-right {
+    /* La colonne de droite (rapport label + donut) contient elle-même
+       2 cartes empilées : on la laisse pleine hauteur dans sa "page" de scroll. */
+    min-width: 86vw;
+    max-width: 360px;
+  }
+
+  .km-kpi-grid,
+  .km-kpi-grid-5 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .km-platform-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Fix : seul .km-filters-row est le vrai grid des filtres */
+  .km-filters-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .km-catalog-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .km-db-header {
+    padding: 12px 16px;
+    gap: 10px;
+  }
+  .km-db-header-right {
+    gap: 6px;
+  }
+  .km-btn-icon,
+  .km-btn-pdf,
+  .km-btn-releve,
+  .km-btn-releve-pdf,
+  .km-btn-logout,
+  .km-btn-reset {
+    padding: 8px 12px;
+    font-size: 11px;
+    gap: 5px;
+  }
+  .km-btn-icon { padding: 8px; min-width: 34px; }
+  .km-header-logo img,
+  .km-header-logo-wrap img { height: 38px; }
+  .km-db-avatar { width: 42px; height: 42px; font-size: 15px; }
+  .km-db-user-info strong,
+  .km-db-artist-name { font-size: 15px; }
+  .km-db-label-tag { font-size: 9px; }
+
+  .km-section,
+  .km-platform-strip,
+  .km-section-tabs-wrapper,
+  .km-filters-bar,
+  .km-filters-row {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .km-charts-row-main,
+  .km-charts-row-secondary,
+  .km-charts-row-3 {
+    padding-left: 14px;
+    padding-right: 14px;
+    grid-auto-columns: minmax(88%, 340px);
+  }
+
+  .km-kpi-grid,
+  .km-kpi-grid-5,
+  .km-platform-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .km-kpi-card { padding: 16px 14px; }
+  .km-kpi-value { font-size: 22px; }
+  .km-kpi-icon-wrap { width: 36px; height: 36px; font-size: 16px; margin-bottom: 10px; }
+  .km-kpi-trend { top: 14px; right: 14px; font-size: 10px; padding: 2px 6px; }
+
+  .km-platform-strip > * { padding: 12px; }
+  .km-plat-name { font-size: 12px; }
+  .km-plat-gains, .km-plat-value { font-size: 13px; }
+
+  .km-filters-bar  { padding: 14px; }
+  /* Fix : seul .km-filters-row est le vrai grid des filtres */
+  .km-filters-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .km-chart-card,
+  .km-monthly-card {
+    padding: 18px 16px;
+  }
+  .km-monthly-gains { font-size: 26px; }
+  .km-monthly-brut { font-size: 11.5px; }
+
+  .km-tab-bar { width: 100%; overflow-x: auto; }
+  .km-tab-btn { flex: 1; justify-content: center; padding: 8px 12px; font-size: 12px; white-space: nowrap; }
+
+  .km-tab-panel { padding: 16px; }
+
+  .km-reports-table { font-size: 11px; }
+  .km-reports-table thead th,
+  .km-reports-table tbody td { padding: 8px 8px; }
+
+  .km-catalog-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .km-countries-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .km-section-header h2 { font-size: 18px; }
+}
+
+@media (max-width: 400px) {
+  .km-kpi-grid,
+  .km-kpi-grid-5,
+  .km-platform-strip {
+    grid-template-columns: 1fr;
+  }
+  .km-db-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Dots de pagination des lignes de graphiques scrollables (mobile uniquement,
+   créés en JS, voir label-dashboard.php). Cachés par défaut au-delà de 900px. */
+.km-scroll-dots {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .km-scroll-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin: -8px 0 18px;
+  }
+  .km-scroll-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: background 0.25s var(--km-ease), width 0.25s var(--km-ease);
+  }
+  .km-scroll-dot.is-active {
+    width: 18px;
+    background: var(--km-primary);
+    box-shadow: 0 0 8px rgba(var(--km-primary-rgb), 0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .km-kpi-card,
+  .km-catalog-card,
+  .km-country-card,
+  .km-chart-card,
+  .km-monthly-card { animation: none; transition: none; }
+}
+
+/* Scrollbar custom */
+.km-db-wrap ::-webkit-scrollbar { width: 8px; height: 8px; }
+.km-db-wrap ::-webkit-scrollbar-track { background: transparent; }
+.km-db-wrap ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+}
+.km-db-wrap ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* ══════════════════════════════════════════════════
+   BUG FIX — BARRE DE FILTRES (double box)
+   .km-filters-bar = conteneur avec fond/bordure
+   .km-filters-row = grille SEULEMENT (pas de box)
+   Les deux avaient les mêmes styles → double boîte.
+═══════════════════════════════════════════════════ */
+.km-filters-row {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+  padding: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ══════════════════════════════════════════════════
+   BUG FIX — CATALOG CARD TOGGLE
+   Le JS toggle 'km-card-open' mais le CSS écoutait
+   '.expanded'. On ajoute le support de km-card-open.
+═══════════════════════════════════════════════════ */
+.km-catalog-card.km-card-open .km-catalog-tracks {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* ══════════════════════════════════════════════════
+   BUG FIX — PLATFORM STRIP COULEURS
+   Le HTML utilise km-plat-pill--* (classes)
+   mais le CSS utilisait [data-platform="*"] (attrs).
+   On ajoute les deux approches.
+═══════════════════════════════════════════════════ */
+.km-plat-pill--spotify,
+.km-platform-strip > *[data-platform="spotify"]  { --km-plat-bg: #1DB954; }
+.km-plat-pill--apple,
+.km-platform-strip > *[data-platform="apple"]    { --km-plat-bg: #FC3C44; }
+.km-plat-pill--youtube,
+.km-platform-strip > *[data-platform="youtube"]  { --km-plat-bg: #FF0000; }
+.km-plat-pill--deezer,
+.km-platform-strip > *[data-platform="deezer"]   { --km-plat-bg: #A238FF; }
+.km-plat-pill--tidal,
+.km-platform-strip > *[data-platform="tidal"]    { --km-plat-bg: #00CFFF; }
+
+/* Appliquer --km-plat-bg aux gains et icônes de la plateforme */
+.km-plat-pill--spotify .km-plat-gains,
+.km-plat-pill--apple   .km-plat-gains,
+.km-plat-pill--youtube .km-plat-gains,
+.km-plat-pill--deezer  .km-plat-gains,
+.km-plat-pill--tidal   .km-plat-gains,
+.km-plat-pill--spotify .km-plat-value,
+.km-plat-pill--apple   .km-plat-value,
+.km-plat-pill--youtube .km-plat-value,
+.km-plat-pill--deezer  .km-plat-value,
+.km-plat-pill--tidal   .km-plat-value { color: var(--km-plat-bg, var(--km-primary)); }
+
+.km-plat-pill--spotify .km-plat-bar-fill,
+.km-plat-pill--apple   .km-plat-bar-fill,
+.km-plat-pill--youtube .km-plat-bar-fill,
+.km-plat-pill--deezer  .km-plat-bar-fill,
+.km-plat-pill--tidal   .km-plat-bar-fill { background: var(--km-plat-bg, var(--km-primary)); }
+
+/* Bordure basse colorée au hover */
+.km-plat-pill--spotify:hover  { border-bottom-color: #1DB954; }
+.km-plat-pill--apple:hover    { border-bottom-color: #FC3C44; }
+.km-plat-pill--youtube:hover  { border-bottom-color: #FF0000; }
+.km-plat-pill--deezer:hover   { border-bottom-color: #A238FF; }
+.km-plat-pill--tidal:hover    { border-bottom-color: #00CFFF; }
+
+/* ══════════════════════════════════════════════════
+   VARIANTES COULEUR KPI — Cyan, Pink, Purple
+   (complètent km-kpi-gold et km-kpi-green)
+═══════════════════════════════════════════════════ */
+.km-kpi-card.km-kpi-cyan .km-kpi-icon-wrap {
+  background: linear-gradient(135deg, rgba(var(--km-cyan-rgb), 0.15), rgba(var(--km-cyan-rgb), 0.05));
+  color: var(--km-cyan);
+}
+.km-kpi-card.km-kpi-cyan .km-kpi-value { color: var(--km-cyan); }
+.km-kpi-card.km-kpi-cyan::before {
+  background: linear-gradient(90deg, transparent, var(--km-cyan), transparent);
+}
+
+.km-kpi-card.km-kpi-pink .km-kpi-icon-wrap {
+  background: linear-gradient(135deg, rgba(255, 107, 158, 0.15), rgba(255, 107, 158, 0.05));
+  color: var(--km-pink);
+}
+.km-kpi-card.km-kpi-pink .km-kpi-value { color: var(--km-pink); }
+.km-kpi-card.km-kpi-pink::before {
+  background: linear-gradient(90deg, transparent, var(--km-pink), transparent);
+}
+
+.km-kpi-card.km-kpi-purple .km-kpi-icon-wrap {
+  background: linear-gradient(135deg, rgba(166, 79, 255, 0.15), rgba(166, 79, 255, 0.05));
+  color: var(--km-purple);
+}
+.km-kpi-card.km-kpi-purple .km-kpi-value { color: var(--km-purple); }
+.km-kpi-card.km-kpi-purple::before {
+  background: linear-gradient(90deg, transparent, var(--km-purple), transparent);
+}
+
+/* Ligne top toujours visible (faible opacité) pour les cartes colorées */
+.km-kpi-card.km-kpi-gold::before,
+.km-kpi-card.km-kpi-green::before,
+.km-kpi-card.km-kpi-cyan::before,
+.km-kpi-card.km-kpi-pink::before,
+.km-kpi-card.km-kpi-purple::before { opacity: 0.35; }
+
+.km-kpi-card.km-kpi-gold:hover::before,
+.km-kpi-card.km-kpi-green:hover::before,
+.km-kpi-card.km-kpi-cyan:hover::before,
+.km-kpi-card.km-kpi-pink:hover::before,
+.km-kpi-card.km-kpi-purple:hover::before { opacity: 1; }
+
+/* Glow coloré au survol */
+.km-kpi-card.km-kpi-gold:hover   { box-shadow: 0 8px 32px rgba(var(--km-primary-rgb), 0.18), var(--km-shadow); }
+.km-kpi-card.km-kpi-green:hover  { box-shadow: 0 8px 32px rgba(var(--km-accent-rgb), 0.18), var(--km-shadow); }
+.km-kpi-card.km-kpi-cyan:hover   { box-shadow: 0 8px 32px rgba(var(--km-cyan-rgb), 0.18), var(--km-shadow); }
+.km-kpi-card.km-kpi-pink:hover   { box-shadow: 0 8px 32px rgba(255, 107, 158, 0.18), var(--km-shadow); }
+.km-kpi-card.km-kpi-purple:hover { box-shadow: 0 8px 32px rgba(166, 79, 255, 0.18), var(--km-shadow); }
+
+/* ══════════════════════════════════════════════════
+   ACCESSIBILITÉ — focus-visible
+═══════════════════════════════════════════════════ */
+.km-btn-icon:focus-visible,
+.km-btn-logout:focus-visible,
+.km-btn-pdf:focus-visible,
+.km-btn-releve:focus-visible,
+.km-btn-releve-pdf:focus-visible,
+.km-btn-reset:focus-visible,
+.km-tab-btn:focus-visible,
+.km-filter-reset:focus-visible,
+.km-tf-reset:focus-visible,
+.km-modal-close:focus-visible,
+.km-catalog-card:focus-visible {
+  outline: 2px solid var(--km-primary);
+  outline-offset: 2px;
+}
+
+/* ══════════════════════════════════════════════════
+   LOADING SKELETON
+═══════════════════════════════════════════════════ */
+@keyframes kmSkeletonPulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.7; }
+}
+
+.km-skeleton {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--km-radius-sm);
+  animation: kmSkeletonPulse 1.5s ease-in-out infinite;
+}
+
+.km-skeleton-text {
+  height: 12px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.km-skeleton-text:last-child { width: 70%; margin-bottom: 0; }
+
+.km-skeleton-value {
+  height: 32px;
+  width: 60%;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+/* ══════════════════════════════════════════════════
+   PLATFORM STRIP — bordure bottom colorée
+═══════════════════════════════════════════════════ */
+.km-platform-strip > *[data-platform] {
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s var(--km-ease), border-color 0.3s var(--km-ease);
+}
+
+.km-platform-strip > *[data-platform="spotify"]:hover  { border-bottom-color: #1DB954; }
+.km-platform-strip > *[data-platform="apple"]:hover    { border-bottom-color: #FC3C44; }
+.km-platform-strip > *[data-platform="youtube"]:hover  { border-bottom-color: #FF0000; }
+.km-platform-strip > *[data-platform="deezer"]:hover   { border-bottom-color: #A238FF; }
+.km-platform-strip > *[data-platform="tidal"]:hover    { border-bottom-color: #00CFFF; }
+
+/* ══════════════════════════════════════════════════
+   AMÉLIORATION CARTE MENSUELLE
+═══════════════════════════════════════════════════ */
+.km-monthly-card {
+  position: relative;
+}
+
+.km-monthly-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to top, rgba(var(--km-primary-rgb), 0.04), transparent);
+  pointer-events: none;
+  border-radius: 0 0 var(--km-radius) var(--km-radius);
+}
+
+/* ══════════════════════════════════════════════════
+   CORRECTIFS MOBILE / TOUCH — v5.4.1
+   Résout : liens inactifs sur iOS/Android
+═══════════════════════════════════════════════════ */
+
+/* 1. Pseudo-éléments décoratifs → jamais de pointer events
+   (sinon ils interceptent les taps sur mobile) */
+.km-kpi-card::before,
+.km-kpi-card::after,
+.km-monthly-card::before,
+.km-chart-card::before,
+.km-chart-card::after,
+.km-catalog-card::before,
+.km-catalog-card::after,
+.km-platform-strip > *::before,
+.km-platform-strip > *::after,
+.km-section-header::before,
+.km-section-header::after { pointer-events: none !important; }
+
+/* 2. Icône "agrandir" invisible sur mobile → désactiver les pointer events
+   (opacity:0 n'empêche PAS les touch events — bloque les taps sur la pochette) */
+.km-cover-expand-icon {
+  pointer-events: none;
+}
+
+/* 3. touch-action: manipulation sur tous les éléments interactifs
+   → supprime le délai 300ms, active le tap immédiat sur iOS/Android */
+.km-btn-icon,
+.km-btn-logout,
+.km-btn-pdf,
+.km-btn-releve,
+.km-btn-releve-pdf,
+.km-btn-reset,
+.km-tab-btn,
+.km-filter-reset,
+.km-tf-reset,
+.km-modal-close,
+.km-catalog-card,
+.km-pdf-link,
+.km-filter-group select,
+.km-filter-group input,
+a[href],
+button,
+[role="button"],
+[tabindex="0"] { touch-action: manipulation; }
+
+/* 4. Supprimer le flash bleu/gris au tap (iOS + Android Chrome) */
+.km-db-wrap a,
+.km-db-wrap button,
+.km-db-wrap [role="button"],
+.km-db-wrap [tabindex] {
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+}
+
+/* 5. Taille minimale des zones tactiles : 44×44px (recommandation Apple/WCAG)
+   pour les petits boutons sur mobile */
+@media (pointer: coarse) {
+  .km-tab-btn,
+  .km-filter-reset,
+  .km-modal-close,
+  .km-btn-icon {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .km-btn-logout,
+  .km-btn-pdf,
+  .km-btn-releve,
+  .km-btn-releve-pdf,
+  .km-btn-reset {
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  /* Liens dans les tableaux : zone de tap plus grande */
+  .km-pdf-link {
+    padding: 8px 14px;
+  }
+  /* Cartes catalogue : pas de transform au tap (évite le bug "double-tap to zoom") */
+  .km-catalog-card:hover {
+    transform: none;
+  }
+  .km-kpi-card:hover {
+    transform: none;
+  }
+}
+
+/* 6. -webkit-backdrop-filter sur tous les éléments utilisant backdrop-filter
+   (requis pour iOS Safari < 15) */
+.km-kpi-card,
+.km-chart-card,
+.km-monthly-card,
+.km-platform-strip > * {
+  -webkit-backdrop-filter: blur(20px);
+}
+.km-db-header {
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+/* 7. Sur mobile, s'assurer que le header sticky ne cache pas les éléments cliquables
+   en dessous (scroll-padding-top = hauteur du header) */
+@media (max-width: 900px) {
+  html { scroll-padding-top: 70px; }
+}
+@media (max-width: 600px) {
+  html { scroll-padding-top: 60px; }
+}
+
+/* ══════════════════════════════════════════════════
+   CORRECTIF PAGE NOIRE SUR MOBILE — v5.4.2
+   Cause : backdrop-filter sur 17+ éléments simultanés
+   épuise la mémoire GPU sur Android/iOS → rendu noir.
+   Fix : désactiver backdrop-filter sur mobile et
+   utiliser des fonds solides à la place.
+═══════════════════════════════════════════════════ */
+
+/* Fallback : navigateurs ne supportant pas backdrop-filter */
+@supports not (backdrop-filter: blur(1px)) {
+  .km-kpi-card,
+  .km-chart-card,
+  .km-monthly-card,
+  .km-platform-strip > *,
+  .km-filters-bar,
+  .km-filters-row,
+  .km-section-tabs-wrapper .km-tab-bar,
+  .km-catalog-card,
+  .km-modal-box {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #121828 !important;
+  }
+  .km-db-header {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(10, 15, 30, 0.98) !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   BUG FIX — KM-PLAT-PILL (alias de km-platform-strip > *)
+   La classe km-plat-pill n'avait aucun style de base.
+═══════════════════════════════════════════════════ */
+.km-plat-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  padding: 12px 14px;
+  background: var(--km-bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--km-border);
+  border-bottom: 2px solid transparent;
+  border-radius: var(--km-radius);
+  overflow: hidden;
+  transition: all 0.3s var(--km-ease);
+}
+.km-plat-pill:hover {
+  transform: translateY(-2px);
+  border-color: var(--km-border-hover);
+}
+.km-plat-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--km-plat-bg, var(--km-primary));
+}
+.km-plat-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ══════════════════════════════════════════════════
+   BUG FIX — TABLEAUX sur mobile
+   -webkit-overflow-scrolling requis sur iOS Safari
+═══════════════════════════════════════════════════ */
+.km-reports-table-wrap {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+@media (max-width: 600px) {
+  .km-reports-table { min-width: 480px; }
+}
+
+/* ══════════════════════════════════════════════════
+   BUG FIX — ÉTAT VIDE (km-empty-state)
+   Styles de base manquants
+═══════════════════════════════════════════════════ */
+.km-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.km-empty-state p   { color: var(--km-text-dim); font-size: 14px; }
+.km-empty-state small { color: var(--km-text-muted); font-size: 12px; }
+
+/* ══════════════════════════════════════════════════
+   BUG FIX — HEADER overflow sur très petits écrans
+   Trop de boutons → on réduit leur taille
+═══════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .km-db-header-right { gap: 4px; flex-wrap: nowrap; overflow-x: auto; }
+  .km-btn-releve,
+  .km-btn-pdf         { padding: 8px 10px; font-size: 11px; }
+}
+
+/* ══════════════════════════════════════════════════
+   CORRECTIF MOBILE DÉFINITIF v5.4.4
+   Approche radicale : zéro backdrop-filter, zéro
+   position:fixed coûteux, fonds 100% solides.
+═══════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+
+  /* Fond global de la page : supprimer le pseudo-élément
+     position:fixed avec radial-gradient (couche GPU coûteuse) */
+  .km-db-wrap::before {
+    display: none !important;
+  }
+
+  /* Fond simple solide en remplacement */
+  .km-db-wrap {
+    background: #080d1a !important;
+  }
+
+  /* Zéro backdrop-filter sur TOUS les éléments de contenu */
+  .km-kpi-card,
+  .km-chart-card,
+  .km-monthly-card,
+  .km-platform-strip > *,
+  .km-plat-pill,
+  .km-filters-bar,
+  .km-section-tabs-wrapper,
+  .km-tab-panel,
+  .km-catalog-card,
+  .km-modal-box,
+  .km-btn-icon,
+  .km-btn-logout,
+  .km-btn-pdf,
+  .km-btn-releve {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Fonds solides équivalents */
+  .km-kpi-card        { background: #111726 !important; }
+  .km-kpi-card:hover  { background: #151d30 !important; transform: none !important; }
+  .km-chart-card,
+  .km-monthly-card    { background: #0f1524 !important; }
+  .km-platform-strip > *,
+  .km-plat-pill           { background: #111726 !important; }
+  .km-filters-bar     { background: #0c1120 !important; }
+  /* .km-filters-row est transparent (fix double box) */
+  .km-catalog-card    { background: #111726 !important; }
+  .km-modal-box       { background: #111826 !important; }
+
+  /* Header : zéro blur aussi sur mobile (un seul élément mais quand même) */
+  .km-db-header {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #070c1c !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CORRECTIF MOBILE v5.4.8 — PAGE NOIRE
+   Cause identifiée : LiteSpeed Cache + Hostinger Cache combinent
+   et minifient le CSS, ce qui peut casser les @keyframes.
+   Quand kmFadeInUp est cassé, .km-kpi-card reste à opacity:0
+   à cause de animation-fill-mode:backwards → page noire vide.
+   
+   Fix bulletproof : forcer opacity:1 sur les éléments critiques
+   et désactiver les animations sur mobile (inutiles, gourmandes).
+═══════════════════════════════════════════════════════════════════ */
+
+/* 1. Garantir la visibilité même si l'animation est cassée
+      (sans supprimer l'effet sur desktop : seul backwards posait problème) */
+.km-kpi-card,
+.km-catalog-card,
+.km-country-card,
+.km-rank-card,
+.km-monthly-card,
+.km-chart-card,
+.km-platform-strip > *,
+.km-plat-pill {
+  opacity: 1 !important;
+}
+
+/* 2. Sur mobile et tablette : zéro animation d'entrée
+      (économise GPU + élimine tout risque d'élément invisible) */
+@media (max-width: 1024px) {
+  .km-db-wrap *,
+  .km-db-wrap *::before,
+  .km-db-wrap *::after {
+    animation: none !important;
+    animation-delay: 0s !important;
+    animation-fill-mode: none !important;
+  }
+  
+  /* Mais on garde l'animation skeleton (loaders) et les transitions
+     courtes (toggles d'onglets, hovers) qui n'utilisent pas backwards */
+  .km-skeleton {
+    animation: kmSkeletonPulse 1.5s ease-in-out infinite !important;
+  }
+  
+  /* Sécurité absolue : tout le contenu visible et opaque */
+  .km-db-wrap,
+  .km-db-wrap > *,
+  .km-section,
+  .km-section > *,
+  .km-kpi-grid,
+  .km-kpi-grid-5,
+  .km-kpi-card,
+  .km-kpi-body,
+  .km-kpi-value,
+  .km-kpi-label,
+  .km-kpi-icon-wrap,
+  .km-platform-strip,
+  .km-charts-row-main,
+  .km-charts-row-secondary,
+  .km-charts-row-3,
+  .km-section-tabs-wrapper,
+  .km-tab-panel,
+  .km-filters-bar,
+  .km-filters-row,
+  .km-filter-group,
+  .km-catalog-grid,
+  .km-catalog-card {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+  
+  /* Reset min-height:100vh qui buggue sur mobile (barre d'adresse iOS) */
+  .km-db-wrap {
+    min-height: auto !important;
+  }
+}

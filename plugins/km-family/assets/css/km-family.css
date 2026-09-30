@@ -1,0 +1,4732 @@
+/**
+ * KM Family v2 — Frontend Styles
+ * Aligné sur l'identité visuelle kophismusic.com
+ * Fond noir + accents dorés + typographie forte
+ */
+
+/* ============================================================
+   VARIABLES & RESET
+============================================================ */
+
+:root {
+    --kmfamily-brand: #d4af37;
+    --kmfamily-brand-dark: #b8941f;
+    --kmfamily-brand-light: #ffd700;
+
+    --kmfamily-bronze: #cd7f32;
+    --kmfamily-argent: #c0c0c0;
+    --kmfamily-or: #d4af37;
+    --kmfamily-platine: #e5e4e2;
+    --kmfamily-diamant: #4facfe;
+
+    --kmfamily-bg: #0a0a0a;
+    --kmfamily-bg-alt: #141414;
+    --kmfamily-bg-card: #1a1a1a;
+    --kmfamily-bg-hover: #222222;
+
+    --kmfamily-text: #ffffff;
+    --kmfamily-text-muted: #a0a0a0;
+    --kmfamily-text-dim: #666666;
+
+    --kmfamily-border: rgba(255, 255, 255, 0.1);
+    --kmfamily-border-strong: rgba(255, 255, 255, 0.2);
+
+    --kmfamily-radius-sm: 8px;
+    --kmfamily-radius: 16px;
+    --kmfamily-radius-lg: 24px;
+
+    --kmfamily-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --kmfamily-shadow-hover: 0 12px 40px rgba(212, 175, 55, 0.15);
+    --kmfamily-shadow-gold: 0 0 40px rgba(212, 175, 55, 0.3);
+
+    --kmfamily-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --kmfamily-font-display: 'Montserrat', 'Inter', sans-serif;
+}
+
+.kmfamily-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+@media (max-width: 768px) {
+    .kmfamily-container { padding: 0 16px; }
+}
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+
+.kmfamily-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border: 2px solid transparent;
+    border-radius: 50px;
+    font-family: var(--kmfamily-font);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.kmfamily-btn--lg {
+    padding: 18px 40px;
+    font-size: 15px;
+}
+
+.kmfamily-btn--sm {
+    padding: 10px 20px;
+    font-size: 12px;
+}
+
+.kmfamily-btn--full {
+    width: 100%;
+}
+
+.kmfamily-btn-primary {
+    background: linear-gradient(135deg, var(--kmfamily-brand-light) 0%, var(--kmfamily-brand) 50%, var(--kmfamily-brand-dark) 100%);
+    color: #0a0a0a;
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+}
+
+.kmfamily-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6);
+    color: #0a0a0a;
+}
+
+.kmfamily-btn-primary:active {
+    transform: translateY(0);
+}
+
+.kmfamily-btn-secondary {
+    background: transparent;
+    color: var(--kmfamily-text);
+    border-color: var(--kmfamily-border-strong);
+}
+
+.kmfamily-btn-secondary:hover {
+    background: var(--kmfamily-bg-hover);
+    border-color: var(--kmfamily-brand);
+    color: var(--kmfamily-brand);
+}
+
+.kmfamily-btn-ghost {
+    background: transparent;
+    color: var(--kmfamily-text-muted);
+    border-color: var(--kmfamily-border);
+}
+
+.kmfamily-btn-ghost:hover {
+    color: var(--kmfamily-text);
+    border-color: var(--kmfamily-text-muted);
+}
+
+.kmfamily-btn-disabled {
+    background: var(--kmfamily-bg-hover);
+    color: var(--kmfamily-text-muted);
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Button spinner */
+.kmfamily-btn__spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: kmfamily-spin 0.6s linear infinite;
+}
+
+.kmfamily-btn.is-loading .kmfamily-btn__spinner {
+    display: inline-block;
+}
+
+.kmfamily-btn.is-loading .kmfamily-btn__label {
+    opacity: 0.5;
+}
+
+@keyframes kmfamily-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   BADGES
+============================================================ */
+
+.kmfamily-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+}
+
+.kmfamily-badge--bronze  { background: linear-gradient(135deg, #cd7f32 0%, #8b4513 100%); color: #fff; }
+.kmfamily-badge--argent  { background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%); color: #1a1a1a; }
+.kmfamily-badge--or      { background: linear-gradient(135deg, #ffd700 0%, #d4af37 50%, #b8941f 100%); color: #1a1a1a; }
+.kmfamily-badge--platine { background: linear-gradient(135deg, #f0f0f0 0%, #b8b8b8 100%); color: #1a1a1a; }
+.kmfamily-badge--diamant { background: linear-gradient(135deg, #b9f2ff 0%, #4facfe 50%, #00f2fe 100%); color: #1a1a1a; }
+.kmfamily-badge--public  { background: #4a9c6c; color: #fff; }
+
+.kmfamily-badge--hero {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 30px;
+}
+
+/* ============================================================
+   AUTH PAGE (Login / Register / Forgot)
+============================================================ */
+
+.kmfamily-auth-page {
+    position: relative;
+    min-height: 100vh;
+    background: var(--kmfamily-bg);
+    color: var(--kmfamily-text);
+    font-family: var(--kmfamily-font);
+    overflow: hidden;
+}
+
+.kmfamily-auth-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.kmfamily-auth-bg__orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.4;
+    animation: kmfamily-float 20s infinite ease-in-out;
+}
+
+.kmfamily-auth-bg__orb--1 {
+    width: 600px; height: 600px;
+    background: var(--kmfamily-brand);
+    top: -200px; left: -200px;
+}
+
+.kmfamily-auth-bg__orb--2 {
+    width: 500px; height: 500px;
+    background: #b8941f;
+    bottom: -150px; right: -150px;
+    animation-delay: -7s;
+}
+
+.kmfamily-auth-bg__orb--3 {
+    width: 400px; height: 400px;
+    background: #4facfe;
+    top: 50%; left: 30%;
+    animation-delay: -14s;
+    opacity: 0.2;
+}
+
+@keyframes kmfamily-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(80px, -60px) scale(1.1); }
+    66% { transform: translate(-60px, 80px) scale(0.9); }
+}
+
+.kmfamily-auth-container {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Brand side */
+.kmfamily-auth-brand {
+    padding: 60px 50px;
+    display: flex;
+    align-items: center;
+}
+
+.kmfamily-auth-brand__content {
+    max-width: 500px;
+}
+
+.kmfamily-auth-brand__logo {
+    margin-bottom: 60px;
+}
+
+.kmfamily-auth-brand__logo-main {
+    display: block;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.kmfamily-auth-brand__logo-sub {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--kmfamily-text-muted);
+    margin-top: 4px;
+}
+
+.kmfamily-auth-brand__title {
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin: 0 0 30px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-auth-brand__title span {
+    background: linear-gradient(135deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-style: italic;
+}
+
+.kmfamily-auth-brand__tagline {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--kmfamily-text-muted);
+    margin: 0 0 40px;
+    border-left: 3px solid var(--kmfamily-brand);
+    padding-left: 20px;
+    font-style: italic;
+}
+
+.kmfamily-auth-brand__perks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.kmfamily-auth-brand__perks li {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--kmfamily-border);
+}
+
+.kmfamily-auth-brand__perks li:last-child { border-bottom: none; }
+
+.kmfamily-auth-brand__perk-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.kmfamily-auth-brand__perks strong {
+    display: block;
+    color: var(--kmfamily-text);
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.kmfamily-auth-brand__perks span {
+    display: block;
+    color: var(--kmfamily-text-muted);
+    font-size: 13px;
+}
+
+/* Main side (forms) */
+.kmfamily-auth-main {
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.kmfamily-auth-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--kmfamily-border);
+}
+
+.kmfamily-auth-tab {
+    flex: 1;
+    padding: 16px 20px;
+    background: transparent;
+    border: none;
+    color: var(--kmfamily-text-muted);
+    font-family: var(--kmfamily-font);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s;
+}
+
+.kmfamily-auth-tab:hover { color: var(--kmfamily-text); }
+
+.kmfamily-auth-tab.is-active {
+    color: var(--kmfamily-brand);
+}
+
+.kmfamily-auth-tab.is-active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+    border-radius: 3px 3px 0 0;
+}
+
+.kmfamily-auth-form {
+    display: none;
+    animation: kmfamily-fade-up 0.5s ease-out;
+}
+
+.kmfamily-auth-form.is-active { display: block; }
+
+@keyframes kmfamily-fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.kmfamily-auth-form__title {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-auth-form__subtitle {
+    color: var(--kmfamily-text-muted);
+    margin: 0 0 32px;
+    font-size: 15px;
+}
+
+.kmfamily-auth-form__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.kmfamily-auth-form__footer {
+    text-align: center;
+    margin: 24px 0 0;
+    color: var(--kmfamily-text-muted);
+    font-size: 14px;
+}
+
+.kmfamily-auth-link {
+    background: none;
+    border: none;
+    color: var(--kmfamily-brand);
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: text-decoration-color 0.2s;
+}
+
+.kmfamily-auth-link:hover {
+    text-decoration-color: var(--kmfamily-brand);
+}
+
+/* Form fields */
+.kmfamily-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.kmfamily-form-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--kmfamily-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.kmfamily-form-field__input {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--kmfamily-bg-card);
+    border: 2px solid var(--kmfamily-border);
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+
+.kmfamily-form-field__input:focus-within {
+    border-color: var(--kmfamily-brand);
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+}
+
+.kmfamily-form-field__icon {
+    padding-left: 16px;
+    font-size: 18px;
+    color: var(--kmfamily-text-muted);
+    flex-shrink: 0;
+}
+
+.kmfamily-form-field__input input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 16px;
+    color: var(--kmfamily-text);
+    font-size: 16px;
+    font-family: inherit;
+    width: 100%;
+    outline: none;
+}
+
+.kmfamily-form-field__input input::placeholder {
+    color: var(--kmfamily-text-dim);
+}
+
+.kmfamily-form-field__toggle {
+    background: none;
+    border: none;
+    padding: 0 16px;
+    cursor: pointer;
+    color: var(--kmfamily-text-muted);
+    font-size: 18px;
+    height: 100%;
+}
+
+.kmfamily-form-field__toggle:hover { color: var(--kmfamily-brand); }
+
+.kmfamily-form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.kmfamily-form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--kmfamily-text-muted);
+    font-size: 14px;
+    user-select: none;
+}
+
+.kmfamily-form-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--kmfamily-brand);
+    cursor: pointer;
+}
+
+.kmfamily-form-message {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    display: none;
+}
+
+.kmfamily-form-message.is-error {
+    background: rgba(220, 53, 69, 0.15);
+    color: #ff6b7a;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    display: block;
+}
+
+.kmfamily-form-message.is-success {
+    background: rgba(40, 167, 69, 0.15);
+    color: #6bde8e;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    display: block;
+}
+
+/* Password strength */
+.kmfamily-password-strength {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.kmfamily-password-strength__bar {
+    flex: 1;
+    height: 4px;
+    background: var(--kmfamily-bg-hover);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.kmfamily-password-strength__bar::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    height: 100%;
+    width: 0;
+    background: #ff6b7a;
+    transition: all 0.3s;
+    border-radius: 4px;
+}
+
+.kmfamily-password-strength[data-strength="weak"] .kmfamily-password-strength__bar::after {
+    width: 25%; background: #ff6b7a;
+}
+.kmfamily-password-strength[data-strength="fair"] .kmfamily-password-strength__bar::after {
+    width: 50%; background: #ffc845;
+}
+.kmfamily-password-strength[data-strength="good"] .kmfamily-password-strength__bar::after {
+    width: 75%; background: #6bde8e;
+}
+.kmfamily-password-strength[data-strength="strong"] .kmfamily-password-strength__bar::after {
+    width: 100%; background: var(--kmfamily-brand);
+}
+
+.kmfamily-password-strength__label {
+    font-size: 12px;
+    color: var(--kmfamily-text-muted);
+    min-width: 90px;
+    text-align: right;
+}
+
+/* Responsive auth */
+@media (max-width: 900px) {
+    .kmfamily-auth-container { grid-template-columns: 1fr; }
+    .kmfamily-auth-brand { display: none; }
+    .kmfamily-auth-main {
+        min-height: 100vh;
+        padding: 40px 24px;
+    }
+    .kmfamily-auth-form__title { font-size: 26px; }
+}
+
+@media (max-width: 480px) {
+    .kmfamily-auth-main { padding: 30px 20px; }
+    .kmfamily-auth-form__title { font-size: 22px; }
+}
+
+/* ============================================================
+   PALIERS ARTISTE / ALL
+============================================================ */
+
+.kmfamily-paliers,
+.kmfamily-paliers-all {
+    background: var(--kmfamily-bg);
+    color: var(--kmfamily-text);
+    padding: 60px 0;
+    font-family: var(--kmfamily-font);
+}
+
+.kmfamily-paliers__header,
+.kmfamily-paliers-all__standard-header,
+.kmfamily-paliers-all__artistes-header {
+    text-align: center;
+    max-width: 820px;
+    margin: 0 auto 50px;
+    padding: 0 20px;
+}
+
+.kmfamily-paliers__eyebrow,
+.kmfamily-paliers-all__eyebrow,
+.kmfamily-archive-header__eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 4px;
+    font-weight: 700;
+    color: var(--kmfamily-brand);
+    margin-bottom: 16px;
+    position: relative;
+    padding: 0 30px;
+}
+
+.kmfamily-paliers__eyebrow::before,
+.kmfamily-paliers__eyebrow::after,
+.kmfamily-paliers-all__eyebrow::before,
+.kmfamily-paliers-all__eyebrow::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 1px;
+    background: var(--kmfamily-brand);
+}
+
+.kmfamily-paliers__eyebrow::before,
+.kmfamily-paliers-all__eyebrow::before { left: 0; }
+
+.kmfamily-paliers__eyebrow::after,
+.kmfamily-paliers-all__eyebrow::after { right: 0; }
+
+/* Titre principal + span dégradé : définis une seule fois plus bas (section PALIERS ARTISTE),
+   voir .kmfamily-paliers__title / .kmfamily-paliers__title span. L'ancienne version ici faisait
+   doublon avec des valeurs différentes (42px vs clamp(), pas de !important) : deux règles
+   concurrentes sur le même sélecteur, source de bugs de spécificité CSS. */
+.kmfamily-paliers-all__artistes-header h2,
+.kmfamily-paliers-all__standard-header h2 {
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin: 0 0 20px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-paliers-all__artistes-header h2 span {
+    background: linear-gradient(135deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-style: italic;
+}
+
+.kmfamily-paliers__social-proof {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--kmfamily-border);
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    color: var(--kmfamily-text-muted);
+    margin-bottom: 24px;
+}
+
+.kmfamily-paliers__social-proof-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #6bde8e;
+    animation: kmfamily-pulse 2s infinite;
+}
+
+@keyframes kmfamily-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(107, 222, 142, 0.6); }
+    50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(107, 222, 142, 0); }
+}
+
+.kmfamily-paliers__message,
+.kmfamily-paliers__emotional {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--kmfamily-text-muted);
+    font-style: italic;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.kmfamily-paliers__message p:last-child,
+.kmfamily-paliers__emotional { margin-bottom: 0; }
+
+.kmfamily-paliers__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.kmfamily-paliers__grid--count-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+@media (max-width: 1200px) {
+    .kmfamily-paliers__grid--count-5 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+    .kmfamily-paliers__grid--count-5 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .kmfamily-paliers__grid--count-5 { grid-template-columns: 1fr; }
+}
+
+/* Palier card */
+.kmfamily-palier-card {
+    position: relative;
+    background: linear-gradient(180deg, var(--kmfamily-bg-alt) 0%, var(--kmfamily-bg-card) 100%);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius);
+    padding: 32px 24px 24px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.kmfamily-palier-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: 0.6;
+}
+
+.kmfamily-palier-card--bronze::before  { background: linear-gradient(90deg, #cd7f32, #8b4513); }
+.kmfamily-palier-card--argent::before  { background: linear-gradient(90deg, #c0c0c0, #808080); }
+.kmfamily-palier-card--or::before      { background: linear-gradient(90deg, #ffd700, #d4af37, #b8941f); }
+.kmfamily-palier-card--platine::before { background: linear-gradient(90deg, #f0f0f0, #b8b8b8); }
+.kmfamily-palier-card--diamant::before { background: linear-gradient(90deg, #b9f2ff, #4facfe, #00f2fe); }
+
+.kmfamily-palier-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--kmfamily-border-strong);
+    box-shadow: var(--kmfamily-shadow-hover);
+}
+
+.kmfamily-palier-card.is-featured {
+    transform: scale(1.05);
+    border-color: var(--kmfamily-brand);
+    box-shadow: var(--kmfamily-shadow-gold);
+}
+
+.kmfamily-palier-card.is-featured:hover { transform: scale(1.05) translateY(-8px); }
+
+.kmfamily-palier-card.is-current {
+    border-color: var(--kmfamily-brand);
+    box-shadow: 0 0 0 2px var(--kmfamily-brand);
+}
+
+.kmfamily-palier-card__number {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--kmfamily-text-dim);
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+}
+
+.kmfamily-palier-card__icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    position: relative;
+}
+
+.kmfamily-palier-card__icon::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    opacity: 0.3;
+}
+
+.kmfamily-palier-card__name {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin: 0 0 6px;
+}
+
+.kmfamily-palier-card__statut {
+    font-size: 13px;
+    color: var(--kmfamily-text-muted);
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
+.kmfamily-palier-card__price {
+    margin: 0 0 24px;
+    padding: 16px 0;
+    border-top: 1px solid var(--kmfamily-border);
+    border-bottom: 1px solid var(--kmfamily-border);
+}
+
+.kmfamily-palier-card__amount {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--kmfamily-text);
+    letter-spacing: -1px;
+}
+
+.kmfamily-palier-card__currency {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--kmfamily-text-muted);
+    margin-left: 4px;
+}
+
+.kmfamily-palier-card__period {
+    display: block;
+    font-size: 12px;
+    color: var(--kmfamily-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+.kmfamily-palier-card__description {
+    font-size: 13px;
+    color: var(--kmfamily-text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.kmfamily-palier-card__benefits {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+    text-align: left;
+    flex: 1;
+}
+
+.kmfamily-palier-card__benefits li {
+    display: flex;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--kmfamily-text-muted);
+    line-height: 1.5;
+}
+
+.kmfamily-palier-card__check {
+    flex-shrink: 0;
+    font-weight: 900;
+}
+
+.kmfamily-palier-card__expiry {
+    margin: 8px 0 0;
+    font-size: 11px;
+    color: var(--kmfamily-text-dim);
+    text-align: center;
+}
+
+.kmfamily-palier-card--showcase .kmfamily-palier-card__action { display: none; }
+
+.kmfamily-paliers__footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+    color: var(--kmfamily-text-muted);
+    font-size: 14px;
+}
+
+.kmfamily-paliers__payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.kmfamily-paliers__payment-logos {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.kmfamily-paliers__payment-logos span {
+    background: var(--kmfamily-bg-alt);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--kmfamily-text-muted);
+}
+
+@media (max-width: 768px) {
+    .kmfamily-paliers__title,
+    .kmfamily-paliers-all__artistes-header h2 { font-size: 28px; }
+
+    .kmfamily-palier-card { padding: 24px 20px; }
+
+    .kmfamily-palier-card.is-featured { transform: none; }
+    .kmfamily-palier-card.is-featured:hover { transform: translateY(-8px); }
+}
+
+/* ============================================================
+   PALIERS ALL HERO
+============================================================ */
+
+.kmfamily-paliers-all__hero {
+    position: relative;
+    min-height: 460px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 24px;
+    overflow: hidden;
+    background: var(--kmfamily-bg);
+}
+
+.kmfamily-paliers-all__hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.2), transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(79, 172, 254, 0.15), transparent 50%),
+        linear-gradient(180deg, #0a0a0a 0%, #141414 100%);
+}
+
+.kmfamily-paliers-all__hero-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.kmfamily-paliers-all__hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+}
+
+.kmfamily-paliers-all__hero-content h1 {
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1.05;
+    margin: 24px 0 20px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-paliers-all__hero-content h1 span {
+    background: linear-gradient(135deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-style: italic;
+}
+
+.kmfamily-paliers-all__hero-tagline {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--kmfamily-text-muted);
+    font-style: italic;
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.kmfamily-paliers-all__standard {
+    padding: 80px 0;
+    background: var(--kmfamily-bg);
+}
+
+.kmfamily-paliers-all__artistes {
+    padding: 80px 0;
+    background: var(--kmfamily-bg-alt);
+}
+
+.kmfamily-artistes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.kmfamily-artiste-card {
+    background: var(--kmfamily-bg-card);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius);
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.kmfamily-artiste-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--kmfamily-brand);
+    box-shadow: var(--kmfamily-shadow-hover);
+}
+
+.kmfamily-artiste-card__img {
+    display: block;
+    aspect-ratio: 1;
+    overflow: hidden;
+}
+
+.kmfamily-artiste-card__body {
+    padding: 20px;
+}
+
+.kmfamily-artiste-card__body h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 0 8px;
+}
+
+.kmfamily-artiste-card__body h3 a {
+    color: var(--kmfamily-text);
+    text-decoration: none;
+}
+
+.kmfamily-artiste-card__stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--kmfamily-text-muted);
+    margin: 0 0 16px;
+}
+
+.kmfamily-artiste-card__dot {
+    width: 6px; height: 6px;
+    background: #6bde8e;
+    border-radius: 50%;
+    animation: kmfamily-pulse 2s infinite;
+}
+
+@media (max-width: 768px) {
+    .kmfamily-paliers-all__hero-content h1 { font-size: 36px; }
+    .kmfamily-paliers-all__hero-tagline { font-size: 14px; }
+}
+
+/* ============================================================
+   ARCHIVE / CARDS CONTENUS
+============================================================ */
+
+.kmfamily-archive-header {
+    background: var(--kmfamily-bg);
+    padding: 80px 0 40px;
+    text-align: center;
+}
+
+.kmfamily-archive-header h1 {
+    font-size: 48px;
+    font-weight: 900;
+    margin: 16px 0 12px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-archive-header__subtitle {
+    color: var(--kmfamily-text-muted);
+    font-size: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.kmfamily-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0 0 40px;
+    padding: 20px 0;
+}
+
+.kmfamily-filter {
+    padding: 12px 20px;
+    background: var(--kmfamily-bg-card);
+    border: 2px solid var(--kmfamily-border);
+    border-radius: 50px;
+    color: var(--kmfamily-text);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.kmfamily-filter:hover,
+.kmfamily-filter:focus {
+    border-color: var(--kmfamily-brand);
+    outline: none;
+}
+
+.kmfamily-exclusive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    margin: 0 0 60px;
+    background: var(--kmfamily-bg);
+}
+
+.kmfamily-exclusive-grid--feed {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.kmfamily-card {
+    background: var(--kmfamily-bg-card);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius);
+    overflow: hidden;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.kmfamily-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--kmfamily-border-strong);
+    box-shadow: var(--kmfamily-shadow-hover);
+}
+
+.kmfamily-card__media {
+    position: relative;
+    display: block;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background: var(--kmfamily-bg-alt);
+}
+
+.kmfamily-card__thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.kmfamily-card:hover .kmfamily-card__thumb {
+    transform: scale(1.05);
+}
+
+.kmfamily-card__thumb--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+}
+
+.kmfamily-card.is-locked .kmfamily-card__thumb {
+    filter: blur(8px) grayscale(60%);
+}
+
+.kmfamily-card__overlay {
+    position: absolute;
+    inset: 0;
+    padding: 12px;
+    pointer-events: none;
+    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%);
+}
+
+.kmfamily-card__type {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.kmfamily-card__duration {
+    position: absolute;
+    bottom: 12px; right: 12px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.kmfamily-card__lock,
+.kmfamily-card__public {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.kmfamily-card__public {
+    background: #4a9c6c;
+    color: #fff;
+}
+
+.kmfamily-card__body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.kmfamily-card__artiste {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--kmfamily-brand);
+    text-decoration: none;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.kmfamily-card__artiste:hover {
+    color: var(--kmfamily-brand-light);
+}
+
+.kmfamily-card__title {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 0 10px;
+    line-height: 1.3;
+}
+
+.kmfamily-card__title a {
+    color: var(--kmfamily-text);
+    text-decoration: none;
+}
+
+.kmfamily-card__title a:hover {
+    color: var(--kmfamily-brand);
+}
+
+.kmfamily-card__excerpt {
+    color: var(--kmfamily-text-muted);
+    font-size: 14px;
+    margin: 0 0 16px;
+    flex: 1;
+    line-height: 1.5;
+}
+
+.kmfamily-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 14px;
+    border-top: 1px solid var(--kmfamily-border);
+}
+
+.kmfamily-card__date {
+    font-size: 12px;
+    color: var(--kmfamily-text-dim);
+}
+
+.kmfamily-card__cta {
+    color: var(--kmfamily-brand);
+    font-weight: 800;
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+.kmfamily-card__cta:hover {
+    color: var(--kmfamily-brand-light);
+}
+
+@media (max-width: 768px) {
+    .kmfamily-archive-header h1 { font-size: 32px; }
+    .kmfamily-archive-header { padding: 50px 0 30px; }
+    .kmfamily-exclusive-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   PAYWALL
+============================================================ */
+
+.kmfamily-paywall {
+    margin: 40px 0;
+}
+
+.kmfamily-teaser {
+    background: var(--kmfamily-bg-alt);
+    border-left: 3px solid var(--kmfamily-brand);
+    padding: 24px 24px 24px 28px;
+    border-radius: 0 var(--kmfamily-radius) var(--kmfamily-radius) 0;
+    margin-bottom: 30px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-teaser__label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--kmfamily-brand);
+    margin-bottom: 12px;
+}
+
+.kmfamily-teaser__dot {
+    width: 8px; height: 8px;
+    background: var(--kmfamily-brand);
+    border-radius: 50%;
+    animation: kmfamily-pulse 2s infinite;
+}
+
+.kmfamily-teaser p { color: var(--kmfamily-text-muted); margin: 0; }
+
+.kmfamily-paywall-box {
+    position: relative;
+    background: linear-gradient(180deg, var(--kmfamily-bg-alt) 0%, var(--kmfamily-bg) 100%);
+    border: 1px solid var(--kmfamily-border-strong);
+    border-radius: var(--kmfamily-radius);
+    overflow: hidden;
+}
+
+.kmfamily-paywall-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--kmfamily-brand-light), var(--kmfamily-brand), var(--kmfamily-brand-dark));
+}
+
+.kmfamily-paywall-box__inner {
+    padding: 50px 40px;
+    text-align: center;
+}
+
+.kmfamily-paywall-box__icon {
+    margin: 0 0 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.kmfamily-paywall-box__icon-bg {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.kmfamily-paywall-box__icon-bg::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    opacity: 0.3;
+    animation: kmfamily-pulse-ring 2s infinite;
+}
+
+@keyframes kmfamily-pulse-ring {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.2); opacity: 0; }
+}
+
+.kmfamily-paywall-box__eyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--kmfamily-text-muted);
+    margin-bottom: 12px;
+}
+
+.kmfamily-paywall-box__title {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--kmfamily-text);
+    margin: 0 0 16px;
+    line-height: 1.2;
+}
+
+.kmfamily-paywall-box__description {
+    font-size: 16px;
+    color: var(--kmfamily-text-muted);
+    max-width: 600px;
+    margin: 0 auto 20px;
+    line-height: 1.6;
+}
+
+.kmfamily-paywall-box__description strong {
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-paywall-box__emotional {
+    background: rgba(212, 175, 55, 0.08);
+    border-left: 3px solid var(--kmfamily-brand);
+    padding: 20px 24px;
+    border-radius: 0 var(--kmfamily-radius-sm) var(--kmfamily-radius-sm) 0;
+    margin: 24px auto 30px;
+    max-width: 640px;
+    font-style: italic;
+    color: var(--kmfamily-text-muted);
+    line-height: 1.7;
+    text-align: left;
+}
+
+.kmfamily-paywall-box__actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.kmfamily-paywall-box__benefits {
+    background: var(--kmfamily-bg-card);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius-sm);
+    padding: 24px;
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.kmfamily-paywall-box__benefits-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--kmfamily-brand);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0 0 12px;
+}
+
+.kmfamily-paywall-box__benefits ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.kmfamily-paywall-box__benefits li {
+    padding: 6px 0 6px 24px;
+    position: relative;
+    color: var(--kmfamily-text-muted);
+    font-size: 14px;
+}
+
+.kmfamily-paywall-box__benefits li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--kmfamily-brand);
+    font-weight: 900;
+}
+
+@media (max-width: 600px) {
+    .kmfamily-paywall-box__inner { padding: 40px 24px; }
+    .kmfamily-paywall-box__title { font-size: 22px; }
+}
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+
+.kmfamily-dashboard {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    background: var(--kmfamily-bg);
+    color: var(--kmfamily-text);
+    min-height: 100vh;
+    font-family: var(--kmfamily-font);
+}
+
+.kmfamily-dashboard__hero {
+    position: relative;
+    border-radius: var(--kmfamily-radius-lg);
+    overflow: hidden;
+    margin-bottom: 40px;
+    padding: 50px 40px;
+}
+
+.kmfamily-dashboard__hero-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #0a0a0a 0%, #141414 100%);
+    z-index: 0;
+}
+
+.kmfamily-dashboard__hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.kmfamily-dashboard__profile {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.kmfamily-dashboard__avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.kmfamily-dashboard__avatar img {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    border: 3px solid var(--kmfamily-brand);
+}
+
+.kmfamily-dashboard__avatar-badge {
+    position: absolute;
+    bottom: -4px; right: -4px;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    border: 3px solid var(--kmfamily-bg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.kmfamily-dashboard__greeting {
+    display: block;
+    font-size: 14px;
+    color: var(--kmfamily-text-muted);
+    margin-bottom: 4px;
+}
+
+.kmfamily-dashboard__profile-info h1 {
+    font-size: 32px;
+    font-weight: 900;
+    margin: 0 0 12px;
+}
+
+.kmfamily-dashboard__user-badge,
+.kmfamily-dashboard__user-no-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.kmfamily-dashboard__user-no-badge {
+    background: var(--kmfamily-bg-card);
+    color: var(--kmfamily-text-muted);
+    border: 1px solid var(--kmfamily-border);
+}
+
+.kmfamily-dashboard__hero-subtitle {
+    font-size: 16px;
+    color: var(--kmfamily-text-muted);
+    margin: 0;
+}
+
+/* Tabs */
+.kmfamily-dashboard__tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--kmfamily-bg-alt);
+    border-radius: 50px;
+    padding: 6px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.kmfamily-dashboard__tab {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-radius: 50px;
+    color: var(--kmfamily-text-muted);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.kmfamily-dashboard__tab:hover { color: var(--kmfamily-text); }
+
+.kmfamily-dashboard__tab.is-active {
+    background: linear-gradient(135deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+    color: #0a0a0a;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.kmfamily-dashboard__tab-content { display: none; animation: kmfamily-fade-up 0.3s ease-out; }
+.kmfamily-dashboard__tab-content.is-active { display: block; }
+
+.kmfamily-dashboard__section-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 24px;
+    color: var(--kmfamily-text);
+}
+
+/* Sub cards */
+.kmfamily-dashboard__subs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.kmfamily-sub-card {
+    background: var(--kmfamily-bg-card);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius);
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.kmfamily-sub-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--kmfamily-border-strong);
+    box-shadow: var(--kmfamily-shadow);
+}
+
+.kmfamily-sub-card__header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    color: #0a0a0a;
+}
+
+.kmfamily-sub-card__avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.kmfamily-sub-card__header-info { flex: 1; }
+
+.kmfamily-sub-card__artist-name {
+    display: block;
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 2px;
+}
+
+.kmfamily-sub-card__palier-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0.8;
+    letter-spacing: 1px;
+}
+
+.kmfamily-sub-card__body {
+    padding: 20px 24px;
+}
+
+.kmfamily-sub-card__statut {
+    font-style: italic;
+    color: var(--kmfamily-text-muted);
+    margin: 0 0 16px;
+    font-size: 14px;
+}
+
+.kmfamily-sub-card__meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.kmfamily-sub-card__meta-item {
+    padding: 12px;
+    background: var(--kmfamily-bg-alt);
+    border-radius: var(--kmfamily-radius-sm);
+}
+
+.kmfamily-sub-card__meta-label {
+    display: block;
+    font-size: 11px;
+    color: var(--kmfamily-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.kmfamily-sub-card__meta-item strong {
+    font-size: 15px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-sub-card__warning {
+    background: rgba(255, 200, 69, 0.15);
+    border: 1px solid rgba(255, 200, 69, 0.3);
+    color: #ffc845;
+    padding: 10px 14px;
+    border-radius: var(--kmfamily-radius-sm);
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.kmfamily-sub-card__actions {
+    display: flex;
+    gap: 8px;
+}
+
+.kmfamily-sub-card__actions .kmfamily-btn {
+    flex: 1;
+}
+
+/* Account section */
+.kmfamily-dashboard__account-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.kmfamily-dashboard__card {
+    background: var(--kmfamily-bg-card);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius);
+    padding: 28px;
+}
+
+.kmfamily-dashboard__card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 20px;
+    color: var(--kmfamily-text);
+    letter-spacing: 0.5px;
+}
+
+.kmfamily-dashboard__account-info {
+    margin: 0 0 20px;
+}
+
+.kmfamily-dashboard__account-info > div {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--kmfamily-border);
+}
+
+.kmfamily-dashboard__account-info > div:last-child { border-bottom: none; }
+
+.kmfamily-dashboard__account-info dt {
+    color: var(--kmfamily-text-muted);
+    font-size: 13px;
+}
+
+.kmfamily-dashboard__account-info dd {
+    color: var(--kmfamily-text);
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+    text-align: right;
+}
+
+.kmfamily-dashboard__password-form .kmfamily-form-field label {
+    font-size: 12px;
+}
+
+.kmfamily-dashboard__logout {
+    text-align: center;
+    padding: 32px 0;
+}
+
+/* History table */
+.kmfamily-dashboard__history-wrap {
+    background: var(--kmfamily-bg-card);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius);
+    overflow: auto;
+}
+
+.kmfamily-dashboard__history {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.kmfamily-dashboard__history th,
+.kmfamily-dashboard__history td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--kmfamily-border);
+    font-size: 14px;
+}
+
+.kmfamily-dashboard__history th {
+    background: var(--kmfamily-bg-alt);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--kmfamily-text-muted);
+}
+
+.kmfamily-dashboard__history tr:last-child td { border-bottom: none; }
+
+/* Empty state */
+.kmfamily-empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: var(--kmfamily-bg-alt);
+    border-radius: var(--kmfamily-radius);
+    border: 1px dashed var(--kmfamily-border);
+}
+
+.kmfamily-empty-state__icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.kmfamily-empty-state h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 12px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-empty-state p {
+    color: var(--kmfamily-text-muted);
+    max-width: 500px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+}
+
+.kmfamily-empty-state--small {
+    padding: 40px 20px;
+}
+
+@media (max-width: 768px) {
+    .kmfamily-dashboard__hero { padding: 30px 24px; }
+    .kmfamily-dashboard__profile-info h1 { font-size: 24px; }
+    .kmfamily-dashboard__avatar img { width: 72px; height: 72px; }
+    .kmfamily-dashboard__tabs { padding: 4px; }
+    .kmfamily-dashboard__tab { padding: 10px 14px; font-size: 12px; }
+}
+
+/* ============================================================
+   SINGLE CONTENU
+============================================================ */
+
+.kmfamily-single {
+    padding: 60px 24px;
+    max-width: 900px;
+    color: var(--kmfamily-text);
+    font-family: var(--kmfamily-font);
+}
+
+.kmfamily-single__header { margin-bottom: 30px; }
+
+.kmfamily-single__artiste {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--kmfamily-text-muted);
+    margin-bottom: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.kmfamily-single__artiste:hover { color: var(--kmfamily-brand); }
+
+.kmfamily-single__artiste-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--kmfamily-brand);
+}
+
+.kmfamily-single__title {
+    font-size: 40px;
+    font-weight: 900;
+    margin: 0 0 16px;
+    line-height: 1.1;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-single__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    color: var(--kmfamily-text-muted);
+    font-size: 13px;
+}
+
+.kmfamily-single__thumbnail {
+    margin: 30px 0;
+    border-radius: var(--kmfamily-radius);
+    overflow: hidden;
+    aspect-ratio: 16/9;
+}
+
+.kmfamily-single__thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(12px) grayscale(80%);
+}
+
+.kmfamily-single__media {
+    margin: 30px 0;
+    border-radius: var(--kmfamily-radius);
+    overflow: hidden;
+    background: #000;
+}
+
+.kmfamily-video-player,
+.kmfamily-audio-player {
+    width: 100%;
+    display: block;
+}
+
+.kmfamily-video-embed {
+    position: relative;
+    aspect-ratio: 16/9;
+}
+
+.kmfamily-video-embed iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.kmfamily-single__protected-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--kmfamily-text-dim);
+    margin: 8px 0 0;
+    font-style: italic;
+}
+
+.kmfamily-single__content {
+    line-height: 1.8;
+    color: var(--kmfamily-text-muted);
+    font-size: 16px;
+}
+
+.kmfamily-single__content p { margin: 0 0 20px; }
+
+@media (max-width: 768px) {
+    .kmfamily-single__title { font-size: 28px; }
+}
+
+/* ============================================================
+   PAYMENT STATUS
+============================================================ */
+
+.kmfamily-payment-status {
+    text-align: center;
+    padding: 80px 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-payment-status h2 {
+    margin: 24px 0 12px;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.kmfamily-payment-status p {
+    color: var(--kmfamily-text-muted);
+    line-height: 1.6;
+}
+
+.kmfamily-payment-status__emotional {
+    font-style: italic;
+    background: rgba(212, 175, 55, 0.08);
+    border-left: 3px solid var(--kmfamily-brand);
+    padding: 20px;
+    margin: 24px auto;
+    border-radius: 0 var(--kmfamily-radius-sm) var(--kmfamily-radius-sm) 0;
+    max-width: 520px;
+    text-align: left;
+}
+
+.kmfamily-spinner {
+    width: 64px;
+    height: 64px;
+    border: 4px solid var(--kmfamily-border);
+    border-top-color: var(--kmfamily-brand);
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    animation: kmfamily-spin 0.8s linear infinite;
+}
+
+.kmfamily-success-icon {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6bde8e, #4ab865);
+    color: #0a0a0a;
+    font-size: 44px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    animation: kmfamily-pop 0.5s ease-out;
+    box-shadow: 0 12px 40px rgba(107, 222, 142, 0.3);
+}
+
+@keyframes kmfamily-pop {
+    0% { transform: scale(0) rotate(-180deg); }
+    50% { transform: scale(1.1) rotate(0); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+.kmfamily-transaction-id {
+    color: var(--kmfamily-text-dim);
+    font-size: 13px;
+    margin-top: 24px;
+}
+
+.kmfamily-transaction-id code {
+    background: var(--kmfamily-bg-card);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--kmfamily-brand);
+}
+
+/* ============================================================
+   NOTICES
+============================================================ */
+
+.kmfamily-notice {
+    background: var(--kmfamily-bg-alt);
+    border-left: 3px solid var(--kmfamily-brand);
+    padding: 20px 24px;
+    border-radius: 0 var(--kmfamily-radius-sm) var(--kmfamily-radius-sm) 0;
+    margin: 24px 0;
+    color: var(--kmfamily-text-muted);
+}
+
+.kmfamily-emotional-message {
+    background: rgba(212, 175, 55, 0.08);
+    border-left: 3px solid var(--kmfamily-brand);
+    padding: 24px 28px;
+    border-radius: 0 var(--kmfamily-radius) var(--kmfamily-radius) 0;
+    margin: 24px 0;
+    font-style: italic;
+    color: var(--kmfamily-text);
+    line-height: 1.7;
+}
+
+/* ============================================================
+   PAGINATION
+============================================================ */
+
+.kmfamily-pagination {
+    text-align: center;
+    margin: 40px 0;
+}
+
+.kmfamily-pagination .page-numbers {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 42px;
+    padding: 0 12px;
+    margin: 0 3px;
+    background: var(--kmfamily-bg-card);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: 50%;
+    text-decoration: none;
+    color: var(--kmfamily-text);
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.kmfamily-pagination .page-numbers.current,
+.kmfamily-pagination .page-numbers:hover {
+    background: linear-gradient(135deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+    color: #0a0a0a;
+    border-color: var(--kmfamily-brand);
+    transform: translateY(-2px);
+}
+
+/* ============================================================
+   RESPONSIVE FINAL TUNING
+============================================================ */
+
+@media (max-width: 480px) {
+    .kmfamily-btn {
+        padding: 12px 20px;
+        font-size: 12px;
+    }
+    .kmfamily-btn--lg {
+        padding: 16px 28px;
+        font-size: 13px;
+    }
+    .kmfamily-paywall-box__actions {
+        flex-direction: column;
+    }
+    .kmfamily-paywall-box__actions .kmfamily-btn {
+        width: 100%;
+    }
+}
+
+
+/* ============================================================
+   v2.1 — WRAP PAGE PLEINE LARGEUR
+============================================================ */
+
+.kmfamily-page-wrap {
+    background: var(--kmfamily-bg);
+    color: var(--kmfamily-text);
+    font-family: var(--kmfamily-font);
+    min-height: 80vh;
+    padding: 0 0 60px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.kmfamily-page-wrap > * {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.kmfamily-page-wrap > .kmfamily-dashboard,
+.kmfamily-page-wrap > .kmfamily-profile-page {
+    max-width: 100%;
+    padding: 0;
+}
+
+.kmfamily-page-wrap .kmfamily-dashboard__hero,
+.kmfamily-page-wrap .kmfamily-profile__hero,
+.kmfamily-page-wrap .kmfamily-paliers-all__hero {
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+
+.kmfamily-page-wrap .kmfamily-dashboard__hero-content,
+.kmfamily-page-wrap .kmfamily-profile__hero-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.kmfamily-page-wrap .kmfamily-dashboard__tabs,
+.kmfamily-page-wrap .kmfamily-dashboard__tab-content,
+.kmfamily-page-wrap .kmfamily-profile__grid,
+.kmfamily-page-wrap .kmfamily-dashboard__logout {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 24px;
+    padding-right: 24px;
+    box-sizing: border-box;
+}
+
+.kmfamily-page-wrap .kmfamily-dashboard__tabs {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.kmfamily-page-wrap .kmfamily-auth-page,
+.kmfamily-page-wrap > .kmfamily-auth-container {
+    max-width: 100%;
+    margin: 0;
+}
+
+/* ============================================================
+   v2.1 — DASHBOARD STATS
+============================================================ */
+
+.kmfamily-dashboard__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--kmfamily-radius);
+    border: 1px solid var(--kmfamily-border);
+}
+
+.kmfamily-dashboard__stat {
+    text-align: center;
+    padding: 12px;
+}
+
+.kmfamily-dashboard__stat-value {
+    display: block;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--kmfamily-brand);
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.kmfamily-dashboard__stat-label {
+    display: block;
+    font-size: 12px;
+    color: var(--kmfamily-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.kmfamily-dashboard__edit-profile {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--kmfamily-border);
+    padding: 10px 18px;
+    border-radius: 50px;
+    color: var(--kmfamily-text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+    margin-left: auto;
+    align-self: flex-start;
+}
+
+.kmfamily-dashboard__edit-profile:hover {
+    background: var(--kmfamily-brand);
+    color: #0a0a0a;
+    border-color: var(--kmfamily-brand);
+    transform: translateY(-2px);
+}
+
+.kmfamily-dashboard__section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kmfamily-dashboard__section-intro {
+    color: var(--kmfamily-text-muted);
+    margin: 0 0 24px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ============================================================
+   v2.1 — PALIER SWITCHER (changement de palier par artiste)
+============================================================ */
+
+.kmfamily-sub-card__change-palier {
+    margin: 16px 0;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--kmfamily-radius-sm);
+    border: 1px solid var(--kmfamily-border);
+}
+
+.kmfamily-sub-card__change-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--kmfamily-text-muted);
+    margin-bottom: 12px;
+}
+
+.kmfamily-palier-switcher {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.kmfamily-palier-switcher__btn {
+    position: relative;
+    flex: 1 1 calc(20% - 6px);
+    min-width: 80px;
+    background: var(--kmfamily-bg-alt);
+    border: 2px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius-sm);
+    padding: 10px 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--kmfamily-text);
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.kmfamily-palier-switcher__btn:hover:not(:disabled) {
+    border-color: var(--kmfamily-brand);
+    transform: translateY(-2px);
+}
+
+.kmfamily-palier-switcher__btn:disabled {
+    cursor: default;
+    opacity: 1;
+}
+
+.kmfamily-palier-switcher__btn.is-current {
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.kmfamily-palier-switcher__icon {
+    font-size: 20px;
+}
+
+.kmfamily-palier-switcher__name {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.kmfamily-palier-switcher__badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--kmfamily-brand);
+    color: #0a0a0a;
+    font-size: 8px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+}
+
+.kmfamily-palier-switcher__badge--upgrade {
+    background: #6bde8e;
+    font-size: 12px;
+    padding: 2px 5px;
+}
+
+/* ============================================================
+   v2.1 — DISCOVER GRID (Soutenir d'autres artistes)
+============================================================ */
+
+.kmfamily-discover-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.kmfamily-discover-card {
+    background: var(--kmfamily-bg-card);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius);
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.kmfamily-discover-card.is-member {
+    border-color: var(--kmfamily-brand);
+    box-shadow: 0 0 0 1px var(--kmfamily-brand);
+}
+
+.kmfamily-discover-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--kmfamily-brand);
+    box-shadow: var(--kmfamily-shadow-hover);
+}
+
+.kmfamily-discover-card__img {
+    display: block;
+    aspect-ratio: 1;
+    overflow: hidden;
+}
+
+.kmfamily-discover-card__img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.kmfamily-discover-card:hover .kmfamily-discover-card__img img {
+    transform: scale(1.05);
+}
+
+.kmfamily-discover-card__body {
+    padding: 18px;
+}
+
+.kmfamily-discover-card__body h3 {
+    font-size: 17px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-discover-card__fans {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--kmfamily-text-muted);
+    margin: 0 0 14px;
+}
+
+.kmfamily-discover-card__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6bde8e;
+    animation: kmfamily-pulse 2s infinite;
+}
+
+.kmfamily-discover-card__member-status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+/* ============================================================
+   v2.1 — PROFILE PAGE
+============================================================ */
+
+.kmfamily-profile-page {
+    padding: 0 !important;
+    padding-bottom: 60px !important;
+}
+
+.kmfamily-profile__hero {
+    position: relative;
+    padding: 60px 40px;
+    margin-bottom: 40px;
+    overflow: hidden;
+    border-radius: 0;
+    max-width: 100% !important;
+}
+
+.kmfamily-profile__hero-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #0a0a0a 0%, #141414 100%);
+    z-index: 0;
+}
+
+.kmfamily-profile__hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.kmfamily-profile__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--kmfamily-text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    transition: color 0.2s;
+}
+
+.kmfamily-profile__back:hover {
+    color: var(--kmfamily-brand);
+}
+
+.kmfamily-profile__hero-content h1 {
+    font-size: 42px;
+    font-weight: 900;
+    margin: 0 0 10px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-profile__hero-content p {
+    color: var(--kmfamily-text-muted);
+    font-size: 16px;
+    margin: 0;
+}
+
+.kmfamily-profile__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+@media (min-width: 900px) {
+    .kmfamily-profile__grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .kmfamily-profile__card--info {
+        grid-column: 1 / -1;
+    }
+}
+
+.kmfamily-profile__card {
+    background: var(--kmfamily-bg-card);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius);
+    padding: 32px;
+}
+
+.kmfamily-profile__card-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0 0 24px;
+    color: var(--kmfamily-text);
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--kmfamily-border);
+}
+
+.kmfamily-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.kmfamily-form-field--full {
+    grid-column: 1 / -1;
+}
+
+.kmfamily-form-field textarea {
+    width: 100%;
+    background: var(--kmfamily-bg-alt);
+    border: 2px solid var(--kmfamily-border);
+    border-radius: 12px;
+    padding: 16px;
+    color: var(--kmfamily-text);
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.kmfamily-form-field textarea:focus {
+    border-color: var(--kmfamily-brand);
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+}
+
+/* Avatar uploader */
+.kmfamily-avatar-uploader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+@media (min-width: 640px) {
+    .kmfamily-avatar-uploader {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+}
+
+.kmfamily-avatar-uploader__preview {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--kmfamily-bg-alt);
+    border: 3px solid var(--kmfamily-brand);
+    flex-shrink: 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.kmfamily-avatar-uploader__preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.kmfamily-avatar-uploader__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--kmfamily-text-muted);
+}
+
+.kmfamily-avatar-uploader__placeholder-icon {
+    font-size: 64px;
+}
+
+.kmfamily-avatar-uploader__placeholder-text {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.kmfamily-avatar-uploader__badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    border: 3px solid var(--kmfamily-bg-card);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.kmfamily-avatar-uploader__actions {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.kmfamily-avatar-uploader__actions .kmfamily-btn {
+    justify-content: center;
+}
+
+.kmfamily-avatar-uploader__hint {
+    font-size: 12px;
+    color: var(--kmfamily-text-muted);
+    line-height: 1.6;
+    margin: 8px 0 0;
+}
+
+.kmfamily-avatar-uploader__preview.is-uploading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kmfamily-avatar-uploader__preview.is-uploading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--kmfamily-brand);
+    border-radius: 50%;
+    animation: kmfamily-spin 0.8s linear infinite;
+    z-index: 1;
+}
+
+/* ============================================================
+   v2.1 — RESPONSIVE FINAL
+============================================================ */
+
+@media (max-width: 768px) {
+    .kmfamily-profile__hero { padding: 40px 20px; }
+    .kmfamily-profile__hero-content h1 { font-size: 28px; }
+    .kmfamily-profile__card { padding: 20px; }
+    .kmfamily-profile__grid { padding: 0 16px; }
+
+    .kmfamily-palier-switcher__btn {
+        flex: 1 1 calc(33% - 6px);
+    }
+
+    .kmfamily-dashboard__edit-profile {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .kmfamily-sub-card__meta {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .kmfamily-palier-switcher__btn {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 0;
+    }
+
+    .kmfamily-avatar-uploader__preview {
+        width: 128px;
+        height: 128px;
+    }
+}
+
+
+/* ============================================================
+   v2.1.1 — PALIER LIBRE (Cœur Généreux)
+============================================================ */
+
+/* Carte palier LIBRE — design distinctif */
+.kmfamily-palier-card--libre {
+    background: linear-gradient(180deg, rgba(240, 147, 251, 0.08) 0%, rgba(245, 87, 108, 0.04) 100%);
+    border-color: rgba(233, 30, 99, 0.3);
+}
+
+.kmfamily-palier-card--libre::before {
+    background: linear-gradient(90deg, #f093fb, #f5576c) !important;
+}
+
+.kmfamily-palier-card--libre:hover {
+    border-color: #f5576c;
+    box-shadow: 0 12px 40px rgba(245, 87, 108, 0.2);
+}
+
+/* Prix spécial "LIBRE" */
+.kmfamily-palier-card__amount--libre {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 24px;
+    letter-spacing: 2px;
+    animation: kmfamily-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes kmfamily-shimmer {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
+}
+
+/* Formulaire contribution libre */
+.kmfamily-libre-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.kmfamily-libre-form label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--kmfamily-text-muted);
+    text-align: center;
+}
+
+.kmfamily-libre-form__input {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--kmfamily-bg-card);
+    border: 2px solid rgba(245, 87, 108, 0.3);
+    border-radius: 12px;
+    padding: 0 16px;
+    transition: all 0.2s;
+}
+
+.kmfamily-libre-form__input:focus-within {
+    border-color: #f5576c;
+    box-shadow: 0 0 0 4px rgba(245, 87, 108, 0.15);
+}
+
+.kmfamily-libre-form__input input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 0;
+    color: var(--kmfamily-text);
+    font-size: 18px;
+    font-weight: 800;
+    font-family: inherit;
+    outline: none;
+    text-align: right;
+    -moz-appearance: textfield;
+}
+
+.kmfamily-libre-form__input input::-webkit-outer-spin-button,
+.kmfamily-libre-form__input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.kmfamily-libre-form__input span {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--kmfamily-text-muted);
+    margin-left: 8px;
+    letter-spacing: 1px;
+}
+
+.kmfamily-libre-form__suggestions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+
+.kmfamily-libre-suggest {
+    background: var(--kmfamily-bg-card);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: 50px;
+    padding: 8px 4px;
+    color: var(--kmfamily-text-muted);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.kmfamily-libre-suggest:hover,
+.kmfamily-libre-suggest.is-active {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    border-color: transparent;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* Bouton libre distinct */
+.kmfamily-btn--libre {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 20px rgba(245, 87, 108, 0.4) !important;
+}
+
+.kmfamily-btn--libre:hover {
+    box-shadow: 0 8px 30px rgba(245, 87, 108, 0.6) !important;
+}
+
+/* Ajustement showcase */
+.kmfamily-palier-card--showcase .kmfamily-palier-card__amount--libre {
+    font-size: 20px;
+}
+
+
+/* ============================================================
+   v2.1.4 — MESSAGE ÉMOTIONNEL RICHE
+============================================================ */
+
+.kmfamily-emotional-message--rich,
+.kmfamily-paliers-all__hero-message {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: left;
+    color: var(--kmfamily-text-muted);
+    line-height: 1.7;
+    font-size: 15px;
+}
+
+.kmfamily-emotional-message--rich p,
+.kmfamily-paliers-all__hero-message p {
+    margin: 0 0 16px;
+}
+
+.kmfamily-emotional-message--rich p strong,
+.kmfamily-paliers-all__hero-message p strong {
+    color: var(--kmfamily-brand);
+    font-weight: 700;
+}
+
+.kmfamily-emotional-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px 18px;
+}
+
+.kmfamily-emotional-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(212, 175, 55, 0.06);
+    border-left: 2px solid var(--kmfamily-brand);
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-emotional-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.kmfamily-emotional-cta {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.03));
+    border-left: 3px solid var(--kmfamily-brand);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 24px 0 !important;
+    font-size: 16px !important;
+    line-height: 1.5;
+}
+
+.kmfamily-emotional-cta strong {
+    color: var(--kmfamily-brand) !important;
+}
+
+.kmfamily-emotional-signature {
+    text-align: center;
+    font-size: 17px !important;
+    font-weight: 700;
+    color: var(--kmfamily-text) !important;
+    letter-spacing: 0.3px;
+    padding-top: 16px;
+    border-top: 1px solid var(--kmfamily-border);
+    margin-top: 24px !important;
+}
+
+@media (max-width: 600px) {
+    .kmfamily-emotional-list {
+        grid-template-columns: 1fr;
+    }
+    .kmfamily-emotional-message--rich,
+    .kmfamily-paliers-all__hero-message {
+        font-size: 14px;
+    }
+}
+
+/* h1 du dashboard : transition douce sur la couleur */
+.kmfamily-dashboard__profile-info h1 {
+    transition: color 0.3s;
+}
+
+
+/* ============================================================
+   v2.1.5 — H1 Nom de l'abonné : blanc, capitales, bold (override Astra)
+============================================================ */
+
+.kmfamily-dashboard__username,
+.kmfamily-page-wrap .kmfamily-dashboard__username,
+body .kmfamily-dashboard__profile-info h1.kmfamily-dashboard__username {
+    color: #ffffff !important;
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    margin: 0 0 12px !important;
+    font-size: 32px !important;
+    line-height: 1.1 !important;
+}
+
+@media (max-width: 768px) {
+    .kmfamily-dashboard__username {
+        font-size: 24px !important;
+    }
+}
+
+
+/* ============================================================
+   v2.1.5 — SÉLECTEUR DE PÉRIODICITÉ
+============================================================ */
+
+.kmfamily-period-selector {
+    max-width: 900px;
+    margin: 0 auto 40px;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--kmfamily-border);
+    border-radius: var(--kmfamily-radius);
+    text-align: center;
+}
+
+.kmfamily-period-selector__label {
+    display: block;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--kmfamily-text-muted);
+    margin-bottom: 14px;
+}
+
+.kmfamily-period-selector__tabs {
+    display: inline-flex;
+    gap: 4px;
+    padding: 6px;
+    background: var(--kmfamily-bg-alt);
+    border-radius: 50px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.kmfamily-period-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: transparent;
+    border: none;
+    border-radius: 50px;
+    color: var(--kmfamily-text-muted);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s;
+    white-space: nowrap;
+}
+
+.kmfamily-period-tab:hover {
+    color: var(--kmfamily-text);
+}
+
+.kmfamily-period-tab.is-active {
+    background: linear-gradient(135deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+    color: #0a0a0a;
+    box-shadow: 0 4px 14px rgba(212, 175, 55, 0.4);
+}
+
+.kmfamily-period-tab__icon {
+    font-size: 16px;
+}
+
+.kmfamily-period-tab__badge {
+    background: #6bde8e;
+    color: #0a0a0a;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 2px 7px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+}
+
+.kmfamily-period-tab.is-active .kmfamily-period-tab__badge {
+    background: rgba(10, 10, 10, 0.85);
+    color: #6bde8e;
+}
+
+/* Bloc info périodicité dans la carte palier */
+.kmfamily-palier-card__period-info {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--kmfamily-border);
+}
+
+.kmfamily-palier-card__total-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.kmfamily-palier-card__total-label {
+    font-size: 11px;
+    color: var(--kmfamily-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.kmfamily-palier-card__total-currency {
+    font-size: 12px;
+    color: var(--kmfamily-text-muted);
+    font-weight: 700;
+}
+
+.kmfamily-palier-card__savings {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(107, 222, 142, 0.12);
+    border: 1px solid rgba(107, 222, 142, 0.25);
+    border-radius: 20px;
+    color: #6bde8e;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.kmfamily-palier-card__savings-amount {
+    font-weight: 900;
+}
+
+@media (max-width: 600px) {
+    .kmfamily-period-tab {
+        padding: 10px 14px;
+        font-size: 11px;
+    }
+    .kmfamily-period-tab__icon { display: none; }
+}
+
+
+/* ============================================================
+   v2.1.8 — SÉLECTEUR PÉRIODICITÉ sur page "Rejoindre KM Family"
+============================================================ */
+
+.kmfamily-period-selector--showcase {
+    max-width: 1100px;
+    margin: 0 auto 50px;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.02) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.kmfamily-period-selector__hint {
+    margin: 14px 0 0;
+    font-size: 12px;
+    color: var(--kmfamily-text-muted);
+    font-style: italic;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Animation du prix lors du changement de période */
+.kmfamily-palier-card__amount {
+    transition: color 0.25s, transform 0.25s;
+}
+
+.kmfamily-palier-card__amount.is-updating {
+    transform: scale(1.08);
+    color: var(--kmfamily-brand);
+}
+
+/* Petit flash vert quand le bloc économies apparaît */
+.kmfamily-palier-card__savings {
+    animation: kmfamily-savings-pop 0.5s ease-out;
+}
+
+@keyframes kmfamily-savings-pop {
+    0%   { opacity: 0; transform: translateY(-6px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Showcase : la carte Libre ne doit pas afficher le bloc "period-info" */
+.kmfamily-palier-card--libre .kmfamily-palier-card__period-info { display: none !important; }
+
+/* Responsive : l'ensemble reste lisible en mobile */
+@media (max-width: 600px) {
+    .kmfamily-period-selector--showcase {
+        padding: 18px 14px;
+    }
+    .kmfamily-period-selector--showcase .kmfamily-period-tab__badge {
+        font-size: 9px;
+        padding: 2px 6px;
+    }
+}
+
+
+/* ============================================================
+   v2.1.9 — REFONTE DESIGN "Rejoindre KM Family"
+============================================================ */
+
+/* Hero amélioré */
+.kmfamily-paliers-all__hero {
+    position: relative;
+    padding: 100px 24px 80px;
+    text-align: center;
+    background: radial-gradient(ellipse at top, rgba(212, 175, 55, 0.15) 0%, transparent 60%), #0a0a0a;
+    overflow: hidden;
+}
+
+.kmfamily-paliers-all__hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(233, 30, 99, 0.05) 0%, transparent 50%);
+    z-index: 0;
+}
+
+.kmfamily-paliers-all__hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.kmfamily-paliers-all__hero h1 {
+    font-size: clamp(32px, 5vw, 56px) !important;
+    font-weight: 900 !important;
+    line-height: 1.1 !important;
+    color: #fff !important;
+    margin: 16px 0 32px !important;
+    letter-spacing: -0.5px;
+}
+
+.kmfamily-paliers-all__hero h1 span {
+    background: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-style: italic;
+}
+
+.kmfamily-paliers-all__eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: var(--kmfamily-brand);
+    text-transform: uppercase;
+    padding: 8px 20px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 50px;
+    background: rgba(212, 175, 55, 0.05);
+}
+
+/* Section standard avec paliers */
+.kmfamily-paliers-all__standard {
+    padding: 80px 24px;
+    background: linear-gradient(180deg, #0a0a0a 0%, #000 100%);
+    position: relative;
+}
+
+.kmfamily-paliers-all__standard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--kmfamily-brand), transparent);
+}
+
+.kmfamily-paliers-all__standard-header {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 50px;
+}
+
+.kmfamily-paliers-all__standard-header h2 {
+    font-size: clamp(28px, 4vw, 44px) !important;
+    font-weight: 900 !important;
+    color: #fff !important;
+    margin: 20px 0 16px !important;
+    line-height: 1.15 !important;
+}
+
+.kmfamily-paliers-all__standard-header p {
+    color: var(--kmfamily-text-muted);
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* CTA sur chaque carte palier */
+.kmfamily-palier-card__cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: all 0.25s;
+    cursor: pointer;
+}
+
+.kmfamily-palier-card__cta:hover {
+    background: rgba(212, 175, 55, 0.12);
+    border-color: var(--kmfamily-brand);
+    color: var(--kmfamily-brand);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+.kmfamily-palier-card__cta-arrow {
+    transition: transform 0.25s;
+}
+
+.kmfamily-palier-card__cta:hover .kmfamily-palier-card__cta-arrow {
+    transform: translateX(4px);
+}
+
+/* Carte Or : CTA doré mis en avant */
+.kmfamily-palier-card--or .kmfamily-palier-card__cta {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(212, 175, 55, 0.08));
+    border-color: rgba(212, 175, 55, 0.4);
+    color: var(--kmfamily-brand);
+}
+
+.kmfamily-palier-card--or .kmfamily-palier-card__cta:hover {
+    background: linear-gradient(135deg, #ffd700, #d4af37);
+    color: #0a0a0a;
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+}
+
+/* Carte Libre : CTA rose */
+.kmfamily-palier-card--libre .kmfamily-palier-card__cta {
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.12), rgba(245, 87, 108, 0.08));
+    border-color: rgba(245, 87, 108, 0.4);
+    color: #f5576c;
+}
+
+.kmfamily-palier-card--libre .kmfamily-palier-card__cta:hover {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(245, 87, 108, 0.4);
+}
+
+/* Rendre toute la carte cliquable visuellement */
+.kmfamily-palier-card--showcase {
+    cursor: default;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kmfamily-palier-card--showcase:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.kmfamily-palier-card--showcase:hover::before {
+    opacity: 1;
+}
+
+.kmfamily-palier-card--or.kmfamily-palier-card--showcase:hover {
+    box-shadow: 0 20px 60px rgba(212, 175, 55, 0.3);
+}
+
+.kmfamily-palier-card--libre.kmfamily-palier-card--showcase:hover {
+    box-shadow: 0 20px 60px rgba(245, 87, 108, 0.25);
+}
+
+/* Section artistes améliorée */
+.kmfamily-paliers-all__artistes {
+    padding: 80px 24px;
+    background: linear-gradient(180deg, #000 0%, #0a0a0a 100%);
+    scroll-margin-top: 80px;
+}
+
+.kmfamily-paliers-all__artistes-header {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 50px;
+}
+
+.kmfamily-paliers-all__artistes-header h2 {
+    font-size: clamp(28px, 4vw, 44px) !important;
+    font-weight: 900 !important;
+    color: #fff !important;
+    margin: 20px 0 16px !important;
+}
+
+.kmfamily-paliers-all__artistes-subtitle {
+    color: var(--kmfamily-text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.kmfamily-artistes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.kmfamily-artiste-card {
+    background: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.kmfamily-artiste-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 16px;
+    padding: 1px;
+    background: linear-gradient(135deg, transparent 40%, rgba(212, 175, 55, 0.3) 50%, transparent 60%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.kmfamily-artiste-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(212, 175, 55, 0.3);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.kmfamily-artiste-card:hover::before {
+    opacity: 1;
+}
+
+.kmfamily-artiste-card__img {
+    display: block;
+    aspect-ratio: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.kmfamily-artiste-card__img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.kmfamily-artiste-card:hover .kmfamily-artiste-card__img img {
+    transform: scale(1.05);
+}
+
+.kmfamily-artiste-card__img::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+.kmfamily-artiste-card__body {
+    padding: 24px;
+}
+
+.kmfamily-artiste-card__body h3 {
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    margin: 0 0 12px !important;
+    color: #fff !important;
+}
+
+.kmfamily-artiste-card__body h3 a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.kmfamily-artiste-card__body h3 a:hover {
+    color: var(--kmfamily-brand);
+}
+
+.kmfamily-artiste-card__stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px !important;
+    font-size: 13px;
+    color: var(--kmfamily-text-muted);
+}
+
+.kmfamily-artiste-card__dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #6bde8e;
+    box-shadow: 0 0 8px rgba(107, 222, 142, 0.6);
+    animation: kmfamily-pulse-green 2s ease-in-out infinite;
+}
+
+@keyframes kmfamily-pulse-green {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .kmfamily-paliers-all__hero,
+    .kmfamily-paliers-all__standard,
+    .kmfamily-paliers-all__artistes {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    .kmfamily-paliers-all__hero { padding-top: 60px; padding-bottom: 50px; }
+    .kmfamily-paliers-all__standard { padding-top: 50px; padding-bottom: 50px; }
+    .kmfamily-paliers-all__artistes { padding-top: 50px; padding-bottom: 50px; }
+}
+
+
+/* Pré-sélection et pulsing */
+.kmfamily-paliers-all__artistes.is-pulsing {
+    animation: kmfamily-section-pulse 1.5s ease-out;
+}
+
+@keyframes kmfamily-section-pulse {
+    0%   { background-color: rgba(212, 175, 55, 0.1); }
+    100% { background-color: transparent; }
+}
+
+.kmfamily-palier-card.is-preselected {
+    animation: kmfamily-card-highlight 3s ease-out;
+    position: relative;
+    z-index: 5;
+}
+
+@keyframes kmfamily-card-highlight {
+    0%, 100% { transform: scale(1); box-shadow: 0 12px 40px rgba(212, 175, 55, 0.3); }
+    20%      { transform: scale(1.05); box-shadow: 0 20px 60px rgba(212, 175, 55, 0.5); }
+    50%      { transform: scale(1.02); box-shadow: 0 16px 50px rgba(212, 175, 55, 0.4); }
+}
+
+
+/* v2.1.10 — Override retiré en 2.3.3 : le CTA palier → artiste est de nouveau utilisé
+   (voir templates/paliers-all.php et le handler JS "CTA paliers → artistes"), pour permettre
+   le parcours dans les deux sens : artiste d'abord, ou palier d'abord. */
+
+
+/* ============================================================
+   v2.1.11 — REFONTE PREMIUM paliers-artiste (style Hostinger)
+============================================================ */
+
+/* Section globale */
+.kmfamily-paliers {
+    padding: 80px 24px 100px;
+    background: linear-gradient(180deg, #0a0a0a 0%, #000 50%, #0a0a0a 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.kmfamily-paliers::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Header */
+.kmfamily-paliers__header {
+    max-width: 900px;
+    margin: 0 auto 50px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.kmfamily-paliers__eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: var(--kmfamily-brand);
+    text-transform: uppercase;
+    padding: 8px 20px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 50px;
+    background: rgba(212, 175, 55, 0.05);
+    margin-bottom: 24px;
+}
+
+.kmfamily-paliers__title {
+    font-size: clamp(32px, 5vw, 56px) !important;
+    font-weight: 900 !important;
+    color: #fff !important;
+    line-height: 1.1 !important;
+    margin: 0 0 24px !important;
+    /* BUGFIX : letter-spacing négatif + span en background-clip:text juste après un espace
+       écrasait visuellement cet espace ("deMonsieur Kophi" au lieu de "de Monsieur Kophi").
+       Un titre de ce type n'a pas besoin d'un resserrement des caractères. */
+}
+
+.kmfamily-paliers__title span {
+    background: linear-gradient(135deg, #ffd700 0%, #d4af37 50%, #b8941f 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-style: italic;
+}
+
+.kmfamily-paliers__social-proof {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 18px;
+    background: rgba(107, 222, 142, 0.1);
+    border: 1px solid rgba(107, 222, 142, 0.25);
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6bde8e;
+    margin-bottom: 24px;
+}
+
+.kmfamily-paliers__social-proof-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #6bde8e;
+    box-shadow: 0 0 10px rgba(107, 222, 142, 0.8);
+    animation: kmfamily-pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes kmfamily-pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.3); opacity: 0.7; }
+}
+
+.kmfamily-paliers__emotional,
+.kmfamily-paliers__message {
+    max-width: 700px;
+    margin: 0 auto;
+    color: var(--kmfamily-text-muted);
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+/* === SÉLECTEUR PÉRIODICITÉ style Hostinger (large, centré, pilulaire) === */
+.kmfamily-period-selector {
+    max-width: 640px;
+    margin: 0 auto 60px;
+    padding: 28px 32px;
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.8) 0%, rgba(10, 10, 10, 0.9) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 20px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.kmfamily-period-selector__label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--kmfamily-text-muted);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+.kmfamily-period-selector__tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 16px;
+    position: relative;
+}
+
+.kmfamily-period-tab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 14px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    color: var(--kmfamily-text-muted);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.kmfamily-period-tab:hover:not(.is-active) {
+    color: var(--kmfamily-text);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.kmfamily-period-tab.is-active {
+    background: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
+    color: #0a0a0a;
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.5);
+    transform: translateY(-1px);
+}
+
+.kmfamily-period-tab__icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.kmfamily-period-tab__label {
+    font-size: 12px;
+    letter-spacing: 0.3px;
+}
+
+.kmfamily-period-tab__badge {
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    background: #6bde8e;
+    color: #0a0a0a;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 3px 7px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(107, 222, 142, 0.4);
+    border: 2px solid #0a0a0a;
+}
+
+.kmfamily-period-tab.is-active .kmfamily-period-tab__badge {
+    background: #0a0a0a;
+    color: #6bde8e;
+    border-color: #d4af37;
+}
+
+.kmfamily-period-selector__hint {
+    margin: 16px 0 0;
+    font-size: 12px;
+    color: var(--kmfamily-text-muted);
+    font-style: italic;
+}
+
+/* === PALIER CARDS refonte premium style Hostinger === */
+.kmfamily-paliers__grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.kmfamily-palier-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 32px 24px;
+    background: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.kmfamily-palier-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent 20%, var(--accent-color, rgba(255, 255, 255, 0.1)) 50%, transparent 80%);
+    opacity: 0.6;
+    transition: opacity 0.3s;
+}
+
+.kmfamily-palier-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+
+.kmfamily-palier-card:hover::before {
+    opacity: 1;
+}
+
+.kmfamily-palier-card--bronze   { --accent-color: #cd7f32; }
+.kmfamily-palier-card--argent   { --accent-color: #c0c0c0; }
+.kmfamily-palier-card--or       { --accent-color: #d4af37; }
+.kmfamily-palier-card--platine  { --accent-color: #e5e4e2; }
+.kmfamily-palier-card--diamant  { --accent-color: #4facfe; }
+.kmfamily-palier-card--libre    { --accent-color: #f5576c; }
+
+/* Carte Or mise en avant style Hostinger "LE PLUS POPULAIRE" */
+.kmfamily-palier-card.is-featured {
+    border-color: rgba(212, 175, 55, 0.4);
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.08) 0%, rgba(10, 10, 10, 0.95) 40%);
+    box-shadow: 0 10px 40px rgba(212, 175, 55, 0.15);
+    transform: scale(1.03);
+}
+
+.kmfamily-palier-card.is-featured:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 25px 60px rgba(212, 175, 55, 0.3);
+}
+
+.kmfamily-palier-card__ribbon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 12px;
+    background: linear-gradient(90deg, #ffd700 0%, #d4af37 100%);
+    color: #0a0a0a;
+    font-size: 11px;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 20px 20px 0 0;
+    z-index: 2;
+}
+
+.kmfamily-palier-card.is-featured {
+    padding-top: 52px;
+}
+
+/* Numéro palier (top-left style discret) */
+.kmfamily-palier-card__number {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--kmfamily-text-muted);
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+/* Icon médaille centrée */
+.kmfamily-palier-card__icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 40px;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.kmfamily-palier-card.is-featured .kmfamily-palier-card__icon {
+    width: 90px;
+    height: 90px;
+    font-size: 44px;
+}
+
+/* Nom du palier */
+.kmfamily-palier-card__name {
+    font-size: 26px !important;
+    font-weight: 900 !important;
+    text-align: center;
+    margin: 0 0 6px !important;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.kmfamily-palier-card__statut {
+    text-align: center;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--kmfamily-text-muted);
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Prix */
+.kmfamily-palier-card__price {
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.kmfamily-palier-card__amount {
+    font-size: 42px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    display: inline-block;
+    letter-spacing: -1px;
+}
+
+.kmfamily-palier-card__currency {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--kmfamily-text-muted);
+    margin-left: 4px;
+}
+
+.kmfamily-palier-card__period {
+    display: block;
+    font-size: 12px;
+    color: var(--kmfamily-text-muted);
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+/* Bloc infos total et économies */
+.kmfamily-palier-card__period-info {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.kmfamily-palier-card__total-row {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.kmfamily-palier-card__total-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--kmfamily-text-muted);
+    font-weight: 700;
+}
+
+.kmfamily-palier-card__total-amount {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--kmfamily-brand);
+}
+
+.kmfamily-palier-card__total-currency {
+    font-size: 11px;
+    color: var(--kmfamily-text-muted);
+    font-weight: 700;
+}
+
+.kmfamily-palier-card__savings {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(107, 222, 142, 0.12);
+    border: 1px solid rgba(107, 222, 142, 0.3);
+    border-radius: 20px;
+    color: #6bde8e;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Description */
+.kmfamily-palier-card__description {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--kmfamily-text-muted);
+    text-align: center;
+    margin-bottom: 20px;
+    min-height: 60px;
+}
+
+/* Liste avantages */
+.kmfamily-palier-card__benefits {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+    flex: 1;
+}
+
+.kmfamily-palier-card__benefits li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--kmfamily-text);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.kmfamily-palier-card__benefits li:last-child { border-bottom: none; }
+
+.kmfamily-palier-card__check {
+    flex-shrink: 0;
+    font-weight: 900;
+    font-size: 14px;
+    margin-top: 1px;
+}
+
+/* Bouton action */
+.kmfamily-palier-card__action {
+    margin-top: auto;
+}
+
+.kmfamily-palier-card__action .kmfamily-btn {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 12px;
+}
+
+/* Bouton "populaire" Or : style primary Hostinger-like */
+.kmfamily-palier-card.is-featured .kmfamily-btn-primary {
+    background: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
+    border: none;
+    color: #0a0a0a;
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+.kmfamily-palier-card.is-featured .kmfamily-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.6);
+}
+
+/* Badge ACTUEL */
+.kmfamily-palier-card__current-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #6bde8e;
+    color: #0a0a0a;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    z-index: 2;
+}
+
+/* Expire */
+.kmfamily-palier-card__expiry {
+    font-size: 11px;
+    color: var(--kmfamily-text-muted);
+    text-align: center;
+    margin: 8px 0 0;
+}
+
+/* Grid responsive */
+.kmfamily-paliers__grid--count-6 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 1400px) {
+    .kmfamily-paliers__grid--count-6 { grid-template-columns: repeat(3, 1fr); }
+    .kmfamily-palier-card.is-featured { transform: scale(1); }
+    .kmfamily-palier-card.is-featured:hover { transform: translateY(-8px); }
+}
+
+@media (max-width: 900px) {
+    .kmfamily-paliers__grid--count-6 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .kmfamily-paliers { padding: 50px 16px 70px; }
+    .kmfamily-paliers__grid--count-6 { grid-template-columns: 1fr; gap: 16px; }
+    .kmfamily-period-selector { padding: 20px 16px; margin-bottom: 40px; }
+    .kmfamily-period-selector__tabs { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    .kmfamily-period-tab { padding: 12px 6px; font-size: 11px; }
+    .kmfamily-period-tab__icon { font-size: 16px; }
+    .kmfamily-palier-card { padding: 24px 18px; }
+    .kmfamily-palier-card__amount { font-size: 36px; }
+}
+
+/* ============ HOME BANNER (page d'accueil, [kmfamily_home_banner]) ============ */
+.kmfamily-home-banner {
+    position: relative;
+    overflow: hidden;
+    padding: 90px 24px;
+    text-align: center;
+    background: radial-gradient(ellipse at 50% -20%, rgba(212, 175, 55, 0.12) 0%, transparent 60%),
+                linear-gradient(180deg, #050505 0%, #000 100%);
+    /* Full-bleed universel : contrairement aux autres sections du plugin, celle-ci est destinée
+       à être posée sur des pages hors périmètre KM Family (page d'accueil...), qui n'ont donc
+       pas le CSS "pleine largeur" injecté par is_kmfamily_page(). On casse la largeur du
+       conteneur du thème sans dépendre de son nom de classe. */
+    width: 100vw;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}
+
+.kmfamily-home-banner__glow {
+    position: absolute;
+    top: -120px; left: 50%; transform: translateX(-50%);
+    width: 520px; height: 320px;
+    background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.10) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.kmfamily-home-banner__inner {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.kmfamily-home-banner__eyebrow {
+    display: inline-block;
+    padding: 6px 18px;
+    border: 1px solid var(--kmfamily-border-strong);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--kmfamily-brand-light);
+    margin-bottom: 24px;
+}
+
+.kmfamily-home-banner__title {
+    font-size: clamp(28px, 4.5vw, 48px);
+    font-weight: 900;
+    line-height: 1.15;
+    color: var(--kmfamily-text);
+    margin: 0 0 18px;
+}
+
+.kmfamily-home-banner__title span {
+    background: linear-gradient(135deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-style: italic;
+}
+
+.kmfamily-home-banner__text {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--kmfamily-text-muted);
+    margin: 0 0 36px;
+}
+
+.kmfamily-home-banner__avatars {
+    display: flex !important;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.kmfamily-home-banner__avatar {
+    display: flex !important;
+    align-items: center; justify-content: center;
+    width: 56px !important; height: 56px !important;
+    min-width: 56px; max-width: 56px;
+    flex-shrink: 0;
+    border-radius: 50% !important;
+    border: 2px solid var(--kmfamily-bg);
+    box-shadow: 0 0 0 1px var(--kmfamily-border-strong);
+    margin-left: -14px;
+    overflow: hidden !important;
+    background: var(--kmfamily-bg-card);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.kmfamily-home-banner__avatar:first-child { margin-left: 0; }
+
+.kmfamily-home-banner__avatar:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 0 2px var(--kmfamily-brand);
+    z-index: 2;
+}
+
+.kmfamily-home-banner__avatar img {
+    width: 100% !important; height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    display: block;
+    border-radius: 50%;
+}
+
+.kmfamily-home-banner__avatar-fallback {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+    font-weight: 800;
+    color: var(--kmfamily-brand-light);
+    font-size: 18px;
+}
+
+.kmfamily-home-banner__avatar--more {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--kmfamily-text-muted);
+    background: var(--kmfamily-bg-hover);
+}
+
+.kmfamily-home-banner__stat {
+    font-size: 14px;
+    color: var(--kmfamily-text-muted);
+    margin: 0 0 32px;
+}
+
+.kmfamily-home-banner__stat strong {
+    color: var(--kmfamily-brand-light);
+    font-size: 17px;
+}
+
+.kmfamily-home-banner__cta {
+    display: inline-block;
+    padding: 16px 44px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+    color: #17171a;
+    font-weight: 800;
+    font-size: 16px;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.25);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.kmfamily-home-banner__cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(212, 175, 55, 0.35);
+    color: #17171a;
+}
+
+.kmfamily-home-banner__cta:focus-visible {
+    outline: 2px solid var(--kmfamily-brand-light);
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    .kmfamily-home-banner { padding: 60px 20px; }
+    .kmfamily-home-banner__avatar {
+        width: 44px !important; height: 44px !important;
+        min-width: 44px; max-width: 44px;
+    }
+    .kmfamily-home-banner__cta { width: 100%; padding: 16px 24px; }
+}
+
+/* ============================================================
+   v3.3.0 — Retour après connexion + liens directs de soutien
+============================================================ */
+
+/* Encart "Vous allez soutenir {artiste}" sur la page de connexion */
+.kmfamily-auth-support {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding: 14px 16px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: var(--kmfamily-radius);
+}
+.kmfamily-auth-support__img {
+    flex: 0 0 56px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--kmfamily-bg-card);
+    border: 2px solid var(--kmfamily-brand);
+}
+.kmfamily-auth-support__img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.kmfamily-auth-support__img--icon { font-size: 26px; }
+.kmfamily-auth-support__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kmfamily-auth-support__text small {
+    color: var(--kmfamily-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.kmfamily-auth-support__text strong {
+    color: var(--kmfamily-brand);
+    font-size: 18px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+.kmfamily-auth-support__text em {
+    color: var(--kmfamily-text-muted);
+    font-style: normal;
+    font-size: 13px;
+}
+
+/* Bandeau "Connectez-vous ou créez un compte" au-dessus des paliers (visiteur déconnecté) */
+.kmfamily-paliers__auth-hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 14px 24px;
+    max-width: 900px;
+    margin: 0 auto 32px;
+    padding: 16px 22px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: var(--kmfamily-radius);
+    color: var(--kmfamily-text);
+    text-align: center;
+}
+.kmfamily-paliers__auth-hint p { margin: 0; font-size: 15px; line-height: 1.5; }
+.kmfamily-paliers__auth-hint strong { color: var(--kmfamily-brand); }
+.kmfamily-paliers__auth-hint-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+@media (max-width: 480px) {
+    .kmfamily-auth-support { padding: 12px; gap: 12px; }
+    .kmfamily-auth-support__img { flex-basis: 46px; width: 46px; height: 46px; }
+    .kmfamily-auth-support__text strong { font-size: 16px; }
+}
+
+/* ============================================================
+ * PHOTO DE COUVERTURE — PAGE DE SOUTIEN D'UN ARTISTE (v3.3.1)
+ * ------------------------------------------------------------
+ * Bandeau affiché en tête de la page de soutien (lien direct /soutenir/{slug}/),
+ * construit à partir de l'image à la une de l'artiste — la même photo de profil
+ * que partout ailleurs dans l'extension.
+ *
+ * Deux usages de la même image :
+ *   .__bg       = fond large, flouté et agrandi (le flou masque une photo de
+ *                 faible définition et évite un fond trop chargé derrière le texte)
+ *   .__portrait = portrait rond net au premier plan
+ *
+ * Le voile dégradé garantit un contraste suffisant pour du texte blanc quelle que
+ * soit la photo — photo claire, sombre ou très contrastée — sans avoir à retoucher
+ * les images côté médiathèque.
+ * ============================================================ */
+
+.kmfamily-artiste-cover {
+    position: relative;
+    overflow: hidden;
+    padding: 72px 24px 56px;
+    margin: 0 0 50px;
+    text-align: center;
+    background: var(--kmfamily-bg-alt);
+    isolation: isolate;
+    /* Le conteneur de page KM Family applique un retrait latéral : des angles droits y
+       feraient lire le bandeau comme un débordement raté. Les angles arrondis reprennent
+       le rayon des cartes de paliers juste en dessous et rendent le retrait volontaire. */
+    border-radius: var(--kmfamily-radius-lg);
+}
+
+.kmfamily-artiste-cover__bg {
+    position: absolute;
+    /* Débordement volontaire : le flou ronge les bords, l'agrandissement évite
+       une bande transparente sur le pourtour du bandeau. */
+    inset: -40px;
+    background-size: cover;
+    background-position: center 30%;
+    background-repeat: no-repeat;
+    filter: blur(18px) saturate(1.2) brightness(0.95);
+    transform: scale(1.12);
+    z-index: -2;
+}
+
+.kmfamily-artiste-cover__veil {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.20) 0%, transparent 62%),
+        linear-gradient(180deg, rgba(10, 10, 10, 0.55) 0%, rgba(10, 10, 10, 0.70) 45%, rgba(10, 10, 10, 0.92) 100%);
+    z-index: -1;
+}
+
+.kmfamily-artiste-cover__content {
+    position: relative;
+    max-width: 820px;
+    margin: 0 auto;
+}
+
+/* ---- Portrait rond ---- */
+
+.kmfamily-artiste-cover__portrait {
+    width: 132px;
+    height: 132px;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    padding: 4px;
+    background: linear-gradient(135deg, var(--kmfamily-brand-light) 0%, var(--kmfamily-brand) 50%, var(--kmfamily-brand-dark) 100%);
+    box-shadow: var(--kmfamily-shadow-gold), 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+.kmfamily-artiste-cover__portrait img,
+.kmfamily-artiste-cover__portrait-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    /* Un liseré sombre sépare le portrait de son anneau doré quand la photo est claire. */
+    border: 3px solid var(--kmfamily-bg);
+    background: var(--kmfamily-bg-card);
+}
+
+/* ---- Textes ---- */
+
+.kmfamily-artiste-cover__eyebrow {
+    margin-bottom: 14px;
+}
+
+.kmfamily-artiste-cover__title {
+    margin: 0 0 18px;
+    /* La photo passe derrière : une ombre portée garde le titre lisible même sur
+       une zone claire de l'image. */
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.75);
+}
+
+.kmfamily-artiste-cover .kmfamily-paliers__social-proof {
+    margin-bottom: 0;
+}
+
+/* Le bandeau porte déjà l'identité de l'artiste : l'en-tête qui suit se limite
+   au message d'accroche, sans répéter le titre ni l'effectif. */
+.kmfamily-paliers--has-cover .kmfamily-paliers__header {
+    margin-top: 0;
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 768px) {
+    .kmfamily-artiste-cover { padding: 52px 20px 44px; margin-bottom: 36px; border-radius: var(--kmfamily-radius); }
+    .kmfamily-artiste-cover__portrait { width: 104px; height: 104px; margin-bottom: 18px; }
+    .kmfamily-artiste-cover__bg { filter: blur(14px) saturate(1.2) brightness(0.95); }
+}
+
+@media (max-width: 480px) {
+    .kmfamily-artiste-cover { padding: 40px 16px 36px; }
+    .kmfamily-artiste-cover__portrait { width: 88px; height: 88px; }
+}
+
+/* Respect du réglage système « réduire les animations / effets ». */
+@media (prefers-reduced-motion: reduce) {
+    .kmfamily-artiste-cover__bg { transform: none; }
+}
+
+/* ============================================================
+ * MOBILE — PAGE DE CONNEXION / INSCRIPTION (v3.3.4)
+ * ------------------------------------------------------------
+ * Refonte de l'affichage sur téléphone. Ces règles arrivent en fin de feuille :
+ * à spécificité égale, elles l'emportent sur les blocs responsive plus haut,
+ * sans avoir à les réécrire ni à ajouter de !important.
+ * ============================================================ */
+
+/* Filet anti-débordement : un seul élément trop large fait apparaître une barre
+   de défilement horizontale sur toute la page, et le défilement latéral sur un
+   formulaire donne immédiatement une impression de site cassé. */
+.kmfamily-auth-page {
+    overflow-x: hidden;
+    /* Encoches et barres système des téléphones récents. */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+.kmfamily-auth-page *,
+.kmfamily-auth-page *::before,
+.kmfamily-auth-page *::after { box-sizing: border-box; }
+
+@media (max-width: 900px) {
+
+    .kmfamily-auth-main {
+        padding: 28px 20px calc(40px + env(safe-area-inset-bottom));
+        /* Sur grand écran, le panneau est centré verticalement dans une colonne de
+           100vh — c'est ce qui l'équilibre face au visuel de gauche. Sur téléphone,
+           cette colonne disparaît et le centrage ne fait plus qu'ouvrir un grand vide
+           au-dessus de l'encart artiste, qui se retrouve poussé sous la ligne de
+           flottaison alors que c'est le premier élément à voir. On repart du haut. */
+        justify-content: flex-start;
+        min-height: auto;
+    }
+
+    /* Les halos animés en arrière-plan coûtent cher en GPU sur un téléphone
+       d'entrée de gamme (trois calques de flou 120px animés en continu) : on les
+       fige et on les allège, le dégradé reste, l'animation part. */
+    .kmfamily-auth-bg__orb {
+        animation: none;
+        filter: blur(80px);
+        opacity: 0.28;
+    }
+    .kmfamily-auth-bg__orb--3 { display: none; }
+
+    /* ---- Encart « Vous allez soutenir » ---- */
+
+    .kmfamily-auth-support {
+        gap: 13px;
+        padding: 13px 14px;
+        margin-bottom: 22px;
+        border-radius: 16px;
+        /* Un fond plus dense que la simple teinte dorée : l'encart devient une
+           vraie carte, et non un aplat qui se confond avec la page. */
+        background:
+            linear-gradient(135deg, rgba(212, 175, 55, 0.16) 0%, rgba(212, 175, 55, 0.05) 100%),
+            var(--kmfamily-bg-card);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    }
+
+    .kmfamily-auth-support__img {
+        flex: 0 0 52px;
+        width: 52px;
+        height: 52px;
+        border-width: 2px;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.14);
+    }
+
+    .kmfamily-auth-support__text { gap: 3px; }
+
+    .kmfamily-auth-support__text small { font-size: 10px; letter-spacing: 1.2px; }
+    .kmfamily-auth-support__text strong { font-size: 17px; }
+
+    /* Sur un écran étroit, cette phrase prenait deux lignes et écrasait l'encart
+       pour une information que la page répète juste en dessous. */
+    .kmfamily-auth-support__text em { display: none; }
+
+    /* ---- Onglets : vrai sélecteur segmenté ---- */
+
+    .kmfamily-auth-tabs {
+        gap: 4px;
+        margin-bottom: 26px;
+        padding: 4px;
+        border-bottom: 0;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--kmfamily-border);
+    }
+
+    .kmfamily-auth-tab {
+        padding: 12px 8px;
+        font-size: 13px;
+        letter-spacing: 0.6px;
+        border-radius: 10px;
+        /* Cible tactile confortable : en dessous de 44px, on rate le bouton. */
+        min-height: 44px;
+        transition: background 0.25s, color 0.25s;
+    }
+
+    .kmfamily-auth-tab.is-active {
+        color: #0a0a0a;
+        background: linear-gradient(135deg, var(--kmfamily-brand-light), var(--kmfamily-brand));
+        box-shadow: 0 3px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Le soulignement du sélecteur d'origine n'a plus lieu d'être ici. */
+    .kmfamily-auth-tab.is-active::after { display: none; }
+
+    /* ---- Titres ---- */
+
+    .kmfamily-auth-form__title {
+        font-size: 24px;
+        line-height: 1.25;
+        margin-bottom: 6px;
+    }
+
+    .kmfamily-auth-form__subtitle { font-size: 14px; }
+
+    /* ---- Champs ---- */
+
+    .kmfamily-form-field label {
+        font-size: 11px;
+        letter-spacing: 0.8px;
+    }
+
+    .kmfamily-form-field__input { border-radius: 14px; }
+
+    .kmfamily-form-field__input input {
+        padding: 15px 14px;
+        /* 16px minimum : en dessous, iOS zoome automatiquement à la mise au point
+           et l'utilisateur se retrouve avec une page décalée à recadrer à la main. */
+        font-size: 16px;
+    }
+
+    .kmfamily-form-field__icon { padding-left: 14px; font-size: 16px; }
+
+    .kmfamily-form-field__toggle {
+        min-width: 48px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+    /* ---- Ligne « se souvenir de moi » / « mot de passe oublié » ---- */
+
+    .kmfamily-form-row {
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px 14px;
+    }
+
+    .kmfamily-form-row .kmfamily-auth-link,
+    .kmfamily-form-row a {
+        font-size: 13px;
+        /* Sans cela, le lien touchait le bord droit et sortait de l'écran. */
+        white-space: nowrap;
+    }
+
+    .kmfamily-form-checkbox { font-size: 14px; }
+
+    /* ---- Bouton principal ---- */
+
+    .kmfamily-btn--lg {
+        min-height: 54px;
+        font-size: 15px;
+        letter-spacing: 1.5px;
+        border-radius: 50px;
+    }
+
+    .kmfamily-auth-form__switch { font-size: 14px; margin-top: 22px; }
+}
+
+@media (max-width: 480px) {
+
+    .kmfamily-auth-main { padding: 22px 18px calc(36px + env(safe-area-inset-bottom)); }
+
+    .kmfamily-auth-support { padding: 12px; gap: 12px; }
+    .kmfamily-auth-support__img { flex-basis: 48px; width: 48px; height: 48px; }
+    .kmfamily-auth-support__text strong { font-size: 16px; }
+
+    .kmfamily-auth-form__title { font-size: 21px; }
+    .kmfamily-auth-tab { font-size: 12px; letter-spacing: 0.4px; }
+
+}
+
+/* Écrans très étroits (360px et moins, encore très répandus). */
+@media (max-width: 360px) {
+    .kmfamily-auth-main { padding-left: 14px; padding-right: 14px; }
+
+    /* À cette largeur seulement, « Se souvenir de moi » et « Mot de passe oublié ? »
+       ne tiennent plus sur une ligne sans rogner le lien : on les empile. */
+    .kmfamily-form-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .kmfamily-auth-support__text em { display: none; }
+    .kmfamily-auth-form__title { font-size: 19px; }
+}
+
+/* Retour tactile : sur mobile il n'y a pas de survol, seul l'appui peut confirmer
+   que le geste a été pris en compte. */
+@media (hover: none) {
+    .kmfamily-auth-tab:active,
+    .kmfamily-btn:active { transform: scale(0.985); }
+    .kmfamily-btn { transition: transform 0.12s ease; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .kmfamily-auth-bg__orb { animation: none; }
+    .kmfamily-auth-form { animation: none; }
+    .kmfamily-auth-tab:active,
+    .kmfamily-btn:active { transform: none; }
+}

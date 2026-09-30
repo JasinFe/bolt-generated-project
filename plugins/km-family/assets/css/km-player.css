@@ -1,0 +1,327 @@
+/* ============================================================
+   KM FAMILY — Lecteur audio (préfixe .kmp-)
+   ============================================================ */
+
+:root {
+    --kmp-or: #d4af37;
+    --kmp-vert: #00D67F;
+    --kmp-rouge: #ff5c5c;
+}
+
+/* ── Liste de titres ───────────────────────────────────────── */
+.kmp-playlist { margin: 24px 0; }
+
+.kmp-playlist-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid rgba(255, 255, 255, .09);
+}
+.kmp-playlist-title { margin: 0; font-size: 16px; letter-spacing: .04em; }
+.kmp-playlist-count { font-size: 11.5px; opacity: .55; }
+
+.kmp-list { list-style: none; margin: 0; padding: 0; }
+
+.kmp-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background .14s;
+}
+.kmp-item:hover  { background: rgba(255, 255, 255, .04); }
+.kmp-item:focus-visible { outline: 2px solid var(--kmp-or); outline-offset: 2px; }
+.kmp-item.is-playing { background: rgba(212, 175, 55, .11); }
+.kmp-item.is-playing .kmp-item-title { color: var(--kmp-or); }
+
+.kmp-item--locked { cursor: default; opacity: .5; }
+.kmp-item--locked:hover { background: none; }
+
+.kmp-item-cover {
+    position: relative;
+    flex: 0 0 48px;
+    width: 48px; height: 48px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .07) center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.kmp-item-icon {
+    font-size: 15px;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, .6);
+}
+
+.kmp-item-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.kmp-item-title {
+    font-size: 14.5px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.kmp-item-sub { font-size: 11.5px; opacity: .55; }
+
+.kmp-item-progress {
+    display: block;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, .1);
+    overflow: hidden;
+    margin-top: 3px;
+}
+.kmp-item-progress > span { display: block; height: 100%; background: var(--kmp-or); }
+
+.kmp-item-fav {
+    flex: 0 0 auto;
+    background: none; border: none;
+    color: inherit; opacity: .45;
+    font-size: 17px; cursor: pointer;
+    padding: 6px; line-height: 1;
+    transition: opacity .14s, color .14s;
+}
+.kmp-item-fav:hover { opacity: 1; }
+.kmp-item-fav[aria-pressed="true"] { color: var(--kmp-rouge); opacity: 1; }
+
+.kmp-item-lock {
+    flex: 0 0 auto;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase;
+    border: 1px solid currentColor; border-radius: 20px;
+    padding: 3px 9px; opacity: .7;
+}
+
+.kmp-locked-notice {
+    padding: 18px;
+    border: 1px dashed rgba(255, 255, 255, .18);
+    border-radius: 12px;
+    text-align: center;
+    font-size: 13.5px;
+    opacity: .7;
+}
+
+/* ── Barre de lecture ──────────────────────────────────────── */
+.kmp-bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 99999;
+    background: rgba(13, 15, 19, .97);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255, 255, 255, .1);
+    color: #e9edf3;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transform: translateY(0);
+    transition: transform .25s ease;
+}
+.kmp-bar--hidden { transform: translateY(110%); }
+
+.kmp-bar-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 11px 16px calc(11px + env(safe-area-inset-bottom, 0px));
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(280px, 2fr) minmax(150px, 1fr);
+    align-items: center;
+    gap: 16px;
+}
+
+.kmp-now { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.kmp-cover {
+    flex: 0 0 44px;
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .08) center/cover no-repeat;
+}
+.kmp-meta { min-width: 0; display: flex; flex-direction: column; }
+.kmp-title  { font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kmp-artist { font-size: 11.5px; opacity: .55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.kmp-btn {
+    background: none; border: none;
+    color: inherit; cursor: pointer;
+    font-size: 15px; line-height: 1;
+    padding: 7px; border-radius: 8px;
+    opacity: .72;
+    transition: opacity .14s, background .14s, color .14s;
+}
+.kmp-btn:hover { opacity: 1; background: rgba(255, 255, 255, .07); }
+.kmp-btn:focus-visible { outline: 2px solid var(--kmp-or); outline-offset: 1px; }
+.kmp-btn.is-on { color: var(--kmp-or); opacity: 1; }
+
+.kmp-fav[class*="is-on"] { color: var(--kmp-rouge); }
+
+.kmp-btn--main {
+    background: var(--kmp-or);
+    color: #12131a;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    font-size: 13px;
+    opacity: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.kmp-btn--main:hover { background: #e6c14f; }
+
+.kmp-controls { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.kmp-buttons  { display: flex; align-items: center; gap: 4px; }
+
+.kmp-seek { display: flex; align-items: center; gap: 9px; width: 100%; }
+.kmp-time { font-size: 11px; opacity: .5; font-variant-numeric: tabular-nums; min-width: 38px; }
+.kmp-time:last-child { text-align: right; }
+
+.kmp-range {
+    flex: 1 1 auto;
+    -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 3px;
+    background: rgba(255, 255, 255, .16);
+    cursor: pointer;
+}
+.kmp-range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--kmp-or); border: none; cursor: pointer;
+}
+.kmp-range::-moz-range-thumb {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--kmp-or); border: none; cursor: pointer;
+}
+
+.kmp-extras { display: flex; align-items: center; justify-content: flex-end; gap: 9px; }
+
+.kmp-badge {
+    font-size: 9px; font-weight: 800;
+    letter-spacing: .1em;
+    color: var(--kmp-or);
+    border: 1px solid rgba(212, 175, 55, .45);
+    border-radius: 20px;
+    padding: 3px 8px;
+    white-space: nowrap;
+}
+.kmp-badge--hidden { display: none; }
+
+.kmp-speed {
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 7px;
+    color: inherit; font: inherit; font-size: 11.5px;
+    padding: 4px 6px; cursor: pointer;
+}
+.kmp-speed option { background: #16181d; color: #e9edf3; }
+
+.kmp-volume {
+    -webkit-appearance: none; appearance: none;
+    width: 74px; height: 4px; border-radius: 3px;
+    background: rgba(255, 255, 255, .16);
+    cursor: pointer;
+}
+.kmp-volume::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #e9edf3; border: none;
+}
+.kmp-volume::-moz-range-thumb {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #e9edf3; border: none;
+}
+
+.kmp-status {
+    grid-column: 1 / -1;
+    font-size: 11.5px;
+    opacity: .6;
+    text-align: center;
+    min-height: 0;
+}
+.kmp-status--err { color: var(--kmp-rouge); opacity: 1; }
+.kmp-status:empty { display: none; }
+
+/* ── Mobile ────────────────────────────────────────────────── */
+@media (max-width: 780px) {
+    .kmp-bar-inner {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 9px 12px calc(9px + env(safe-area-inset-bottom, 0px));
+    }
+    .kmp-extras { justify-content: center; }
+    .kmp-volume { display: none; } /* le volume se règle par les touches de l'appareil */
+    .kmp-cover  { flex-basis: 38px; width: 38px; height: 38px; }
+    .kmp-btn    { font-size: 17px; padding: 9px; }
+    .kmp-btn--main { width: 42px; height: 42px; }
+    .kmp-item-cover { flex-basis: 42px; width: 42px; height: 42px; }
+}
+
+/* Les préférences système priment sur nos transitions. */
+@media (prefers-reduced-motion: reduce) {
+    .kmp-bar, .kmp-item, .kmp-btn { transition: none; }
+}
+
+/* ============================================================
+   LECTEUR VIDÉO (LOT 5)
+   ============================================================ */
+
+.kmv-cadre {
+    position: relative;
+    background: #000;
+    border-radius: 13px;
+    overflow: hidden;
+    margin: 22px 0;
+}
+.kmv-cadre video {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #000;
+}
+
+.kmv-barre {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 13px;
+    background: rgba(0, 0, 0, .55);
+}
+.kmv-titre { font-size: 13.5px; font-weight: 600; }
+
+.kmv-qualite {
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 7px;
+    color: #e9edf3; font: inherit; font-size: 11.5px;
+    padding: 4px 7px; cursor: pointer;
+}
+.kmv-qualite option { background: #16181d; color: #e9edf3; }
+
+.kmv-statut {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, .72);
+    color: #e9edf3;
+    font-size: 12.5px;
+    padding: 9px 16px;
+    border-radius: 9px;
+    pointer-events: none;
+}
+.kmv-statut:empty { display: none; }
+.kmv-statut--err { color: #ff5c5c; }
+
+/* Filigrane : lisible mais discret, et jamais cliquable. */
+.kmv-filigrane {
+    position: absolute;
+    top: 8%; left: 6%;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: rgba(255, 255, 255, .38);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .8);
+    pointer-events: none;
+    user-select: none;
+    transition: all 1.4s ease;
+    z-index: 5;
+}
+
+@media (max-width: 640px) {
+    .kmv-filigrane { font-size: 9.5px; }
+}

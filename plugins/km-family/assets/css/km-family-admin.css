@@ -1,0 +1,65 @@
+/**
+ * KM Family — Admin styles
+ */
+
+.kmfamily-admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.kmfamily-stat-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-left: 4px solid #d4af37;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.kmfamily-stat-card__label {
+    font-size: 13px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.kmfamily-stat-card__value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a1a;
+}
+
+.kmfamily-admin-notif {
+    border-left-color: #d4af37 !important;
+}
+
+.kmfamily-admin-notif p {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.kmfamily-urls-block {
+    background: #f7f7f7;
+    border: 1px solid #ddd;
+    padding: 14px;
+    border-radius: 6px;
+    margin: 10px 0;
+}
+
+.kmfamily-urls-block code {
+    background: #fff;
+    padding: 6px 10px;
+    display: inline-block;
+    border-radius: 4px;
+    font-size: 12px;
+    word-break: break-all;
+    border: 1px solid #e0e0e0;
+}
+
+.kmfamily-urls-block + button.kmfamily-copy {
+    cursor: pointer;
+    margin-left: 8px;
+}

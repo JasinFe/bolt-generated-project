@@ -1,0 +1,450 @@
+[
+  {
+    "key": "group_km_rapport_mensuel",
+    "title": "Rapport Mensuel — Streaming",
+    "fields": [
+      {
+        "key": "field_km_artiste_user_id",
+        "label": "Artiste (User ID)",
+        "name": "artiste_user_id",
+        "type": "number",
+        "required": 1
+      },
+      {
+        "key": "field_km_tunecore_artist_name",
+        "label": "Nom TuneCore (auto)",
+        "name": "tunecore_artist_name",
+        "type": "text",
+        "required": 0
+      },
+      {
+        "key": "field_km_periode",
+        "label": "Période (ex: Janvier 2026)",
+        "name": "periode",
+        "type": "text",
+        "required": 1
+      },
+      {
+        "key": "field_km_spotify_streams",
+        "label": "Spotify — Streams",
+        "name": "spotify_streams",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_spotify_gains",
+        "label": "Spotify — Gains (€)",
+        "name": "spotify_gains",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_apple_streams",
+        "label": "Apple Music — Streams",
+        "name": "apple_streams",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_apple_gains",
+        "label": "Apple Music — Gains (€)",
+        "name": "apple_gains",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_youtube_streams",
+        "label": "YouTube — Streams",
+        "name": "youtube_streams",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_youtube_gains",
+        "label": "YouTube — Gains (€)",
+        "name": "youtube_gains",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_deezer_streams",
+        "label": "Deezer — Streams",
+        "name": "deezer_streams",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_deezer_gains",
+        "label": "Deezer — Gains (€)",
+        "name": "deezer_gains",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_tidal_streams",
+        "label": "Tidal — Streams",
+        "name": "tidal_streams",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_tidal_gains",
+        "label": "Tidal — Gains (€)",
+        "name": "tidal_gains",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_total_streams",
+        "label": "Total Streams",
+        "name": "total_streams",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_total_gains_brut",
+        "label": "Total Gains Bruts (€)",
+        "name": "total_gains_brut",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_part_artiste",
+        "label": "Part Artiste (€)",
+        "name": "part_artiste",
+        "type": "number",
+        "default_value": 0
+      },
+      {
+        "key": "field_km_notes_rapport",
+        "label": "Notes",
+        "name": "notes_rapport",
+        "type": "textarea",
+        "rows": 3
+      }
+    ],
+    "location": [
+      [
+        {
+          "param": "post_type",
+          "operator": "==",
+          "value": "rapport_mensuel"
+        }
+      ]
+    ],
+    "position": "normal",
+    "style": "default",
+    "active": true
+  },
+  {
+    "key": "group_km_paiement",
+    "title": "Paiement Artiste",
+    "fields": [
+      {
+        "key": "field_km_pay_artiste_uid",
+        "label": "Artiste (User ID)",
+        "name": "artiste_user_id",
+        "type": "number",
+        "required": 1
+      },
+      {
+        "key": "field_km_pay_date",
+        "label": "Date de paiement",
+        "name": "date_paiement",
+        "type": "date_picker",
+        "display_format": "d/m/Y",
+        "return_format": "d/m/Y"
+      },
+      {
+        "key": "field_km_pay_montant",
+        "label": "Montant (€)",
+        "name": "montant_paiement",
+        "type": "number",
+        "required": 1
+      },
+      {
+        "key": "field_km_pay_methode",
+        "label": "Méthode",
+        "name": "methode_paiement",
+        "type": "select",
+        "choices": {
+          "Virement": "Virement bancaire",
+          "Mobile_Money": "Mobile Money",
+          "Cash": "Cash",
+          "PayPal": "PayPal",
+          "Crypto": "Crypto"
+        },
+        "default_value": "Virement"
+      },
+      {
+        "key": "field_km_pay_statut",
+        "label": "Statut",
+        "name": "statut_paiement",
+        "type": "select",
+        "choices": {
+          "En attente": "En attente",
+          "Payé": "Payé",
+          "Annulé": "Annulé"
+        },
+        "default_value": "En attente"
+      },
+      {
+        "key": "field_km_pay_reference",
+        "label": "Référence / N° virement",
+        "name": "reference_paiement",
+        "type": "text"
+      },
+      {
+        "key": "field_km_pay_pdf",
+        "label": "Relevé PDF",
+        "name": "releve_pdf",
+        "type": "file",
+        "return_format": "array",
+        "mime_types": "pdf"
+      },
+      {
+        "key": "field_km_pay_rapport_lie",
+        "label": "Rapport lié (Post ID)",
+        "name": "rapport_lie",
+        "type": "number"
+      },
+      {
+        "key": "field_km_pay_notes",
+        "label": "Notes internes",
+        "name": "notes_paiement",
+        "type": "textarea",
+        "rows": 2
+      }
+    ],
+    "location": [
+      [
+        {
+          "param": "post_type",
+          "operator": "==",
+          "value": "paiement"
+        }
+      ]
+    ],
+    "position": "normal",
+    "style": "default",
+    "active": true
+  },
+  {
+    "key": "group_km_artiste_profile",
+    "title": "Profil Artiste",
+    "fields": [
+      {
+        "key": "field_km_art_user_id",
+        "label": "Compte WordPress (User ID)",
+        "name": "artiste_user_id",
+        "type": "number",
+        "instructions": "L'ID du compte utilisateur WordPress de l'artiste"
+      },
+      {
+        "key": "field_km_art_tunecore_name",
+        "label": "Nom sur TuneCore",
+        "name": "tunecore_name",
+        "type": "text",
+        "instructions": "Doit correspondre exactement au nom dans les exports TuneCore"
+      },
+      {
+        "key": "field_km_art_genre",
+        "label": "Genre(s) musical(aux)",
+        "name": "genre_musical",
+        "type": "checkbox",
+        "choices": {
+          "Urban Gospel": "Urban Gospel",
+          "Gospel": "Gospel",
+          "Worship": "Worship",
+          "R&B Gospel": "R&B Gospel",
+          "Trap Gospel": "Trap Gospel",
+          "Hip Hop / Rap": "Hip Hop / Rap",
+          "Variété": "Variété",
+          "Afro": "Afro",
+          "Zouglou": "Zouglou",
+          "Autre": "Autre"
+        },
+        "instructions": "Sélectionnez jusqu'à 3 genres. Maintenez Ctrl (ou Cmd sur Mac) pour plusieurs choix.",
+        "layout": "horizontal",
+        "toggle": 0,
+        "return_format": "value"
+      },
+      {
+        "key": "field_km_art_bio",
+        "label": "Biographie courte",
+        "name": "bio_artiste",
+        "type": "textarea",
+        "rows": 4
+      },
+      {
+        "key": "field_km_art_spotify_url",
+        "label": "Profil Spotify",
+        "name": "spotify_url",
+        "type": "url"
+      },
+      {
+        "key": "field_km_art_apple_url",
+        "label": "Profil Apple Music",
+        "name": "apple_url",
+        "type": "url"
+      },
+      {
+        "key": "field_km_art_youtube_url",
+        "label": "Chaîne YouTube",
+        "name": "youtube_url",
+        "type": "url"
+      },
+      {
+        "key": "field_km_art_instagram_url",
+        "label": "Instagram",
+        "name": "instagram_url",
+        "type": "url"
+      },
+      {
+        "key": "field_km_art_commission",
+        "label": "Commission Label (%)",
+        "name": "commission_artiste",
+        "type": "number",
+        "instructions": "Pourcentage retenu par le LABEL pour cet artiste. Ex: 30 = le label prend 30%, l'artiste reçoit 70%. Laissez vide pour utiliser le taux global (Réglages → KM Dashboard).",
+        "min": 0,
+        "max": 100,
+        "placeholder": "Ex: 30",
+        "step": 0.5
+      },
+      {
+        "key": "field_km_art_date_signature",
+        "label": "Date de signature",
+        "name": "date_signature",
+        "type": "date_picker",
+        "display_format": "d/m/Y",
+        "return_format": "d/m/Y"
+      },
+      {
+        "key": "field_km_art_statut",
+        "label": "Statut contrat",
+        "name": "statut_contrat",
+        "type": "select",
+        "choices": {
+          "Actif": "Actif",
+          "En négociation": "En négociation",
+          "Expiré": "Expiré",
+          "Suspendu": "Suspendu"
+        },
+        "default_value": "Actif"
+      }
+    ],
+    "location": [
+      [
+        {
+          "param": "post_type",
+          "operator": "==",
+          "value": "nos-artistes"
+        }
+      ]
+    ],
+    "position": "normal",
+    "style": "default",
+    "active": true
+  },
+  {
+    "key": "group_km_discographie",
+    "title": "Informations Discographie",
+    "fields": [
+      {
+        "key": "field_km_disc_artiste",
+        "label": "Artiste",
+        "name": "disc_artiste",
+        "type": "post_object",
+        "post_type": [
+          "nos-artistes"
+        ],
+        "return_format": "id",
+        "multiple": 0
+      },
+      {
+        "key": "field_km_disc_type",
+        "label": "Type de sortie",
+        "name": "disc_type",
+        "type": "select",
+        "choices": {
+          "Single": "Single",
+          "EP": "EP",
+          "Album": "Album",
+          "Mixtape": "Mixtape",
+          "Collaboration": "Collaboration"
+        }
+      },
+      {
+        "key": "field_km_disc_release_date",
+        "label": "Date de sortie",
+        "name": "disc_release_date",
+        "type": "date_picker",
+        "display_format": "d/m/Y",
+        "return_format": "d/m/Y"
+      },
+      {
+        "key": "field_km_disc_label",
+        "label": "Label / Distribution",
+        "name": "disc_label",
+        "type": "text",
+        "default_value": "KOPHI'S MUSIC"
+      },
+      {
+        "key": "field_km_disc_upc",
+        "label": "UPC / EAN",
+        "name": "disc_upc",
+        "type": "text"
+      },
+      {
+        "key": "field_km_disc_isrc",
+        "label": "ISRC (morceau principal)",
+        "name": "disc_isrc",
+        "type": "text"
+      },
+      {
+        "key": "field_km_disc_spotify_link",
+        "label": "Lien Spotify",
+        "name": "disc_spotify_link",
+        "type": "url"
+      },
+      {
+        "key": "field_km_disc_apple_link",
+        "label": "Lien Apple Music",
+        "name": "disc_apple_link",
+        "type": "url"
+      },
+      {
+        "key": "field_km_disc_youtube_link",
+        "label": "Lien YouTube",
+        "name": "disc_youtube_link",
+        "type": "url"
+      },
+      {
+        "key": "field_km_disc_cover",
+        "label": "Pochette (Image)",
+        "name": "disc_cover",
+        "type": "image",
+        "return_format": "array"
+      },
+      {
+        "key": "field_km_disc_credits",
+        "label": "Crédits / Notes",
+        "name": "disc_credits",
+        "type": "textarea",
+        "rows": 3
+      }
+    ],
+    "location": [
+      [
+        {
+          "param": "post_type",
+          "operator": "==",
+          "value": "discographies"
+        }
+      ]
+    ],
+    "position": "normal",
+    "style": "default",
+    "active": true
+  }
+]
