@@ -1,0 +1,9 @@
+#!/usr/bin/env php
+<?php
+/**
+ * FinaKop Plateforme — console d'exploitation.  « php bin/finakop aide »
+ */
+if ( 'cli' !== PHP_SAPI ) { http_response_code( 404 ); exit; }
+require dirname( __DIR__ ) . '/app/Plateforme/Amorcage.php';
+require dirname( __DIR__ ) . '/app/Plateforme/Console.php';
+exit( (int) FKC_Plateforme_Console::executer( $argv ) );

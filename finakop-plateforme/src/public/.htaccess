@@ -1,0 +1,39 @@
+# FinaKop Plateforme — règles du dossier web des espaces clients (LiteSpeed / Apache).
+# Ce dossier ne contient que index.php, ce fichier et les fichiers statiques _fkc/.
+# Code, configuration et données sont HORS de la racine web.
+
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+AddDefaultCharset UTF-8
+ServerSignature Off
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Fichiers et dossiers cachés : refusés (sauf la validation des certificats SSL).
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
+    # Aucun script PHP autre que le contrôleur frontal.
+    RewriteCond %{REQUEST_URI} !^/index\.php$
+    RewriteRule \.(php[0-9]?|phtml|phar|inc)$ - [F,L]
+
+    # Fichiers statiques existants : servis directement, sans PHP.
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Tout le reste : FinaKop.
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always unset X-Powered-By
+</IfModule>
+
+# Fichiers statiques : cache long (leurs adresses portent la version : ?v=1.876.0).
+<IfModule mod_expires.c>
+    <FilesMatch "\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf)$">
+        ExpiresActive On
+        ExpiresDefault "access plus 30 days"
+    </FilesMatch>
+</IfModule>
