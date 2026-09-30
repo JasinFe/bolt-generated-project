@@ -102,6 +102,28 @@ Limites Cloudflare à connaître :
 - **Envoi de 100 Mo maximum** : sans effet, FinaKop limite à 64 Mo.
 - Les flux `text/event-stream` (afficheur client) passent.
 
+## 5 bis. Sans Cloudflare
+
+**Possible et stable.** Cloudflare ajoute une couche de protection, il ne conditionne pas la stabilité. Celle-ci dépend de l'hébergement : SQLite en mode WAL, débit disque et limite de 30 requêtes simultanées. Ces points sont vérifiés par le diagnostic dans les deux cas.
+
+| | Sans Cloudflare | Avec Cloudflare |
+| --- | --- | --- |
+| Vraie IP des visiteurs | Directe : rien à adapter | À rétablir (adaptation 4) |
+| Durée maximale d'une requête | Limite de l'hébergeur (`max_execution_time`, réglable) | 100 s |
+| Règles de cache à tenir | Aucune | Contourner tout sauf `/_fkc/*` |
+| Protection réseau | Pare-feu et anti-DDoS de base de l'hébergeur | WAF, anti-DDoS avancé, origine masquée |
+| Adaptations du kit | 4 | 5 |
+
+Protections qui restent actives sans Cloudflare :
+- FinaKop : limiteur de tentatives de connexion par IP, jetons CSRF, cookies de session durcis, en-têtes de sécurité, blocage des comptes au mot de passe publié ;
+- `.htaccess` : HTTPS forcé, HSTS, fichiers cachés refusés ;
+- données hors de la racine web ;
+- certificat SSL gratuit de l'hébergeur sur le sous-domaine.
+
+Cloudflare pourra être ajouté plus tard sans modifier le code : le point d'entrée ne rétablit l'IP que pour les requêtes venant des plages officielles de Cloudflare, et ne fait rien sinon.
+
+**PHP 8.4** (disponible sur l'offre) : c'est la version sur laquelle FinaKop 1.875.6 a été testé ici. Choisissez-la pour le site ET vérifiez celle du PHP en SSH, utilisé par les tâches cron : le diagnostic lancé en SSH l'affiche. Si elle diffère, les commandes cron utiliseront le chemin complet du PHP 8.4.
+
 ## 6. Licence et nouveau domaine
 
 Le jeton actuel est lié à l'hôte de l'ancien site. Sur `app.finakoperp.com`, il serait **refusé**.
