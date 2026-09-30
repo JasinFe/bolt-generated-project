@@ -100,6 +100,14 @@ $badge_data = $badge_slug ? KMFamily_Paliers::get( $badge_slug ) : null;
                         </div>
                     </div>
 
+                    <div class="kmfamily-form-field kmfamily-form-field--email-confirm" hidden>
+                        <label for="email_current_password">Mot de passe actuel <small>(requis pour changer d'e-mail)</small></label>
+                        <div class="kmfamily-form-field__input">
+                            <span class="kmfamily-form-field__icon">🔒</span>
+                            <input type="password" name="email_current_password" id="email_current_password" autocomplete="current-password">
+                        </div>
+                    </div>
+
                     <div class="kmfamily-form-field">
                         <label for="first_name">Prénom</label>
                         <div class="kmfamily-form-field__input">

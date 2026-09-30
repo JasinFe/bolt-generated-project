@@ -95,7 +95,9 @@ class KMFamily_Artist_Publishing {
                AND a.meta_value = %s
                AND p.post_date_gmt > %s",
             self::META_AUTHOR, (string) absint( $artiste_id ),
-            KMFamily_Orders::local_datetime( - DAY_IN_SECONDS )
+            // CORRECTIF v3.4.1 : post_date_gmt (UTC) était comparé à une heure LOCALE — sur
+            // un site en UTC+1 la fenêtre « 24 h » faisait 23 h ou 25 h selon le signe.
+            gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS )
         ) );
     }
 
@@ -156,7 +158,7 @@ class KMFamily_Artist_Publishing {
         $format  = isset( $args['format'] ) && isset( $formats[ $args['format'] ] ) ? $args['format'] : 'message';
         $cfg     = $formats[ $format ];
 
-        $titre   = sanitize_text_field( (string) ( $args['titre'] ?? '' ) );
+        $titre   = mb_substr( sanitize_text_field( (string) ( $args['titre'] ?? '' ) ), 0, 120 );
         $message = wp_kses_post( (string) ( $args['message'] ?? '' ) );
         $palier  = sanitize_key( (string) ( $args['palier'] ?? 'bronze' ) );
 
@@ -223,6 +225,13 @@ class KMFamily_Artist_Publishing {
             update_post_meta( $post_id, 'palier_requis', $palier );
             update_post_meta( $post_id, 'type_media', $cfg['type_media'] );
             if ( $attachment_id ) update_post_meta( $post_id, 'fichier_media', $attachment_id );
+        }
+
+        // Filet de sécurité : si le champ ACF n'est pas déclaré (ou ACF absent), le filtre
+        // acf/update_value ne s'exécute pas et le fichier resterait dans /uploads public.
+        // L'appel est idempotent (drapeau _kmfamily_protected).
+        if ( $attachment_id && class_exists( 'KMFamily_Media_Protector' ) ) {
+            KMFamily_Media_Protector::protect_uploaded_file( $attachment_id, $post_id, array() );
         }
 
         // Taxonomie de palier, pour rester cohérent avec les contenus créés en admin.
@@ -295,7 +304,13 @@ class KMFamily_Artist_Publishing {
 
         // Les métadonnées (miniatures, durée) sont générées AVANT le passage en
         // dossier protégé, qui intervient ensuite via update_field().
+        // Aucune déclinaison publique (miniatures, « -scaled ») : elles resteraient
+        // accessibles en direct dans /uploads après le passage en dossier protégé.
+        add_filter( 'intermediate_image_sizes_advanced', '__return_empty_array', 99 );
+        add_filter( 'big_image_size_threshold', '__return_false', 99 );
         wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $moved['file'] ) );
+        remove_filter( 'intermediate_image_sizes_advanced', '__return_empty_array', 99 );
+        remove_filter( 'big_image_size_threshold', '__return_false', 99 );
 
         return (int) $attachment_id;
     }

@@ -38,21 +38,31 @@ function km_render_artist_dashboard() {
     ));
 
     // Fallback : chercher aussi par tunecore_artist_name si aucun résultat
+    //
+    // CORRECTIF SÉCURITÉ (fuite de données entre artistes) : l'ancien repli utilisait
+    // le nom d'affichage du compte — modifiable par l'artiste lui-même depuis son profil
+    // KM Family — avec une comparaison LIKE (« contient »). Un artiste qui se renommait
+    // « a » voyait les relevés, gains et streams de TOUS les artistes dont le nom
+    // contient un « a ». On n'utilise désormais que le nom TuneCore fixé par le label sur
+    // la fiche artiste, en égalité stricte, et jamais un rapport déjà attribué à un
+    // autre compte.
     if (empty($rapports_all)) {
-        // Chercher le nom TuneCore lié à cet artiste
         $profile = km_get_artist_profile_post($user_id);
-        $tc_name = $profile ? get_field('tunecore_name', $profile) : '';
-        if (!$tc_name) $tc_name = $user->display_name;
-        $rapports_all = get_posts(array(
+        $tc_name = $profile ? trim((string) get_field('tunecore_name', $profile)) : '';
+        $rapports_all = $tc_name === '' ? array() : get_posts(array(
             'post_type'      => 'rapport_mensuel',
             'posts_per_page' => -1,
             'post_status'    => 'publish',
             'orderby'        => 'date',
             'order'          => 'DESC',
             'meta_query'     => array(
-                array('key'=>'tunecore_artist_name','value'=>$tc_name,'compare'=>'LIKE'),
+                array('key'=>'tunecore_artist_name','value'=>$tc_name,'compare'=>'='),
             ),
         ));
+        $rapports_all = array_values(array_filter($rapports_all, function($r) use ($user_id) {
+            $owner = (int) get_post_meta($r->ID, 'artiste_user_id', true);
+            return $owner === 0 || $owner === (int) $user_id;
+        }));
         // Aussi essayer post_meta direct si ACF n'est pas dispo
         if (empty($rapports_all)) {
             global $wpdb;

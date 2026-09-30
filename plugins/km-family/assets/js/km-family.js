@@ -655,6 +655,16 @@
         // =====================================================
         // 13. Profile form (update infos) — avec fallback REST si 403
         // =====================================================
+        // Changement d'e-mail : le mot de passe actuel est exigé côté serveur.
+        (function() {
+            var $email = $('#kmfamily-profile-form [name=email]');
+            if (!$email.length) return;
+            var initial = $email.val();
+            $email.on('input', function() {
+                $('.kmfamily-form-field--email-confirm').prop('hidden', $.trim($email.val()).toLowerCase() === $.trim(initial).toLowerCase());
+            });
+        })();
+
         $('#kmfamily-profile-form').on('submit', function(e) {
             e.preventDefault();
             var $form = $(this);
@@ -670,7 +680,8 @@
                 last_name:    $form.find('[name=last_name]').val(),
                 phone:        $form.find('[name=phone]').val(),
                 city:         $form.find('[name=city]').val(),
-                description:  $form.find('[name=description]').val()
+                description:  $form.find('[name=description]').val(),
+                current_password: $form.find('[name=email_current_password]').val() || ''
             };
 
             function handleSuccess(response) {

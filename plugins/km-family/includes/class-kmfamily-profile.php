@@ -97,7 +97,7 @@ class KMFamily_Profile {
         $nonce = self::verify_request_nonce( $request );
         if ( ! $nonce ) return self::rest_nonce_error();
 
-        $_POST = array_merge( $_POST, $request->get_params() );
+        $_POST = array_merge( $_POST, wp_slash( $request->get_params() ) );
         $_POST['nonce'] = $nonce;
 
         ob_start();
@@ -235,13 +235,15 @@ class KMFamily_Profile {
 
         $user_id = get_current_user_id();
 
-        $display_name = sanitize_text_field( $_POST['display_name'] ?? '' );
-        $first_name   = sanitize_text_field( $_POST['first_name']   ?? '' );
-        $last_name    = sanitize_text_field( $_POST['last_name']    ?? '' );
-        $description  = wp_kses_post(     $_POST['description']  ?? '' );
-        $email        = sanitize_email(   $_POST['email']        ?? '' );
-        $phone        = sanitize_text_field( $_POST['phone']        ?? '' );
-        $city         = sanitize_text_field( $_POST['city']         ?? '' );
+        // wp_unslash : sans lui « O'Brien » devenait « O\'Brien » en base.
+        $in           = wp_unslash( $_POST );
+        $display_name = mb_substr( sanitize_text_field( $in['display_name'] ?? '' ), 0, 60 );
+        $first_name   = sanitize_text_field( $in['first_name']   ?? '' );
+        $last_name    = sanitize_text_field( $in['last_name']    ?? '' );
+        $description  = wp_kses_post(     $in['description']  ?? '' );
+        $email        = sanitize_email(   $in['email']        ?? '' );
+        $phone        = sanitize_text_field( $in['phone']        ?? '' );
+        $city         = sanitize_text_field( $in['city']         ?? '' );
 
         if ( ! $display_name ) {
             wp_send_json_error( array( 'message' => __( 'Le nom d\'affichage est obligatoire.', 'km-family' ) ) );
@@ -255,6 +257,25 @@ class KMFamily_Profile {
             $existing = email_exists( $email );
             if ( $existing && $existing !== $user_id ) {
                 wp_send_json_error( array( 'message' => __( 'Cet email est déjà utilisé.', 'km-family' ) ) );
+            }
+
+            /**
+             * CORRECTIF SÉCURITÉ v3.4.1 — PRISE DE CONTRÔLE DE COMPTE.
+             * L'e-mail pouvait être changé sans ressaisir le mot de passe : quiconque
+             * disposait un instant de la session (téléphone prêté, session restée ouverte,
+             * cookie volé) remplaçait l'adresse puis déclenchait « mot de passe oublié »
+             * vers SA boîte — le compte, ses abonnements et ses billets étaient perdus.
+             */
+            $current_user = wp_get_current_user();
+            if ( strtolower( $email ) !== strtolower( $current_user->user_email ) ) {
+                if ( KMFamily_Security::is_rate_limited( 'change_email', 5, 15 * MINUTE_IN_SECONDS ) ) {
+                    KMFamily_Security::rate_limit_response();
+                }
+                $pwd = (string) ( $in['current_password'] ?? '' );
+                if ( $pwd === '' || ( ! wp_check_password( $pwd, $current_user->user_pass, $user_id )
+                                      && ! wp_check_password( wp_slash( $pwd ), $current_user->user_pass, $user_id ) ) ) {
+                    wp_send_json_error( array( 'message' => __( 'Pour changer d\'e-mail, saisissez votre mot de passe actuel.', 'km-family' ) ) );
+                }
             }
         }
 

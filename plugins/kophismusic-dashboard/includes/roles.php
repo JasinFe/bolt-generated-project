@@ -33,10 +33,51 @@ function km_create_roles() {
     ) );
 }
 
+// ── Destination « maison » d'un utilisateur, partagée par tous les parcours ─────
+// PONT KM FAMILY : un simple membre KM Family (subscriber / kmfamily_member) n'a
+// rien à faire sur le Dashboard Label — l'y envoyer affichait « Accès réservé au
+// label ». On le renvoie vers son espace membre KM Family quand il existe.
+if ( ! function_exists( 'km_user_home_url' ) ) {
+    function km_user_home_url( $user ) {
+        $roles = (array) ( $user->roles ?? array() );
+        if ( in_array( 'artiste_label', $roles, true ) ) {
+            return km_dashboard_url( 'mon-tableau-de-bord' );
+        }
+        if ( in_array( 'manager_label', $roles, true ) || in_array( 'administrator', $roles, true )
+             || user_can( $user, 'km_view_label_dashboard' ) ) {
+            return km_dashboard_url( 'dashboard-label' );
+        }
+        // Artiste rattaché à une fiche mais sans le rôle (compte créé côté KM Family).
+        if ( class_exists( 'KMFamily_Revenue' ) && ! empty( $user->ID )
+             && KMFamily_Revenue::get_artiste_id_by_user( $user->ID ) ) {
+            return km_dashboard_url( 'mon-tableau-de-bord' );
+        }
+        $kmf = (int) get_option( 'kmfamily_page_dashboard' );
+        return $kmf ? get_permalink( $kmf ) : home_url( '/' );
+    }
+}
+
+if ( ! function_exists( 'km_user_is_label_staff' ) ) {
+    function km_user_is_label_staff( $user = null ) {
+        $user  = $user ?: wp_get_current_user();
+        $roles = (array) ( $user->roles ?? array() );
+        return in_array( 'administrator', $roles, true ) || in_array( 'manager_label', $roles, true )
+            || user_can( $user, 'km_view_label_dashboard' );
+    }
+}
+
 // Empêcher les artistes d'accéder à l'admin WordPress
 add_action( 'admin_init', 'km_redirect_artists_from_admin' );
 function km_redirect_artists_from_admin() {
-    if ( is_user_logged_in() && ! defined( 'DOING_AJAX' ) ) {
+    // CORRECTIF PONT KM FAMILY : admin-post.php déclenche aussi 'admin_init'. Le
+    // formulaire « Parler à ma famille » (action kmfp_publish) y est envoyé : l'artiste
+    // était redirigé AVANT que la publication ne soit traitée — la fonctionnalité ne
+    // marchait donc jamais pour le rôle artiste_label. Idem pour les requêtes AJAX/REST.
+    if ( wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) return;
+    $script = isset( $_SERVER['SCRIPT_NAME'] ) ? wp_basename( wp_unslash( $_SERVER['SCRIPT_NAME'] ) ) : '';
+    if ( in_array( $script, array( 'admin-post.php', 'admin-ajax.php', 'async-upload.php' ), true ) ) return;
+
+    if ( is_user_logged_in() ) {
         $user = wp_get_current_user();
         if ( in_array( 'artiste_label', (array) $user->roles ) ) {
             $url = function_exists( 'km_dashboard_url' ) ? km_dashboard_url( 'mon-tableau-de-bord' ) : home_url( '/mon-tableau-de-bord/' );
@@ -62,11 +103,14 @@ function km_hide_admin_bar_for_artists( $show ) {
 add_filter( 'login_redirect', 'km_login_redirect', 10, 3 );
 function km_login_redirect( $redirect_to, $request, $user ) {
     if ( ! isset( $user->roles ) ) return $redirect_to;
-    if ( in_array( 'artiste_label', (array) $user->roles ) ) {
-        return function_exists( 'km_dashboard_url' ) ? km_dashboard_url( 'mon-tableau-de-bord' ) : home_url( '/mon-tableau-de-bord/' );
+    if ( in_array( 'artiste_label', (array) $user->roles, true ) ) {
+        return km_dashboard_url( 'mon-tableau-de-bord' );
     }
-    if ( in_array( 'manager_label', (array) $user->roles ) || in_array( 'administrator', (array) $user->roles ) ) {
-        return function_exists( 'km_dashboard_url' ) ? km_dashboard_url( 'dashboard-label' ) : home_url( '/dashboard-label/' );
+    // Un administrateur qui se connecte pour aller dans wp-admin doit y arriver :
+    // on ne détourne que la destination par défaut.
+    if ( in_array( 'manager_label', (array) $user->roles, true )
+         || ( in_array( 'administrator', (array) $user->roles, true ) && ( ! $request || false === strpos( $request, 'wp-admin' ) ) ) ) {
+        return km_dashboard_url( 'dashboard-label' );
     }
     return $redirect_to;
 }
@@ -75,9 +119,18 @@ function km_login_redirect( $redirect_to, $request, $user ) {
 // (slug réel : "connexion-artiste", pas "connexion" — l'ancienne
 // version pointait vers une page inexistante et affichait un 404
 // après chaque déconnexion).
-add_action( 'wp_logout', 'km_logout_redirect' );
-function km_logout_redirect() {
-    $url = function_exists( 'km_dashboard_url' ) ? km_dashboard_url( 'connexion-artiste' ) : home_url( '/connexion-artiste/' );
-    wp_redirect( $url );
-    exit;
+//
+// CORRECTIF PONT KM FAMILY : l'ancienne version faisait wp_redirect()+exit sur
+// 'wp_logout' pour TOUT le monde — un membre KM Family (ou un administrateur) qui se
+// déconnectait atterrissait sur « Connexion Artiste », et le paramètre redirect_to de
+// wp_logout_url() (utilisé par KM Family) était ignoré. L'exit court-circuitait aussi
+// les autres extensions accrochées à la déconnexion. On passe par le filtre prévu, et
+// uniquement pour les comptes artiste / manager.
+add_filter( 'logout_redirect', 'km_logout_redirect', 10, 3 );
+function km_logout_redirect( $redirect_to, $requested, $user ) {
+    $roles = (array) ( $user->roles ?? array() );
+    if ( in_array( 'artiste_label', $roles, true ) || in_array( 'manager_label', $roles, true ) ) {
+        return km_dashboard_url( 'connexion-artiste' );
+    }
+    return $redirect_to;
 }

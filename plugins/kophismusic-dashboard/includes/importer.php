@@ -236,9 +236,12 @@ function km_importer_menu() {
 
 function km_importer_page() {
     $results = null;
+    if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Accès refusé', 403 );
     if ( isset($_POST['km_import_nonce']) && wp_verify_nonce($_POST['km_import_nonce'],'km_import_csv') && isset($_FILES['tunecore_csv']) ) {
         $file = $_FILES['tunecore_csv'];
-        if ( $file['error'] === UPLOAD_ERR_OK && strtolower(pathinfo($file['name'],PATHINFO_EXTENSION)) === 'csv' ) {
+        if ( $file['error'] === UPLOAD_ERR_OK && is_uploaded_file( $file['tmp_name'] )
+             && (int) $file['size'] <= 50 * MB_IN_BYTES
+             && strtolower(pathinfo($file['name'],PATHINFO_EXTENSION)) === 'csv' ) {
             $results = km_process_csv($file['tmp_name']);
         } else {
             $results = array('error'=>'Fichier invalide. Utilisez un fichier .csv TuneCore.');

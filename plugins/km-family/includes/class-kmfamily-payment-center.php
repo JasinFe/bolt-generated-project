@@ -376,12 +376,17 @@ class KMFamily_Payment_Center {
     public static function rest_create_order( WP_REST_Request $request ) {
         $user_id = get_current_user_id();
 
+        // Même plafond que ajax_create_order() : le repli REST le contournait.
+        if ( KMFamily_Security::is_rate_limited( 'create_order', 8, 15 * MINUTE_IN_SECONDS ) ) {
+            return new WP_Error( 'rate_limited', __( 'Trop de tentatives, réessaie dans quelques minutes.', 'km-family' ), array( 'status' => 429 ) );
+        }
+
         $artiste_id     = absint( $request->get_param( 'artiste_id' ) );
         $palier         = sanitize_key( $request->get_param( 'palier' ) );
         $periodicity    = sanitize_key( $request->get_param( 'periodicity' ) ?: 'monthly' );
         $client_montant = absint( $request->get_param( 'montant' ) );
 
-        if ( ! $artiste_id || ! $palier || ! get_the_title( $artiste_id ) ) {
+        if ( ! $artiste_id || ! $palier || ! self::is_valid_artist( $artiste_id ) ) {
             return new WP_Error( 'invalid_order', __( 'Artiste ou palier invalide.', 'km-family' ), array( 'status' => 400 ) );
         }
 
@@ -409,6 +414,18 @@ class KMFamily_Payment_Center {
                 'redirect_url' => home_url( '/km-payment/' . $order_ref . '/' ),
             ),
         ), 200 );
+    }
+
+    /**
+     * CORRECTIF v3.4.1 : get_the_title() acceptait n'importe quel ID de contenu (page,
+     * article, pièce jointe…) comme « artiste » — des commandes orphelines pouvaient être
+     * créées puis payées pour un contenu qui n'est pas un artiste soutenable.
+     */
+    private static function is_valid_artist( $artiste_id ) {
+        if ( class_exists( 'KMFamily_Direct_Link' ) && method_exists( 'KMFamily_Direct_Link', 'is_supportable' ) ) {
+            return KMFamily_Direct_Link::is_supportable( $artiste_id );
+        }
+        return get_post_type( $artiste_id ) === 'nos-artistes' && get_post_status( $artiste_id ) === 'publish';
     }
 
     public static function register_rewrite_rule() {
@@ -585,7 +602,7 @@ class KMFamily_Payment_Center {
         $periodicity = sanitize_key( $_POST['periodicity'] ?? 'monthly' );
         $client_montant = absint( $_POST['montant'] ?? 0 );
 
-        if ( ! $artiste_id || ! $palier || ! get_the_title( $artiste_id ) ) {
+        if ( ! $artiste_id || ! $palier || ! self::is_valid_artist( $artiste_id ) ) {
             wp_send_json_error( array( 'message' => __( 'Artiste ou palier invalide.', 'km-family' ) ) );
         }
 

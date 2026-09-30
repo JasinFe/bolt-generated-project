@@ -56,6 +56,24 @@ class KMFamily_Payment_Gateway {
 
         $is_ticket = KMFamily_Orders::is_ticket_order( $order );
 
+        /**
+         * CORRECTIF SÉCURITÉ v3.4.1 — PALIER PAYÉ ≠ PALIER ACTIVÉ.
+         * Le montant était recalculé à partir du palier/artiste/périodicité envoyés par le
+         * navigateur, alors que l'activation (confirm_and_activate) utilise ceux de la
+         * COMMANDE. Il suffisait de créer une commande « Diamant » puis d'appeler
+         * init-payment avec palier=bronze : on payait le prix Bronze, le contrôle de montant
+         * du webhook (comparé à la transaction) passait, et le palier Diamant était activé.
+         * La commande est désormais l'unique source de vérité.
+         */
+        $artiste_id  = (int) $order['artiste_id'];
+        $palier      = (string) $order['palier'];
+        $periodicity = (string) ( $order['periodicity'] ?: 'monthly' );
+
+        // Commande déjà payée/clôturée : on ne relance jamais un second encaissement.
+        if ( in_array( $order['status'], array( 'confirming', 'confirmed', 'active', 'cancelled', 'rejected', 'expired' ), true ) ) {
+            return new WP_Error( 'order_closed', __( 'Cette commande n\'est plus payable.', 'km-family' ), array( 'status' => 409 ) );
+        }
+
         if ( $is_ticket ) {
             /**
              * BILLETTERIE — MONTANT : contrairement aux abonnements (recalculé ici depuis le
@@ -96,8 +114,9 @@ class KMFamily_Payment_Gateway {
                 return new WP_Error( 'invalid_palier', __( 'Palier invalide.', 'km-family' ), array( 'status' => 400 ) );
             }
 
-            if ( ! empty( $palier_info['is_free'] ) ) {
-                $montant = max( $montant_client, (int) ( $palier_info['prix_min'] ?? 500 ) );
+            if ( ! empty( $palier_info['is_free'] ) || 'libre' === $palier ) {
+                // Palier « Libre » : le montant choisi a été figé à la création de la commande.
+                $montant = max( (int) $order['montant'], (int) ( $palier_info['prix_min'] ?? 500 ) );
             } else {
                 $price = KMFamily_Periodicity::calculate_price( (int) $palier_info['prix'], $periodicity );
                 $montant = (int) $price['total'];
@@ -203,7 +222,14 @@ class KMFamily_Payment_Gateway {
         $expected = (int) ( $txn['montant'] ?? 0 );
         $paid     = (int) round( (float) $paid_amount );
 
-        if ( $expected <= 0 || $paid <= 0 ) return true; // rien de comparable : on ne bloque pas
+        if ( $expected <= 0 ) return true; // billet gratuit : rien à comparer
+
+        // CORRECTIF v3.4.1 : un montant absent/nul dans la réponse de la passerelle était
+        // accepté (« rien de comparable ») — on active désormais uniquement sur preuve.
+        if ( $paid <= 0 ) {
+            error_log( sprintf( 'KM Family - montant webhook absent (%s) : activation refusée.', $transaction_id ) );
+            return false;
+        }
 
         if ( $paid + 1 < $expected ) {
             if ( class_exists( 'KMFamily_Event_Log' ) && ! empty( $txn['order_ref'] ) ) {
@@ -305,10 +331,8 @@ class KMFamily_Payment_Gateway {
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( empty( $body['data']['payment_url'] ) ) {
-            return new WP_Error( 'cinetpay_error', __( 'Erreur CinetPay', 'km-family' ), array(
-                'status'   => 500,
-                'response' => $body,
-            ) );
+            error_log( 'KM Family - init CinetPay en échec : ' . wp_json_encode( $body['message'] ?? $body['code'] ?? '' ) );
+            return new WP_Error( 'cinetpay_error', __( 'Erreur CinetPay', 'km-family' ), array( 'status' => 502 ) );
         }
 
         return new WP_REST_Response( array(
@@ -366,10 +390,8 @@ class KMFamily_Payment_Gateway {
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( empty( $body['data']['authorization_url'] ) ) {
-            return new WP_Error( 'paystack_error', __( 'Erreur Paystack', 'km-family' ), array(
-                'status'   => 500,
-                'response' => $body,
-            ) );
+            error_log( 'KM Family - init Paystack en échec : ' . wp_json_encode( $body['message'] ?? '' ) );
+            return new WP_Error( 'paystack_error', __( 'Erreur Paystack', 'km-family' ), array( 'status' => 502 ) );
         }
 
         return new WP_REST_Response( array(
@@ -415,7 +437,7 @@ class KMFamily_Payment_Gateway {
         // Seconde barrière : même pour des références connues, on plafonne la cadence.
         // Une passerelle légitime ne rejoue pas la même notification en boucle.
         if ( class_exists( 'KMFamily_Security' )
-             && KMFamily_Security::is_rate_limited( 'webhook_cinetpay', 60, 5 * MINUTE_IN_SECONDS ) ) {
+             && KMFamily_Security::is_rate_limited( 'webhook_cinetpay', 10, 5 * MINUTE_IN_SECONDS, 'txn:' . $transaction_id ) ) {
             return new WP_REST_Response( array( 'status' => 'rate_limited' ), 429 );
         }
 
@@ -438,6 +460,11 @@ class KMFamily_Payment_Gateway {
 
         if ( empty( $body['data']['status'] ) || $body['data']['status'] !== 'ACCEPTED' ) {
             return new WP_REST_Response( array( 'status' => 'not_accepted' ), 200 );
+        }
+
+        if ( ! empty( $body['data']['currency'] ) && strtoupper( $body['data']['currency'] ) !== 'XOF' ) {
+            error_log( 'KM Family - devise CinetPay inattendue pour ' . $transaction_id );
+            return new WP_REST_Response( array( 'status' => 'currency_mismatch' ), 200 );
         }
 
         // La transaction a déjà été résolue en amont (voir le correctif d'amplification).
@@ -463,7 +490,7 @@ class KMFamily_Payment_Gateway {
             return new WP_REST_Response( array( 'status' => 'not_configured' ), 500 );
         }
 
-        $signature = $_SERVER['HTTP_X_PAYSTACK_SIGNATURE'] ?? '';
+        $signature = (string) $request->get_header( 'x_paystack_signature' );
         $payload   = $request->get_body();
         $computed  = hash_hmac( 'sha512', $payload, $secret );
 
@@ -485,6 +512,10 @@ class KMFamily_Payment_Gateway {
             // en erreur, et un rejeu légitime (transient déjà purgé) ne doit pas compter
             // comme un échec de livraison.
             return new WP_REST_Response( array( 'status' => 'txn_not_found' ), 200 );
+        }
+
+        if ( ! empty( $data['data']['currency'] ) && strtoupper( $data['data']['currency'] ) !== 'XOF' ) {
+            return new WP_REST_Response( array( 'status' => 'currency_mismatch' ), 200 );
         }
 
         // Paystack exprime le montant en sous-unité (voir init_paystack_payment) : on

@@ -377,8 +377,10 @@ function km_admin_overview_page() {
 
 function km_admin_settings_page() {
     if ( isset( $_POST['km_settings_nonce'] ) && wp_verify_nonce( $_POST['km_settings_nonce'], 'km_save_settings' ) ) {
-        update_option( 'km_label_commission', intval( $_POST['km_label_commission'] ) );
-        update_option( 'km_label_name',       sanitize_text_field( $_POST['km_label_name'] ) );
+        // Borné à 0–100 : une valeur hors plage produisait des parts artiste négatives
+        // (ou supérieures au brut) dans tous les relevés.
+        update_option( 'km_label_commission', max( 0, min( 100, intval( $_POST['km_label_commission'] ?? 30 ) ) ) );
+        update_option( 'km_label_name',       sanitize_text_field( wp_unslash( $_POST['km_label_name'] ?? '' ) ) );
         echo '<div class="notice notice-success is-dismissible"><p>✅ Réglages sauvegardés.</p></div>';
     }
 
@@ -1015,28 +1017,15 @@ function km_admin_encoding_repair_page() {
 }
 
 function km_admin_import_page() {
-    if ( isset( $_FILES['km_csv'] ) && check_admin_referer( 'km_import_csv' ) ) {
-        $result = km_import_tunecore_csv( $_FILES['km_csv']['tmp_name'] );
-        if ( is_wp_error( $result ) ) {
-            echo '<div class="notice notice-error"><p>❌ ' . esc_html( $result->get_error_message() ) . '</p></div>';
-        } else {
-            echo '<div class="notice notice-success is-dismissible"><p>✅ Import terminé — Créés: ' . $result['created'] . ' | Mis à jour: ' . $result['updated'] . ' | Ignorés: ' . $result['skipped'] . '</p></div>';
-        }
+    // CORRECTIF : cette page appelait km_import_tunecore_csv(), fonction qui n'existe
+    // nulle part — tout import depuis « KM Dashboard → Import TuneCore » provoquait une
+    // erreur fatale. Elle partage de plus son identifiant (km-tunecore-import) avec
+    // l'importeur complet de includes/importer.php : on délègue simplement à celui-ci.
+    if ( function_exists( 'km_importer_page' ) ) {
+        km_importer_page();
+        return;
     }
-    ?>
-    <div class="wrap">
-        <h1>📥 Import CSV TuneCore</h1>
-        <div style="background:#1e2535;border:1px solid #2d3a50;border-radius:10px;padding:24px;max-width:600px;margin-top:20px;">
-            <p style="color:#c8d6e8;">Téléversez le fichier CSV mensuel TuneCore (Sales Report).</p>
-            <form method="post" enctype="multipart/form-data">
-                <?php wp_nonce_field( 'km_import_csv' ); ?>
-                <input type="file" name="km_csv" accept=".csv" style="color:#EEF2FF;margin-bottom:14px;display:block;" />
-                <input type="submit" class="button button-primary button-large" value="📥 Importer" />
-            </form>
-        </div>
-        <style>#wpcontent{background:#0d1120 !important;}#wpbody-content .wrap h1{color:#EEF2FF;}</style>
-    </div>
-    <?php
+    wp_die( 'Importeur indisponible.' );
 }
 
 // ══════════════════════════════════════════════════════════════

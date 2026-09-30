@@ -166,11 +166,58 @@ class KMFamily_Media_Protector {
             update_post_meta( $attachment_id, '_kmfamily_protected', 1 );
             update_post_meta( $attachment_id, '_kmfamily_protected_filename', $new_filename );
 
+            self::purge_public_derivatives( $attachment_id, $file_path );
+
             // Invalider l'URL publique de WP : remplacer par notre URL sécurisée
             // (on conserve la valeur ACF telle quelle, mais on sert via un endpoint)
         }
 
         return $value;
+    }
+
+    /**
+     * CORRECTIF SÉCURITÉ v3.4.1 — MINIATURES RESTÉES PUBLIQUES.
+     * Seul le fichier principal était déplacé dans le dossier protégé. Pour une image,
+     * WordPress génère pourtant des déclinaisons (150px, 300px, 1024px…) et conserve
+     * l'original non réduit (« original_image ») à côté du fichier « -scaled » : toutes
+     * restaient téléchargeables en direct dans /uploads/AAAA/MM/, en haute définition,
+     * par simple devinette du nom. On supprime ces copies publiques et on nettoie les
+     * métadonnées pour que WordPress ne les référence plus.
+     */
+    private static function purge_public_derivatives( $attachment_id, $old_main_path ) {
+        $meta = wp_get_attachment_metadata( $attachment_id );
+        if ( ! is_array( $meta ) ) return;
+
+        $dir = trailingslashit( dirname( $old_main_path ) );
+
+        if ( ! empty( $meta['sizes'] ) && is_array( $meta['sizes'] ) ) {
+            foreach ( $meta['sizes'] as $size ) {
+                if ( empty( $size['file'] ) ) continue;
+                $path = $dir . wp_basename( $size['file'] );
+                if ( file_exists( $path ) ) @unlink( $path );
+            }
+            $meta['sizes'] = array();
+        }
+
+        if ( ! empty( $meta['original_image'] ) ) {
+            $path = $dir . wp_basename( $meta['original_image'] );
+            if ( file_exists( $path ) ) @unlink( $path );
+            unset( $meta['original_image'] );
+        }
+
+        if ( ! empty( $meta['file'] ) ) {
+            $meta['file'] = self::PROTECTED_DIR . '/' . wp_basename( get_attached_file( $attachment_id ) );
+        }
+
+        wp_update_attachment_metadata( $attachment_id, $meta );
+    }
+
+    /** Identifiant de pièce jointe depuis une valeur ACF (tableau, ID ou objet). */
+    private static function attachment_id_from_field( $fichier ) {
+        if ( is_numeric( $fichier ) ) return absint( $fichier );
+        if ( is_array( $fichier ) ) return absint( $fichier['ID'] ?? ( $fichier['id'] ?? 0 ) );
+        if ( is_object( $fichier ) && isset( $fichier->ID ) ) return absint( $fichier->ID );
+        return 0;
     }
 
     /**
@@ -267,13 +314,8 @@ class KMFamily_Media_Protector {
             return new WP_Error( 'forbidden', 'Droits insuffisants.', array( 'status' => 403 ) );
         }
 
-        $fichier = get_field( 'fichier_media', $post_id );
-        $attachment_id = 0;
-        if ( is_array( $fichier ) && isset( $fichier['ID'] ) ) {
-            $attachment_id = $fichier['ID'];
-        } elseif ( is_array( $fichier ) && isset( $fichier['id'] ) ) {
-            $attachment_id = $fichier['id'];
-        }
+        // CORRECTIF v3.4.1 : le format de retour ACF « ID » n'était pas géré.
+        $attachment_id = self::attachment_id_from_field( get_field( 'fichier_media', $post_id, false ) );
         if ( ! $attachment_id ) return new WP_Error( 'no_file', 'Aucun fichier associé.', array( 'status' => 404 ) );
 
         $token = self::generate_token( array(
@@ -378,7 +420,11 @@ class KMFamily_Media_Protector {
         }
 
         $file_size = filesize( $file_path );
-        $mime = mime_content_type( $file_path );
+        $mime = function_exists( 'mime_content_type' ) ? mime_content_type( $file_path ) : '';
+        if ( ! $mime ) {
+            $ft   = wp_check_filetype( $file_path );
+            $mime = $ft['type'] ?: '';
+        }
         if ( ! $mime ) {
             $mime = 'application/octet-stream';
         }
@@ -389,6 +435,11 @@ class KMFamily_Media_Protector {
         header( 'Accept-Ranges: bytes' );
         header( 'Cache-Control: private, max-age=3600' );
         header( 'X-Frame-Options: SAMEORIGIN' );
+        header( 'Content-Disposition: inline' );
+        header( 'Referrer-Policy: no-referrer' );
+        // Un SVG/HTML glissé par erreur dans le dossier protégé ne doit jamais s'exécuter
+        // dans l'origine du site.
+        header( "Content-Security-Policy: default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox" );
 
         $start = 0;
         $end   = $file_size - 1;
@@ -494,13 +545,8 @@ class KMFamily_Media_Protector {
     public static function get_secure_media_url( $post_id, $user_id = null ) {
         if ( ! $user_id ) $user_id = get_current_user_id();
 
-        $fichier = get_field( 'fichier_media', $post_id );
-        $attachment_id = 0;
-        if ( is_array( $fichier ) && isset( $fichier['ID'] ) ) {
-            $attachment_id = $fichier['ID'];
-        } elseif ( is_array( $fichier ) && isset( $fichier['id'] ) ) {
-            $attachment_id = $fichier['id'];
-        }
+        // CORRECTIF v3.4.1 : le format de retour ACF « ID » n'était pas géré.
+        $attachment_id = self::attachment_id_from_field( get_field( 'fichier_media', $post_id, false ) );
 
         if ( ! $attachment_id ) return '';
 

@@ -31,9 +31,12 @@ if ( ! function_exists( 'km_store_certification' ) ) {
         // Garde-fou anti-croissance illimitée : ne conserve que les 1000
         // certifications les plus récentes (l'option wp_options n'est pas
         // faite pour stocker un historique infini).
-        if ( count( $certs ) > 1000 ) {
+        // 1000 → 5000 : chaque ouverture du relevé émet un certificat ; avec l'ancien
+        // plafond, un document imprimé quelques semaines plus tôt pouvait déjà ne plus
+        // être vérifiable (entrée évincée).
+        if ( count( $certs ) > 5000 ) {
             uasort( $certs, function( $a, $b ) { return $a['created'] <=> $b['created']; } );
-            $certs = array_slice( $certs, -1000, null, true );
+            $certs = array_slice( $certs, -5000, null, true );
         }
         update_option( 'km_certifications', $certs, false );
     }

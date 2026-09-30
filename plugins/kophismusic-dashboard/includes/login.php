@@ -15,11 +15,7 @@ function km_redirect_if_logged_in_on_login_page() {
     $pid = km_get_page_id( 'connexion-artiste' );
     if ( ! $pid || ! is_page( $pid ) ) return;
     if ( ! is_user_logged_in() ) return;
-    $user = wp_get_current_user();
-    $url  = in_array( 'artiste_label', (array) $user->roles )
-        ? km_dashboard_url( 'mon-tableau-de-bord' )
-        : km_dashboard_url( 'dashboard-label' );
-    wp_safe_redirect( $url, 302 );
+    wp_safe_redirect( km_user_home_url( wp_get_current_user() ), 302 );
     exit;
 }
 
@@ -33,13 +29,23 @@ function km_process_login_post() {
     if ( ! isset( $_POST['km_login_nonce'] ) ) return;
     if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['km_login_nonce'] ) ), 'km_login' ) ) return;
 
+    $base = km_dashboard_url( 'connexion-artiste' );
+    $login_raw = sanitize_text_field( wp_unslash( isset( $_POST['username'] ) ? $_POST['username'] : '' ) );
+
+    // SÉCURITÉ : ce formulaire n'avait aucune limite — force brute illimitée sur les
+    // comptes artistes et label. On réutilise le limiteur KM Family (par compte visé +
+    // large plafond par source) quand il est disponible, sinon un compteur local.
+    if ( km_login_throttled( $login_raw ) ) {
+        wp_safe_redirect( add_query_arg( 'km_err', 'throttle', $base ) );
+        exit;
+    }
+
     $creds = array(
-        'user_login'    => sanitize_text_field( wp_unslash( isset( $_POST['username'] ) ? $_POST['username'] : '' ) ),
+        'user_login'    => $login_raw,
         'user_password' => isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : '',
         'remember'      => isset( $_POST['remember'] ),
     );
     $user = wp_signon( $creds, is_ssl() );
-    $base = km_dashboard_url( 'connexion-artiste' );
 
     if ( is_wp_error( $user ) ) {
         // Erreur : rediriger vers la page de connexion avec indicateur d'erreur
@@ -47,12 +53,28 @@ function km_process_login_post() {
         exit;
     }
 
-    // Succes : rediriger vers le bon tableau de bord
-    $url = in_array( 'artiste_label', (array) $user->roles )
-        ? km_dashboard_url( 'mon-tableau-de-bord' )
-        : km_dashboard_url( 'dashboard-label' );
-    wp_safe_redirect( $url, 302 );
+    // Succes : rediriger vers le bon espace (artiste, label ou membre KM Family)
+    wp_safe_redirect( km_user_home_url( $user ), 302 );
     exit;
+}
+
+/**
+ * Limiteur de tentatives pour les formulaires de ce fichier.
+ * @return bool true si la tentative doit être refusée.
+ */
+function km_login_throttled( $identifiant, $action = 'login' ) {
+    if ( 'login' === $action && class_exists( 'KMFamily_Security' ) && method_exists( 'KMFamily_Security', 'login_attempt_blocked' ) ) {
+        return KMFamily_Security::login_attempt_blocked( (string) $identifiant );
+    }
+    if ( class_exists( 'KMFamily_Security' ) && method_exists( 'KMFamily_Security', 'is_rate_limited' ) ) {
+        return KMFamily_Security::is_rate_limited( 'km_dash_' . $action, 5, 15 * MINUTE_IN_SECONDS );
+    }
+    $ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+    $key = 'km_rl_' . $action . '_' . md5( strtolower( (string) $identifiant ) . '|' . $ip );
+    $n   = (int) get_transient( $key );
+    if ( $n >= ( 'login' === $action ? 8 : 5 ) ) return true;
+    set_transient( $key, $n + 1, 15 * MINUTE_IN_SECONDS );
+    return false;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -92,15 +114,16 @@ function km_render_login_form() {
     // n'a pas pu rediriger (ex: shortcode hors page connexion),
     // on utilise un redirect JS qui fonctionne meme apres les headers
     if ( is_user_logged_in() ) {
-        $user = wp_get_current_user();
-        $url  = in_array( 'artiste_label', (array) $user->roles )
-            ? km_dashboard_url( 'mon-tableau-de-bord' )
-            : km_dashboard_url( 'dashboard-label' );
-        return '<script>window.location.replace(' . wp_json_encode( $url ) . ');</script>';
+        return '<script>window.location.replace(' . wp_json_encode( km_user_home_url( wp_get_current_user() ) ) . ');</script>';
     }
 
     // Erreur de connexion transmise via GET (traitee par km_process_login_post sur init)
-    $error = isset( $_GET['km_err'] ) ? 'Identifiants incorrects. Veuillez reessayer.' : '';
+    $error = '';
+    if ( isset( $_GET['km_err'] ) ) {
+        $error = ( 'throttle' === $_GET['km_err'] )
+            ? 'Trop de tentatives. Merci de patienter quelques minutes avant de reessayer.'
+            : 'Identifiants incorrects. Veuillez reessayer.';
+    }
 
     $logo_url  = defined( 'KM_LOGO_URL' ) ? KM_LOGO_URL : '';
     $reset_url = km_dashboard_url( 'connexion-artiste' ) . '?km_action=lost_password';
@@ -405,8 +428,13 @@ function km_process_password_forms() {
     if ( isset( $_POST['km_do_lost_password'] ) ) {
         if ( ! isset( $_POST['km_lost_nonce'] ) || ! wp_verify_nonce( $_POST['km_lost_nonce'], 'km_lost_password' ) ) return;
 
-        $login = sanitize_text_field( wp_unslash( $_POST['user_login'] ) );
+        $login = sanitize_text_field( wp_unslash( $_POST['user_login'] ?? '' ) );
         $user  = false;
+
+        // Anti-bombardement d'e-mails : même réponse visible, mais aucun envoi au-delà du plafond.
+        if ( km_login_throttled( $login, 'lost_password' ) ) {
+            $login = '';
+        }
         if ( is_email( $login ) ) $user = get_user_by( 'email', $login );
         if ( ! $user )            $user = get_user_by( 'login', $login );
         if ( ! $user )            $user = get_user_by( 'slug', $login );
@@ -450,9 +478,13 @@ function km_process_password_forms() {
         $pass1 = isset( $_POST['pass1'] ) ? wp_unslash( $_POST['pass1'] ) : '';
         $pass2 = isset( $_POST['pass2'] ) ? wp_unslash( $_POST['pass2'] ) : '';
 
-        $user = check_password_reset_key( $key, $login );
         $base = km_dashboard_url( 'connexion-artiste' );
         $sep  = strpos( $base, '?' ) !== false ? '&' : '?';
+        if ( km_login_throttled( $login, 'reset_password' ) ) {
+            wp_safe_redirect( $base . $sep . 'km_action=lost_password&km_error=invalid_key' );
+            exit;
+        }
+        $user = check_password_reset_key( $key, $login );
 
         if ( is_wp_error( $user ) ) {
             wp_safe_redirect( $base . $sep . 'km_action=lost_password&km_error=invalid_key' );

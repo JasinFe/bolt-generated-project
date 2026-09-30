@@ -152,7 +152,14 @@ add_shortcode( 'km_family_revenus', 'kmfb_shortcode' );
 function kmfb_shortcode( $atts ) {
     if ( ! is_user_logged_in() ) return '';
     $atts = shortcode_atts( array( 'user_id' => 0 ), $atts, 'km_family_revenus' );
-    $uid  = absint( $atts['user_id'] ) ?: get_current_user_id();
+    $uid  = get_current_user_id();
+    // SÉCURITÉ : l'attribut user_id permettait à tout auteur pouvant insérer un
+    // shortcode (ou à une page mal configurée) d'afficher les revenus d'un AUTRE
+    // artiste. Seul le personnel du label peut consulter un autre compte.
+    $asked = absint( $atts['user_id'] );
+    if ( $asked && $asked !== $uid && function_exists( 'km_user_is_label_staff' ) && km_user_is_label_staff() ) {
+        $uid = $asked;
+    }
     return kmfb_get_artist_section( $uid );
 }
 
@@ -354,6 +361,7 @@ if ( ! function_exists( 'kmfb_get_artist_section' ) ) {
 // ══════════════════════════════════════════════════════════════
 add_action( 'km_label_dashboard_after_kpi', 'kmfb_render_label_section' );
 function kmfb_render_label_section() {
+    if ( function_exists( 'km_user_is_label_staff' ) && ! km_user_is_label_staff() ) return;
     echo kmfb_get_label_section();
 }
 

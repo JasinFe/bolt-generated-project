@@ -53,10 +53,10 @@ add_shortcode( 'km_label_dashboard', 'km_render_label_dashboard' );
 function km_render_label_dashboard() {
 
     if ( ! is_user_logged_in() ) {
-        return '<script>window.location="' . home_url('/connexion-artiste/') . '";</script>';
+        return '<script>window.location.replace(' . wp_json_encode( km_dashboard_url( 'connexion-artiste' ) ) . ');</script>';
     }
     $user = wp_get_current_user();
-    if ( ! in_array('administrator',(array)$user->roles) && ! in_array('manager_label',(array)$user->roles) ) {
+    if ( ! km_user_is_label_staff( $user ) ) {
         return '<div class="km-db-wrap"><div class="km-empty-state" style="margin:80px auto;text-align:center;"><p style="font-size:1.1rem;color:#FF4E6A;">🚫 Accès réservé au label.</p></div></div>';
     }
 
