@@ -1,0 +1,11 @@
+# À copier en /etc/logrotate.d/finakop
+/var/log/finakop/*.log {
+    weekly
+    rotate 12
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 finakop finakop
+    su finakop finakop
+}

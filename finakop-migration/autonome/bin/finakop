@@ -1,0 +1,181 @@
+#!/usr/bin/env php
+<?php
+/**
+ * FinaKop ERP Core — commandes d'exploitation (remplace WP-Cron et WP-CLI).
+ *
+ *   finakop bpe [--max=25]        File différée de toutes les sociétés (cron, toutes les 5 min)
+ *   finakop balayage              Temporisation comptable (cron horaire)
+ *   finakop verifier              Contrôle complet de l'installation (après migration)
+ *   finakop licence               État de la licence installée
+ *   finakop comptes-compromis     Comptes bloqués pour mot de passe publié
+ *   finakop reemettre-mdp LOGIN   Réémet un mot de passe à usage unique
+ *
+ * À lancer sous l'utilisateur du pool PHP :  runuser -u finakop -- finakop verifier
+ */
+
+if ( 'cli' !== PHP_SAPI ) { http_response_code( 403 ); exit; }
+
+require dirname( __DIR__ ) . '/lib/amorcage.php';
+fka_definir_constantes();
+
+$cfg  = fka_config();
+$args = array_slice( $argv, 1 );
+$cmd  = $args ? array_shift( $args ) : 'aide';
+$opts = array();
+foreach ( $args as $a ) {
+	if ( preg_match( '/^--([a-z-]+)(?:=(.*))?$/', $a, $m ) ) { $opts[ $m[1] ] = $m[2] ?? '1'; }
+}
+$quiet = isset( $opts['quiet'] );
+
+/* Contexte HTTP simulé : le contrôle de domaine de la licence lit HTTP_HOST. */
+$_SERVER['HTTP_HOST']   = (string) parse_url( $cfg['base_url'], PHP_URL_HOST );
+$_SERVER['HTTPS']       = 'on';
+$_SERVER['REQUEST_URI'] = '/';
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+if ( ! isset( $_SESSION ) ) { $_SESSION = array(); }
+
+/** Verrou : deux passages simultanés du même traitement ne doivent jamais se chevaucher. */
+function fka_verrou( $nom ) {
+	$f = fopen( sys_get_temp_dir() . '/finakop-' . $nom . '.lock', 'c' );
+	if ( ! $f || ! flock( $f, LOCK_EX | LOCK_NB ) ) { fwrite( STDERR, "Déjà en cours : {$nom}\n" ); exit( 0 ); }
+	return $f;
+}
+
+/**
+ * Charge le noyau SANS servir de requête.
+ *
+ * app/index.php enchaîne : chargement des classes → API → session → routes →
+ * dispatch. On en exécute la première partie (tout ce qui précède l'aiguillage
+ * de l'API), mise en cache par version, puis les amorçages sans session. Aucune
+ * modification de app/ n'est nécessaire.
+ *
+ * RECOMMANDATION ÉDITEUR : ajouter dans app/index.php, juste avant
+ * « $fkc_req_path = fkc_rel_path(); », la ligne
+ *     if ( defined( 'FKC_CLI_NOYAU' ) ) { return; }
+ * rendrait cette extraction inutile. Elle reste compatible avec les deux.
+ */
+function fka_charger_noyau() {
+	$marqueur = '$fkc_req_path = fkc_rel_path();';
+	$src = (string) file_get_contents( FKC_ROOT . 'index.php' );
+	$pos = strpos( $src, $marqueur );
+	if ( false === $pos ) { fka_fatal( 'Marqueur introuvable dans app/index.php : version non prise en charge par bin/finakop.' ); }
+
+	$cache = rtrim( (string) ( fka_config()['cache_dir'] ?? sys_get_temp_dir() ), '/' );
+	if ( ! is_dir( $cache ) ) { @mkdir( $cache, 0750, true ); }
+	$fichier = $cache . '/noyau-' . FKC_VERSION . '-' . substr( md5( $src ), 0, 12 ) . '.php';
+	if ( ! is_file( $fichier ) ) {
+		file_put_contents( $fichier . '.tmp', substr( $src, 0, $pos ) . "\n" );
+		rename( $fichier . '.tmp', $fichier );
+	}
+	define( 'FKC_CLI_NOYAU', true );
+	require $fichier;
+
+	// Amorçages de app/index.php qui ne dépendent ni de la session ni de l'utilisateur.
+	FKC_Master::conn();
+	FKC_License::bootstrap();
+	if ( method_exists( 'FKC_Immobilisation', 'brancher' ) ) { FKC_Immobilisation::brancher(); }
+	FKC_License_Depot::enregistrerTraitement();
+	if ( method_exists( 'FKC_Assistant', 'brancherForecast' ) ) { FKC_Assistant::brancherForecast(); }
+}
+
+switch ( $cmd ) {
+
+	case 'bpe':
+		$l = fka_verrou( 'bpe' );
+		fka_charger_noyau();
+		$r = FKC_BPEWorker::traiterToutesSocietes( max( 1, (int) ( $opts['max'] ?? 25 ) ) );
+		foreach ( (array) $r['erreurs'] as $m ) { fwrite( STDERR, "! {$m}\n" ); }
+		if ( ! $quiet || $r['traitees'] ) {
+			printf( "%d société(s) — %d tâche(s) : %d réussie(s), %d en échec, %d abandonnée(s), %d récupérée(s).\n",
+				$r['societes'], $r['traitees'], $r['succes'], $r['echecs'], $r['abandons'], $r['recuperees'] );
+		}
+		exit( $r['erreurs'] ? 2 : 0 );
+
+	case 'balayage':
+		$l = fka_verrou( 'balayage' );
+		fka_charger_noyau();
+		$r = FKC_Balayeur::balayerTout( isset( $opts['forcer'] ) );
+		foreach ( (array) $r['erreurs'] as $m ) { fwrite( STDERR, "! {$m}\n" ); }
+		if ( ! $quiet || $r['publiees'] ) {
+			printf( "%d société(s) — %d publiée(s), %d refusée(s), %d retenue(s).\n",
+				$r['societes'], $r['publiees'], $r['refusees'], $r['retenues'] );
+		}
+		exit( $r['erreurs'] ? 2 : 0 );
+
+	case 'licence':
+		fka_charger_noyau();
+		$s = FKC_License::resolve();
+		printf( "Statut   : %s%s\nClient   : %s\nPalier   : %s\nExpire   : %s\nMessage  : %s\n",
+			$s['status'], $s['valid'] ? ' (valide)' : '', $s['client'] ?? '—', $s['profile_label'] ?? ( $s['profile'] ?? '—' ),
+			$s['expires_at'] ?? '—', $s['message'] ?? '' );
+		exit( $s['valid'] ? 0 : 3 );
+
+	case 'comptes-compromis':
+		fka_charger_noyau();
+		$rows = FKC_Master::comptesCompromis();
+		if ( ! $rows ) { echo "Aucun compte bloqué.\n"; exit( 0 ); }
+		foreach ( $rows as $u ) { printf( "%-20s %s\n", $u['login'], $u['nom_complet'] ); }
+		exit( 0 );
+
+	case 'reemettre-mdp':
+		$login = $args[0] ?? '';
+		if ( '' === $login || '-' === $login[0] ) { fwrite( STDERR, "Usage : finakop reemettre-mdp LOGIN\n" ); exit( 1 ); }
+		fka_charger_noyau();
+		$mdp = FKC_Master::reemettreMotDePasse( $login );
+		if ( null === $mdp ) { fwrite( STDERR, "Compte inconnu : {$login}\n" ); exit( 1 ); }
+		echo "Mot de passe à usage unique pour {$login} : {$mdp}\n(changement exigé à la première connexion)\n";
+		exit( 0 );
+
+	case 'verifier':
+		$ok = true;
+		$ligne = function ( $bon, $txt ) use ( &$ok ) {
+			if ( ! $bon ) { $ok = false; }
+			echo ( $bon ? "  [OK]  " : "  [!!]  " ) . $txt . "\n";
+		};
+		echo "FinaKop " . FKC_VERSION . " — vérification de l'installation autonome\n\n";
+		$ligne( version_compare( PHP_VERSION, '8.1', '>=' ), 'PHP ' . PHP_VERSION );
+		foreach ( array( 'pdo_sqlite', 'openssl', 'mbstring', 'sodium', 'curl', 'intl', 'gd', 'zip' ) as $e ) {
+			$ligne( extension_loaded( $e ), "extension {$e}" );
+		}
+		$ligne( function_exists( 'opcache_get_status' ), 'OPcache chargé (activé pour FPM : voir deploiement/php)' );
+		$ligne( is_writable( FKC_DATA_DIR ), 'dossier de données inscriptible : ' . FKC_DATA_DIR );
+		$ligne( 0 === ( fileperms( FKC_DATA_DIR ) & 0007 ), 'dossier de données fermé aux « autres » (0750 ou moins)' );
+
+		$cle = FKC_DATA_DIR . '.fkc-secret.key';
+		if ( defined( 'FKC_ENCRYPTION_KEY' ) ) {
+			$ligne( true, 'clé de chiffrement : constante FKC_ENCRYPTION_KEY (config.php)' );
+		} else {
+			$ligne( is_file( $cle ), 'clé de chiffrement : fichier .fkc-secret.key PRÉSENT (sinon une clé neuve serait générée → secrets illisibles)' );
+		}
+
+		$master = FKC_DATA_DIR . 'finakopcore-master.db';
+		$ligne( is_file( $master ), 'registre maître présent : finakopcore-master.db' );
+		$bases = glob( FKC_DATA_DIR . '*.db' ) ?: array();
+		foreach ( $bases as $b ) {
+			try {
+				$pdo = new PDO( 'sqlite:' . $b, null, null, array( PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION ) );
+				$ic  = (string) $pdo->query( 'PRAGMA integrity_check' )->fetchColumn();
+				$jm  = (string) $pdo->query( 'PRAGMA journal_mode' )->fetchColumn();
+				$ligne( 'ok' === $ic, sprintf( 'intégrité %-40s %s (journal %s)', basename( $b ), $ic, $jm ) );
+			} catch ( \Throwable $e ) {
+				$ligne( false, basename( $b ) . ' : ' . $e->getMessage() );
+			}
+		}
+		if ( is_file( $master ) ) {
+			fka_charger_noyau();
+			$soc = FKC_Master::q( 'SELECT id, raison_sociale, db_file, actif FROM societes ORDER BY id' )->fetchAll();
+			foreach ( $soc as $s ) {
+				$ligne( is_file( FKC_DATA_DIR . $s['db_file'] ), sprintf( 'société #%d %s → %s%s',
+					$s['id'], $s['raison_sociale'], $s['db_file'], $s['actif'] ? '' : ' (inactive)' ) );
+			}
+			$ligne( 'fichier' === FKC_Crypto::keySource() || 'constante' === FKC_Crypto::keySource(), 'source de clé : ' . FKC_Crypto::keySource() );
+			$l = FKC_License::resolve();
+			$ligne( ! empty( $l['valid'] ), 'licence : ' . $l['status'] . ' — ' . ( $l['message'] ?? '' ) . ' (hôte ' . $_SERVER['HTTP_HOST'] . ')' );
+		}
+		echo "\n" . ( $ok ? "Tout est en ordre.\n" : "Des points demandent une action (lignes [!!]).\n" );
+		exit( $ok ? 0 : 4 );
+
+	default:
+		echo "Usage : finakop bpe|balayage|verifier|licence|comptes-compromis|reemettre-mdp LOGIN\n";
+		exit( 'aide' === $cmd ? 0 : 1 );
+}

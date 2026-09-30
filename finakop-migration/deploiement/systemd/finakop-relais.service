@@ -1,0 +1,31 @@
+# FinaKop Connect — relais temps réel (tools/relay/relais.js, Node 18+, sans dépendance).
+# À copier en /etc/systemd/system/finakop-relais.service
+# Secret : /etc/finakop/relais.env  (FKC_RELAIS_SECRET=<32+ caractères, le même que dans FinaKop>)
+
+[Unit]
+Description=FinaKop Connect - relais temps reel
+After=network.target
+
+[Service]
+Type=simple
+User=finakop-relais
+Group=finakop-relais
+EnvironmentFile=/etc/finakop/relais.env
+Environment=FKC_RELAIS_PORT=8081
+ExecStart=/usr/bin/node /srv/finakop/current/tools/relay/relais.js
+Restart=always
+RestartSec=3
+
+# Le relais ne stocke rien : on le lui interdit aussi.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

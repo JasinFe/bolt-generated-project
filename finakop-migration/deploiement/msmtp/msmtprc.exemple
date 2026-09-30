@@ -1,0 +1,24 @@
+# msmtp — relais SMTP pour les courriels FinaKop (wp_mail → mail() → msmtp).
+# À copier en /etc/msmtprc  (root:finakop, 0640)
+#
+# N'envoyez PAS directement depuis le VPS (port 25) : sans réputation d'IP,
+# vos relances et factures finiraient en spam. Passez par un relais :
+#   • OVH (Zimbra/MX Plan) si votre domaine y est déjà,
+#   • Brevo (ex-Sendinblue, gratuit jusqu'à 300 courriels/jour),
+#   • Amazon SES, Mailjet, Scaleway TEM…
+# Et publiez SPF, DKIM et DMARC pour le domaine expéditeur.
+
+defaults
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        /var/log/finakop/msmtp.log
+
+account        relais
+host           smtp-relay.brevo.com
+port           587
+from           no-reply@kophisgroup.com
+user           VOTRE_IDENTIFIANT_SMTP
+password       VOTRE_MOT_DE_PASSE_SMTP
+
+account default : relais

@@ -1,0 +1,17 @@
+# FinaKop — tâches planifiées (remplace WP-Cron, qui ne partait qu'aux visites).
+# À copier en /etc/cron.d/finakop (propriétaire root, droits 0644).
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+MAILTO=""
+
+# File différée (BPE) : encaissements différés, notifications, FNE, consultation du dépôt de licences.
+*/5 * * * *  finakop  /srv/finakop/autonome/bin/finakop bpe --quiet >> /var/log/finakop/cron.log 2>&1
+
+# Temporisation comptable : publication des écritures « temporisées ».
+7 * * * *    finakop  /srv/finakop/autonome/bin/finakop balayage --quiet >> /var/log/finakop/cron.log 2>&1
+
+# Sauvegarde quotidienne à 02 h 17 (heure du serveur), puis envoi hors site.
+17 2 * * *   root     /srv/finakop/scripts/sauvegarder.sh >> /var/log/finakop/sauvegarde.log 2>&1
+
+# Contrôle hebdomadaire (intégrité SQLite, clé, licence) — lundi 06 h 43.
+43 6 * * 1   finakop  /srv/finakop/autonome/bin/finakop verifier >> /var/log/finakop/verifier.log 2>&1
