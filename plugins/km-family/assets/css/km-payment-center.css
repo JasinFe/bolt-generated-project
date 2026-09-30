@@ -156,3 +156,32 @@
     .kmfamily-spc__step-label { font-size: 9.5px; }
     .kmfamily-spc__summary { flex-direction: column; align-items: flex-start; }
 }
+
+/* v3.4.1 — Le centre de paiement n'avait pas de fond propre : sur un thème clair,
+   le titre « Finalise ton adhésion » (texte clair) devenait invisible. */
+.kmfamily-spc {
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(212,175,55,.10) 0%, transparent 60%),
+        var(--spc-bg);
+    border-radius: 24px;
+    padding: 36px 20px 56px;
+    box-sizing: border-box;
+}
+.kmfamily-spc *, .kmfamily-spc *::before, .kmfamily-spc *::after { box-sizing: border-box; }
+.kmfamily-spc__title { color: var(--spc-text); }
+.kmfamily-spc__subtitle strong { color: var(--spc-text); white-space: normal; }
+.kmfamily-spc__amount { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+@media (max-width: 560px) {
+    .kmfamily-spc {
+        margin: 0 auto;
+        border-radius: 0;
+        padding: 28px 16px 48px;
+    }
+    .kmfamily-spc__title { font-size: 22px; }
+    .kmfamily-spc button,
+    .kmfamily-spc .kmfamily-btn,
+    .kmfamily-spc a[class*="btn"] { min-height: 48px; }
+    .kmfamily-spc input,
+    .kmfamily-spc textarea { font-size: 16px; }
+}

@@ -4,12 +4,24 @@ Tags: membership, mobile money, urban gospel, cinetpay, paystack, multisite
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 3.3.0
+Stable tag: 3.4.1
 License: GPLv2 or later
 
 Plateforme de soutien pour les artistes du label Urban Gospel KOPHI'S MUSIC.
 
 == Changelog ==
+
+= 3.4.1 - 2026-09-30 =
+* SÉCURITÉ CRITIQUE (paiement) : le montant facturé était calculé à partir du palier envoyé par le navigateur alors que l'activation utilisait celui de la commande — on pouvait payer le prix Bronze et obtenir le palier Diamant. La commande est désormais l'unique source de vérité ; une commande déjà payée/clôturée ne peut plus être relancée.
+* SÉCURITÉ (webhooks) : un montant absent dans la réponse de la passerelle n'active plus rien ; devise XOF vérifiée (CinetPay, Paystack) ; limite de débit par transaction (et non plus globale par IP de la passerelle) ; signature Paystack lue via l'API REST ; la réponse brute de la passerelle n'est plus renvoyée au navigateur.
+* SÉCURITÉ (commandes) : l'artiste d'une commande doit être une fiche « nos-artistes » publiée et soutenable ; le repli REST de création de commande est limité comme l'AJAX.
+* SÉCURITÉ (comptes) : changer l'e-mail du profil exige le mot de passe actuel (sinon prise de contrôle via « mot de passe oublié ») ; « mot de passe oublié » ne révèle plus si un e-mail existe ; changement de mot de passe limité en tentatives.
+* CORRECTIF (mots de passe) : le repli REST anti-WAF hachait différemment les mots de passe contenant ' ou \ — un compte créé par un chemin était refusé par l'autre. Tous les chemins sont alignés sur wp-login.php.
+* SÉCURITÉ (médias protégés) : les miniatures et l'original « non réduit » d'une image restaient téléchargeables en direct dans /uploads après protection — ils sont supprimés ; format ACF « ID » pris en charge ; en-têtes nosniff / CSP sandbox sur le flux ; une publication d'artiste est protégée même sans ACF.
+* CORRECTIF (publication artiste) : la limite « 24 h » comparait une heure UTC à une heure locale.
+* CORRECTIF (connexion) : le gabarit de connexion injectait un second document HTML complet dans la page (get_header/get_footer depuis un shortcode) — scripts chargés deux fois, erreur JavaScript, page cassée.
+* RESPONSIVE : plus aucun défilement horizontal sur smartphone (thèmes blocs, grilles à largeur minimale fixe, boutons en nowrap) ; double marge supprimée sur l'espace membre ; champs à 16 px (pas de zoom iOS) ; cibles tactiles 44 px ; zones sûres (encoches) ; focus clavier visible.
+* DESIGN : le centre de paiement a son propre fond (titre invisible sur thème clair), montant affiché « 2 500 F CFA ».
 
 = 3.3.0 - 2026-09-20 =
 * CORRECTIF (parcours de soutien) : après « Soutenir / Rejoindre » → connexion ou création de compte, la personne est désormais ramenée sur le soutien de l'artiste choisi (avec le palier cliqué mis en avant) au lieu de rester dans son espace membre. Cause : le bouton « Rejoindre » des paliers et du paywall pointait vers la page de connexion sans paramètre de retour (« next »).

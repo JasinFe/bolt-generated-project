@@ -1283,7 +1283,7 @@
 ═══════════════════════════════════════════════════ */
 .km-countries-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
   gap: 14px;
 }
 
@@ -2471,4 +2471,128 @@ button,
   .km-db-wrap {
     min-height: auto !important;
   }
+}
+
+/* ================================================================
+   v5.8.1 — CORRECTIFS VISUELS & RESPONSIVE (tests 375 / 768 / 1366 px)
+================================================================ */
+
+/* 1. Compteurs KPI : ils héritaient du style « pastille de notification »
+      (.km-counter = bulle orange 20 px, .km-counter-float = position absolue
+      en haut à droite). Résultat : « Total Streams » s'affichait comme une
+      barre orange vide et « Mes gains nets » sortait de sa carte. */
+.km-kpi-value.km-counter,
+.km-kpi-value.km-counter-float {
+  display: block;
+  position: static;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--km-text);
+  justify-content: flex-start;
+}
+.km-kpi-gold  .km-kpi-value.km-counter,
+.km-kpi-gold  .km-kpi-value.km-counter-float { color: var(--km-primary); }
+.km-kpi-green .km-kpi-value.km-counter,
+.km-kpi-green .km-kpi-value.km-counter-float { color: var(--km-accent); }
+
+/* 2. Mini-donut : SVG de 52 px dans une boîte de 28 px → débordait de la carte. */
+.km-kpi-donut-mini { width: 44px; height: 44px; }
+.km-kpi-donut-mini svg { width: 100%; height: 100%; display: block; }
+
+/* 3. Gouttière cohérente : filtres et KPI collaient aux bords de l'écran
+      entre 1024 et 1600 px, alors que le reste de la page a une marge. */
+.km-db-wrap { --km-gutter: clamp(12px, 3vw, 32px); }
+.km-db-wrap > .km-filters-bar,
+.km-db-wrap > .km-kpi-grid,
+.km-db-wrap > .km-kpi-grid-5 {
+  width: calc(100% - 2 * var(--km-gutter));
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.km-db-wrap > .km-kpi-grid,
+.km-db-wrap > .km-kpi-grid-5 { margin-top: 18px; }
+/* La ligne de filtres était stylée comme une 2e carte dans la carte. */
+.km-filters-bar .km-filters-row {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.km-kpi-card { min-width: 0; }
+.km-kpi-body { min-width: 0; }
+.km-kpi-value, .km-kpi-xof, .km-kpi-sub { overflow-wrap: anywhere; }
+
+/* 4. Tablette */
+@media (max-width: 1024px) and (min-width: 601px) {
+  .km-kpi-grid,
+  .km-kpi-grid-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* 5. Smartphone */
+@media (max-width: 600px) {
+  /* Boutons d'en-tête : le défilement horizontal masquait « Relevé PDF »
+     (bouton coupé à gauche). On passe sur plusieurs lignes, pleine largeur. */
+  .km-db-header-right {
+    flex-wrap: wrap !important;
+    overflow: visible !important;
+    gap: 8px !important;
+    width: 100%;
+  }
+  .km-db-header-right > .km-btn-releve,
+  .km-db-header-right > .km-btn-pdf,
+  .km-db-header-right > .km-btn-logout {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  .km-db-header-right > .km-btn-logout { flex-basis: 100%; }
+
+  /* KPI sur 2 colonnes : moins de défilement, lecture en un coup d'œil. */
+  .km-kpi-grid,
+  .km-kpi-grid-5 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+  .km-kpi-card { padding: 14px !important; }
+  .km-kpi-value,
+  .km-kpi-value.km-counter,
+  .km-kpi-value.km-counter-float { font-size: 20px; }
+  .km-kpi-trend { display: none; }
+  /* Nombre impair de cartes : la dernière prend toute la largeur. */
+  .km-kpi-grid > .km-kpi-card:last-child:nth-child(odd),
+  .km-kpi-grid-5 > .km-kpi-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .km-kpi-donut-mini { top: 10px; right: 10px; width: 32px; height: 32px; }
+
+  .km-filters-bar { padding: 12px !important; }
+  .km-filter-summary { flex-wrap: wrap; row-gap: 4px; }
+
+  /* Tableaux : défilement dans leur cadre plutôt que la page entière. */
+  .km-db-wrap table { min-width: 520px; }
+  .km-db-wrap .km-table-wrap,
+  .km-db-wrap [class*="table-wrap"],
+  .km-db-wrap [class*="-table-scroll"] { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* iOS : pas de zoom automatique sur les champs. */
+  .km-db-wrap input:not([type="checkbox"]):not([type="radio"]),
+  .km-db-wrap select,
+  .km-db-wrap textarea { font-size: 16px; }
+}
+@media (max-width: 360px) {
+  .km-kpi-grid,
+  .km-kpi-grid-5 { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
+/* 6. Accessibilité : focus clavier visible. */
+.km-db-wrap :focus-visible {
+  outline: 2px solid var(--km-primary);
+  outline-offset: 2px;
 }

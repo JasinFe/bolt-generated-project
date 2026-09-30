@@ -6,7 +6,15 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-get_header();
+// CORRECTIF v3.4.1 — DOCUMENT HTML IMBRIQUÉ.
+// Ce gabarit n'est inclus QUE par le shortcode [kmfamily_login] (donc au milieu du
+// contenu de la page, alors que l'en-tête du thème est déjà envoyé). Il appelait
+// pourtant get_header()/get_footer() : un second <html><head><body> complet était
+// injecté dans la page — scripts et styles chargés deux fois, erreurs JavaScript,
+// mise en page cassée sur mobile. On ne les appelle plus que si le gabarit est
+// servi seul (ancienne surcharge de thème via template_include).
+$kmfamily_login_standalone = empty( $kmfamily_login_embedded );
+if ( $kmfamily_login_standalone ) get_header();
 
 $reset_action = isset( $_GET['action'] ) ? sanitize_key( $_GET['action'] ) : '';
 $reset_key    = isset( $_GET['key'] )    ? sanitize_text_field( $_GET['key'] ) : '';
@@ -324,4 +332,4 @@ if ( $kmfamily_support_id && ! KMFamily_Direct_Link::is_supportable( $kmfamily_s
 })();
 </script>
 
-<?php get_footer(); ?>
+<?php if ( $kmfamily_login_standalone ) get_footer(); ?>

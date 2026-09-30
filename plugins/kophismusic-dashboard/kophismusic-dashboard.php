@@ -3,14 +3,14 @@
  * Plugin Name: KOPHI'S MUSIC — Artist Dashboard
  * Plugin URI:  https://kophismusic.com
  * Description: Tableau de bord premium pour artistes et label — Urban Gospel
- * Version:     5.8.0
+ * Version:     5.8.1
  * Author:      KOPHI'S MUSIC
  * Text Domain: kophismusic
  */
 
 defined( 'ABSPATH' ) || exit;
 
-if ( ! defined( 'KM_VERSION' ) )    define( 'KM_VERSION',    '5.8.0' );
+if ( ! defined( 'KM_VERSION' ) )    define( 'KM_VERSION',    '5.8.1' );
 if ( ! defined( 'KM_PLUGIN_DIR' ) ) define( 'KM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 if ( ! defined( 'KM_PLUGIN_URL' ) ) define( 'KM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 if ( ! defined( 'KM_LOGO_URL' ) )   define( 'KM_LOGO_URL',   'https://kophismusic.com/wp-content/uploads/2025/11/LOGO-KOPHIS-MUSIC.svg' );

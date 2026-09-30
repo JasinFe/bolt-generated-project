@@ -3,7 +3,7 @@
  * Plugin Name:       KM Family
  * Plugin URI:        https://kophismusic.com/
  * Description:       Plateforme de soutien pour les artistes du label Urban Gospel Kophis Music. Paliers standardisés (Bronze/Argent/Or/Platine/Diamant), badges membres, paiement Mobile Money (CinetPay/Paystack) et protection totale des médias.
- * Version:           3.4.0
+ * Version:           3.4.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kophis Music
@@ -18,7 +18,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'KMFAMILY_VERSION', '3.4.0' );
+define( 'KMFAMILY_VERSION', '3.4.1' );
 define( 'KMFAMILY_FILE', __FILE__ );
 define( 'KMFAMILY_PATH', plugin_dir_path( __FILE__ ) );
 define( 'KMFAMILY_URL', plugin_dir_url( __FILE__ ) );

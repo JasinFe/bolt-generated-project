@@ -744,7 +744,7 @@
 
 .kmfamily-paliers__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
     gap: 20px;
     max-width: 1280px;
     margin: 0 auto;
@@ -1042,7 +1042,7 @@
 
 .kmfamily-artistes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
     gap: 24px;
     max-width: 1280px;
     margin: 0 auto;
@@ -1158,14 +1158,14 @@
 
 .kmfamily-exclusive-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
     gap: 24px;
     margin: 0 0 60px;
     background: var(--kmfamily-bg);
 }
 
 .kmfamily-exclusive-grid--feed {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
     gap: 16px;
 }
 
@@ -1682,7 +1682,7 @@
 /* Sub cards */
 .kmfamily-dashboard__subs-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
     gap: 24px;
 }
 
@@ -1792,7 +1792,7 @@
 /* Account section */
 .kmfamily-dashboard__account-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
     gap: 24px;
     margin-bottom: 32px;
 }
@@ -2434,7 +2434,7 @@
 
 .kmfamily-discover-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
     gap: 20px;
 }
 
@@ -2609,7 +2609,7 @@
 
 .kmfamily-form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
     gap: 20px;
     margin-bottom: 20px;
 }
@@ -2961,7 +2961,7 @@
     padding: 0;
     margin: 12px 0 20px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
     gap: 10px 18px;
 }
 
@@ -3450,7 +3450,7 @@ body .kmfamily-dashboard__profile-info h1.kmfamily-dashboard__username {
 
 .kmfamily-artistes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
     gap: 30px;
     max-width: 1280px;
     margin: 0 auto;
@@ -4729,4 +4729,88 @@ body .kmfamily-dashboard__profile-info h1.kmfamily-dashboard__username {
     .kmfamily-auth-form { animation: none; }
     .kmfamily-auth-tab:active,
     .kmfamily-btn:active { transform: none; }
+}
+
+/* ============================================================
+   v3.4.1 — DURCISSEMENT RESPONSIVE (smartphone & tablette)
+   ------------------------------------------------------------
+   Constat (tests 375 / 768 / 1366 px) : plusieurs grilles débordaient
+   de l'écran sur téléphone parce que leurs enfants gardaient la largeur
+   « min-content » de boutons en white-space:nowrap (ex. « Enregistrer
+   les modifications ») — la page défilait alors horizontalement.
+   Règles génériques, sans changer le rendu desktop.
+============================================================ */
+.kmfamily-page-wrap,
+.kmfamily-page-wrap *,
+.kmfamily-page-wrap *::before,
+.kmfamily-page-wrap *::after { box-sizing: border-box; }
+
+/* Une piste de grille ne doit jamais être élargie par son contenu. */
+.kmfamily-profile__grid { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) {
+    .kmfamily-profile__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.kmfamily-page-wrap [class*="__grid"] > *,
+.kmfamily-page-wrap [class*="-grid"] > *,
+.kmfamily-page-wrap [class*="__cards"] > * { min-width: 0; }
+
+.kmfamily-page-wrap img,
+.kmfamily-page-wrap video,
+.kmfamily-page-wrap iframe { max-width: 100%; }
+.kmfamily-page-wrap img,
+.kmfamily-page-wrap video { height: auto; }
+
+.kmfamily-page-wrap input,
+.kmfamily-page-wrap select,
+.kmfamily-page-wrap textarea { max-width: 100%; }
+
+.kmfamily-page-wrap table { max-width: 100%; }
+.kmfamily-page-wrap .kmfamily-table-wrap,
+.kmfamily-page-wrap [class*="table-wrap"] { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.kmfamily-page-wrap h1,
+.kmfamily-page-wrap h2,
+.kmfamily-page-wrap h3 { overflow-wrap: anywhere; }
+
+@media (max-width: 600px) {
+    /* Les libellés longs passent à la ligne au lieu d'élargir la page. */
+    .kmfamily-btn,
+    .kmfamily-btn__label {
+        white-space: normal;
+        max-width: 100%;
+        text-align: center;
+        line-height: 1.3;
+    }
+    .kmfamily-btn { justify-content: center; }
+
+    /* iOS zoome sur tout champ < 16px : on l'évite. */
+    .kmfamily-page-wrap input:not([type="checkbox"]):not([type="radio"]),
+    .kmfamily-page-wrap select,
+    .kmfamily-page-wrap textarea,
+    .kmfamily-auth-page input:not([type="checkbox"]):not([type="radio"]) { font-size: 16px; }
+
+    .kmfamily-profile__hero-content h1,
+    .kmfamily-dashboard__hero h1 { font-size: clamp(24px, 7vw, 32px); line-height: 1.15; }
+}
+
+/* Cibles tactiles confortables (recommandation 44 × 44 px). */
+@media (pointer: coarse) {
+    .kmfamily-btn,
+    .kmfamily-page-wrap button,
+    .kmfamily-dashboard__tab { min-height: 44px; }
+}
+
+/* Encoches / barres système (iPhone, Android plein écran). */
+@supports (padding: max(0px)) {
+    .kmfamily-page-wrap {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+}
+
+/* Visibilité du focus clavier (accessibilité) sans gêner la souris. */
+.kmfamily-page-wrap :focus-visible,
+.kmfamily-auth-page :focus-visible {
+    outline: 2px solid var(--kmfamily-brand, #d4af37);
+    outline-offset: 2px;
 }

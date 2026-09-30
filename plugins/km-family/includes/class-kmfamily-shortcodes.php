@@ -221,6 +221,7 @@ class KMFamily_Shortcodes {
                 . '<script>window.location.replace(' . wp_json_encode( $target ) . ');</script>';
         }
 
+        $kmfamily_login_embedded = true; // lu par le gabarit : pas de get_header()/get_footer()
         ob_start();
         include KMFamily_Access::locate_template( 'login.php' );
         return ob_get_clean();

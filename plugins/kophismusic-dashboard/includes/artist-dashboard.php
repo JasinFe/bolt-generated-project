@@ -372,7 +372,7 @@ function km_render_artist_dashboard() {
         </div>
         <div class="km-kpi-body">
             <span class="km-kpi-label">Total Streams</span>
-            <span class="km-kpi-value km-counter" data-target="<?php echo intval($total_streams); ?>">0</span>
+            <span class="km-kpi-value km-counter" data-target="<?php echo intval($total_streams); ?>"><?php echo esc_html( number_format( (int) $total_streams, 0, ',', ' ' ) ); ?></span>
             <span class="km-kpi-sub"><?php echo $nb_rapports; ?> rapport(s) · <?php echo $nb_pays; ?> pays</span>
         </div>
         <div class="km-kpi-trend">
@@ -386,7 +386,7 @@ function km_render_artist_dashboard() {
         </div>
         <div class="km-kpi-body">
             <span class="km-kpi-label">Mes Gains Nets</span>
-            <span class="km-kpi-value km-counter-float" data-target="<?php echo esc_attr($total_gains); ?>">0,0000 €</span>
+            <span class="km-kpi-value km-counter-float" data-target="<?php echo esc_attr($total_gains); ?>"><?php echo esc_html( number_format( (float) $total_gains, 4, ',', '' ) ); ?> €</span>
             <span class="km-kpi-xof"><?php echo number_format($total_gains_xof, 0, ',', ' '); ?> F CFA</span>
             <span class="km-kpi-sub">Part artiste <?php echo $pct_artiste; ?>%</span>
         </div>
@@ -1047,10 +1047,17 @@ window.kmToggleCatalogCard = function(cardId) {
 };
 
 document.addEventListener('DOMContentLoaded',function(){
-    if(typeof Chart==='undefined') return;
+    // CORRECTIF : les compteurs KPI ne s'animaient (et ne s'affichaient) que si
+    // Chart.js était chargé — CDN bloqué, réseau mobile lent ou bloqueur de pub,
+    // et les chiffres clés restaient à « 0 ». Chart.js n'est plus requis que pour
+    // les graphiques ; les valeurs sont aussi rendues côté serveur.
+    var kmHasChart = typeof Chart !== 'undefined';
+    var kmReduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (kmHasChart) {
     Chart.defaults.color='#C8D6E8';
     Chart.defaults.font.family="'Space Grotesk',sans-serif";
     Chart.defaults.font.size=12;
+    }
 
     // Helpers
     function fmtEur(v){
@@ -1082,14 +1089,16 @@ document.addEventListener('DOMContentLoaded',function(){
     // Compteurs entiers animés
     document.querySelectorAll('.km-counter').forEach(function(el){
         var t=parseInt(el.dataset.target)||0;
-        if(!t){el.textContent='0';return;}
+        if(!t||kmReduceMotion){el.textContent=t.toLocaleString('fr-FR');return;}
         var c=0,inc=t/80,tm=setInterval(function(){c=Math.min(c+inc,t);el.textContent=Math.floor(c).toLocaleString('fr-FR');if(c>=t)clearInterval(tm);},16);
     });
     document.querySelectorAll('.km-counter-float').forEach(function(el){
         var t=parseFloat(el.dataset.target)||0;
-        if(!t){el.textContent='0,00 €';return;}
+        if(!t||kmReduceMotion){el.textContent=t?fmtEur(t):'0,00 €';return;}
         var c=0,inc=t/80,tm=setInterval(function(){c=Math.min(c+inc,t);el.textContent=fmtEur(c);if(c>=t)clearInterval(tm);},16);
     });
+
+    if (!kmHasChart) return;
 
     var tlLabels=<?php echo $js_labels; ?>;
     var tlStreams=<?php echo $js_streams; ?>;

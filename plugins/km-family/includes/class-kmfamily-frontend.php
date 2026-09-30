@@ -252,6 +252,24 @@ class KMFamily_Frontend {
             margin-right: 0 !important;
         }
 
+        /* ======= THÈMES BLOCS (FSE : Twenty Twenty-Four/Five…) =======
+         * CORRECTIF v3.4.1 : le conteneur principal perdait son padding (règle ci-dessus)
+         * mais ses enfants .alignfull gardaient la marge négative prévue pour « sortir » de
+         * ce padding : la page débordait de ~30 px à droite sur mobile (défilement latéral).
+         */
+        body.kmfamily-fullwidth main .alignfull,
+        body.kmfamily-fullwidth .has-global-padding > .alignfull {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            max-width: 100% !important;
+        }
+        body.kmfamily-fullwidth .has-global-padding:has(.kmfamily-page-wrap) {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        /* Filet anti-défilement horizontal (clip ne casse pas position:sticky). */
+        body.kmfamily-fullwidth { overflow-x: clip; }
+
         /* ======= ASTRA THEME SPECIFIC ======= */
         body.kmfamily-fullwidth .ast-container,
         body.kmfamily-fullwidth .site-content .ast-container,
@@ -427,6 +445,25 @@ class KMFamily_Frontend {
          * On reaffirme ici la marge pour rester correct meme si un autre theme ou
          * une extension applique la meme remise a zero agressive sur `main`.
          * ======================================================== */
+        /* CORRECTIF v3.4.1 — double gouttière sur téléphone : l\'enveloppe ET ses
+         * sections (onglets, contenu, grille profil) avaient chacune 24 px de marge,
+         * soit 48 px perdus de chaque côté d\'un écran de 375 px. */
+        @media (max-width: 768px) {
+            body.kmfamily-fullwidth .kmfamily-page-wrap.kmfamily-dashboard,
+            body.kmfamily-fullwidth .kmfamily-page-wrap.kmfamily-profile-page {
+                padding-left: 0;
+                padding-right: 0;
+                padding-top: 0;
+            }
+            body.kmfamily-fullwidth .kmfamily-page-wrap .kmfamily-dashboard__tabs,
+            body.kmfamily-fullwidth .kmfamily-page-wrap .kmfamily-dashboard__tab-content,
+            body.kmfamily-fullwidth .kmfamily-page-wrap .kmfamily-profile__grid,
+            body.kmfamily-fullwidth .kmfamily-page-wrap .kmfamily-dashboard__logout {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+
         body.kmfamily-fullwidth .kmfamily-auth-main {
             padding-left: 24px !important;
             padding-right: 24px !important;

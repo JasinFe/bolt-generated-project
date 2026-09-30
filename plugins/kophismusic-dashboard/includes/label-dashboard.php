@@ -235,6 +235,9 @@ function km_render_label_dashboard() {
 
     $global_payed_xof  = round($global_payed * KM_EUR_TO_XOF);
     $global_gains_xof  = round($global_gains * KM_EUR_TO_XOF);
+    // CORRECTIF : $global_marge n'était calculée que plus bas — la marge du label
+    // en F CFA s'affichait toujours « 0 F CFA » (et un avertissement PHP était émis).
+    $global_marge      = $global_gains - $global_part_artiste;
     $global_marge_xof  = round($global_marge * KM_EUR_TO_XOF);
 
     // Listes albums/pistes disponibles
@@ -379,7 +382,7 @@ function km_render_label_dashboard() {
         </div>
         <div class="km-kpi-body">
             <span class="km-kpi-label">Total Streams</span>
-            <span class="km-kpi-value km-counter" data-target="<?php echo intval($global_streams); ?>">0</span>
+            <span class="km-kpi-value km-counter" data-target="<?php echo intval($global_streams); ?>"><?php echo esc_html( number_format( (int) $global_streams, 0, ',', ' ' ) ); ?></span>
             <span class="km-kpi-sub"><?php echo count($all_rapports); ?> rapports</span>
         </div>
     </div>
@@ -390,7 +393,7 @@ function km_render_label_dashboard() {
         </div>
         <div class="km-kpi-body">
             <span class="km-kpi-label">Revenus Bruts</span>
-            <span class="km-kpi-value km-counter-float" data-target="<?php echo esc_attr($global_gains); ?>">0,0000 €</span>
+            <span class="km-kpi-value km-counter-float" data-target="<?php echo esc_attr($global_gains); ?>"><?php echo esc_html( number_format( (float) $global_gains, 4, ',', '' ) ); ?> €</span>
             <span class="km-kpi-xof"><?php echo number_format($global_gains_xof, 0, ',', ' '); ?> F CFA</span>
             <span class="km-kpi-sub">Marge label : <?php echo number_format($global_marge,4,',',''); ?> € (<?php echo number_format($global_marge_xof,0,',',' '); ?> F CFA)</span>
         </div>
@@ -1033,21 +1036,30 @@ function kmToggleCatalogCard(cardId) {
 }
 
 document.addEventListener('DOMContentLoaded',function(){
-    if(typeof Chart==='undefined') return;
+    // CORRECTIF : les compteurs KPI ne s'animaient (et ne s'affichaient) que si
+    // Chart.js était chargé — CDN bloqué, réseau mobile lent ou bloqueur de pub,
+    // et les chiffres clés restaient à « 0 ». Chart.js n'est plus requis que pour
+    // les graphiques ; les valeurs sont aussi rendues côté serveur.
+    var kmHasChart = typeof Chart !== 'undefined';
+    var kmReduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (kmHasChart) {
     Chart.defaults.color='#C8D6E8';
     Chart.defaults.font.family="'Space Grotesk',sans-serif";
     Chart.defaults.font.size=12;
+    }
 
     document.querySelectorAll('.km-counter').forEach(function(el){
         var t=parseInt(el.dataset.target)||0,c=0,inc=t/80;
-        if(!t){el.textContent='0';return;}
+        if(!t||kmReduceMotion){el.textContent=t.toLocaleString('fr-FR');return;}
         var tm=setInterval(function(){c=Math.min(c+inc,t);el.textContent=Math.floor(c).toLocaleString('fr-FR');if(c>=t)clearInterval(tm);},16);
     });
     document.querySelectorAll('.km-counter-float').forEach(function(el){
         var t=parseFloat(el.dataset.target)||0,c=0,inc=t/80;
-        if(!t){el.textContent='0,0000 €';return;}
+        if(!t||kmReduceMotion){el.textContent=t?(t.toFixed(4).replace('.',',')+' €'):'0,0000 €';return;}
         var tm=setInterval(function(){c=Math.min(c+inc,t);el.textContent=c.toFixed(4).replace('.',',')+' €';if(c>=t)clearInterval(tm);},16);
     });
+
+    if (!kmHasChart) return;
 
     /* ── Style de tooltip premium partagé par tous les graphiques :
        carte flottante à coins arrondis, ombre douce, padding généreux. ── */

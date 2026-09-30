@@ -186,9 +186,10 @@ class KMFamily_Auth {
             ), 403 );
         }
 
-        // WordPress « slashe » $_POST pour admin-ajax.php mais pas les paramètres REST :
-        // on aligne les deux chemins pour que les handlers puissent wp_unslash() partout
-        // (sans quoi un mot de passe contenant ' ou \ différait selon le chemin emprunté).
+        // CORRECTIF v3.4.1 : WordPress « slashe » $_POST pour admin-ajax.php mais pas les
+        // paramètres REST. Un mot de passe contenant ' ou \ était donc haché différemment
+        // selon le chemin emprunté (admin-ajax ou repli REST anti-WAF) : le compte créé
+        // par l'un devenait inaccessible par l'autre. On aligne le repli sur admin-ajax.
         $_POST = array_merge( $_POST, wp_slash( $request->get_params() ) );
 
         // Le handler AJAX appelé ci-dessous revérifie ce nonce : on lui transmet celui que
@@ -228,7 +229,11 @@ class KMFamily_Auth {
         }
 
         $login    = sanitize_text_field( wp_unslash( $_POST['login'] ?? '' ) );
-        $password = (string) wp_unslash( $_POST['password'] ?? '' );
+        // Mot de passe volontairement NON « déslashé » : WordPress (wp-login.php, profil
+        // wp-admin, réinitialisation native) manipule les mots de passe sous leur forme
+        // slashée. Rester aligné garantit qu'un même mot de passe contenant ' ou \
+        // fonctionne partout. Le repli REST re-slashe ses paramètres (voir rest_wrap).
+        $password = (string) ( $_POST['password'] ?? '' );
         $remember = ! empty( $_POST['remember'] );
 
         if ( ! $login || ! $password ) {
@@ -250,18 +255,6 @@ class KMFamily_Auth {
         );
 
         $user = wp_signon( $creds, is_ssl() );
-
-        // Compatibilité : avant v3.4.1 les mots de passe étaient enregistrés sans
-        // wp_unslash() (apostrophe stockée « \' »). On retente une fois avec l'ancienne
-        // forme pour ne bloquer aucun compte existant, puis on ré-enregistre proprement.
-        if ( is_wp_error( $user ) && $password !== wp_slash( $password ) ) {
-            $legacy = wp_signon( array_merge( $creds, array( 'user_password' => wp_slash( $password ) ) ), is_ssl() );
-            if ( ! is_wp_error( $legacy ) ) {
-                wp_set_password( $password, $legacy->ID );
-                wp_set_auth_cookie( $legacy->ID, $remember, is_ssl() );
-                $user = $legacy;
-            }
-        }
 
         if ( is_wp_error( $user ) ) {
             wp_send_json_error( array( 'message' => __( 'Identifiants incorrects. Vérifiez votre email et mot de passe.', 'km-family' ) ) );
@@ -291,7 +284,7 @@ class KMFamily_Auth {
 
         $email     = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
         $full_name = sanitize_text_field( wp_unslash( $_POST['full_name'] ?? '' ) );
-        $password  = (string) wp_unslash( $_POST['password'] ?? '' );
+        $password  = (string) ( $_POST['password'] ?? '' ); // forme slashée, comme le cœur WP
 
         if ( ! is_email( $email ) || ! $full_name || strlen( $password ) < 8 ) {
             wp_send_json_error( array( 'message' => __( 'Veuillez remplir tous les champs. Le mot de passe doit contenir au moins 8 caractères.', 'km-family' ) ) );
@@ -414,16 +407,15 @@ class KMFamily_Auth {
             KMFamily_Security::rate_limit_response();
         }
 
-        $current = (string) wp_unslash( $_POST['current_password'] ?? '' );
-        $new     = (string) wp_unslash( $_POST['new_password'] ?? '' );
+        $current = (string) ( $_POST['current_password'] ?? '' ); // forme slashée, comme le cœur WP
+        $new     = (string) ( $_POST['new_password'] ?? '' );
 
         if ( strlen( $new ) < 8 ) {
             wp_send_json_error( array( 'message' => __( 'Le nouveau mot de passe doit contenir au moins 8 caractères.', 'km-family' ) ) );
         }
 
         $user = wp_get_current_user();
-        if ( ! wp_check_password( $current, $user->user_pass, $user->ID )
-             && ! wp_check_password( wp_slash( $current ), $user->user_pass, $user->ID ) ) { // ancienne forme « slashée »
+        if ( ! wp_check_password( $current, $user->user_pass, $user->ID ) ) {
             wp_send_json_error( array( 'message' => __( 'Mot de passe actuel incorrect.', 'km-family' ) ) );
         }
 
@@ -569,8 +561,8 @@ class KMFamily_Auth {
 
         $key   = sanitize_text_field( $_POST['key'] ?? '' );
         $login = sanitize_text_field( $_POST['login'] ?? '' );
-        $pass1 = (string) wp_unslash( $_POST['pass1'] ?? '' );
-        $pass2 = (string) wp_unslash( $_POST['pass2'] ?? '' );
+        $pass1 = (string) ( $_POST['pass1'] ?? '' ); // forme slashée, comme wp-login.php?action=resetpass
+        $pass2 = (string) ( $_POST['pass2'] ?? '' );
 
         if ( ! $key || ! $login || ! $pass1 || ! $pass2 ) {
             wp_send_json_error( array( 'message' => __( 'Tous les champs sont obligatoires.', 'km-family' ) ) );

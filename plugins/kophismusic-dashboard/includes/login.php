@@ -25,7 +25,7 @@ function km_redirect_if_logged_in_on_login_page() {
 // ══════════════════════════════════════════════════════════════
 add_action( 'init', 'km_process_login_post' );
 function km_process_login_post() {
-    if ( $_SERVER['REQUEST_METHOD'] !== 'POST' ) return;
+    if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) !== 'POST' ) return;
     if ( ! isset( $_POST['km_login_nonce'] ) ) return;
     if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['km_login_nonce'] ) ), 'km_login' ) ) return;
 
@@ -42,7 +42,9 @@ function km_process_login_post() {
 
     $creds = array(
         'user_login'    => $login_raw,
-        'user_password' => isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : '',
+        // Forme slashée, comme wp-login.php : avec wp_unslash(), un mot de passe
+        // contenant ' ou \ ne correspondait jamais à celui enregistré par WordPress.
+        'user_password' => isset( $_POST['password'] ) ? (string) $_POST['password'] : '',
         'remember'      => isset( $_POST['remember'] ),
     );
     $user = wp_signon( $creds, is_ssl() );
@@ -422,7 +424,7 @@ function km_render_reset_success() {
 add_action( 'init', 'km_process_password_forms' );
 function km_process_password_forms() {
     // Uniquement si un formulaire est soumis
-    if ( $_SERVER['REQUEST_METHOD'] !== 'POST' ) return;
+    if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) !== 'POST' ) return;
 
     // ── ETAPE 1 : demande de reinitialisation ──
     if ( isset( $_POST['km_do_lost_password'] ) ) {
@@ -475,8 +477,9 @@ function km_process_password_forms() {
 
         $login = isset( $_POST['login'] ) ? sanitize_text_field( wp_unslash( $_POST['login'] ) ) : '';
         $key   = isset( $_POST['key'] )   ? trim( wp_unslash( $_POST['key'] ) )                 : '';
-        $pass1 = isset( $_POST['pass1'] ) ? wp_unslash( $_POST['pass1'] ) : '';
-        $pass2 = isset( $_POST['pass2'] ) ? wp_unslash( $_POST['pass2'] ) : '';
+        // Forme slashée, comme wp-login.php?action=resetpass (voir km_process_login_post).
+        $pass1 = isset( $_POST['pass1'] ) ? (string) $_POST['pass1'] : '';
+        $pass2 = isset( $_POST['pass2'] ) ? (string) $_POST['pass2'] : '';
 
         $base = km_dashboard_url( 'connexion-artiste' );
         $sep  = strpos( $base, '?' ) !== false ? '&' : '?';

@@ -150,7 +150,7 @@ get_header();
         </div>
         <div class="kmfamily-spc__summary-item">
             <span class="kmfamily-spc__summary-label"><?php esc_html_e( 'Montant exact à régler', 'km-family' ); ?></span>
-            <span class="kmfamily-spc__amount"><?php echo esc_html( number_format_i18n( $order['montant'] ) ); ?> <?php echo esc_html( $order['currency'] ); ?></span>
+            <span class="kmfamily-spc__amount"><?php echo esc_html( number_format( (int) $order['montant'], 0, ',', ' ' ) ); ?> <?php echo esc_html( 'XOF' === strtoupper( (string) $order['currency'] ) ? 'F CFA' : $order['currency'] ); ?></span>
         </div>
     </div>
 

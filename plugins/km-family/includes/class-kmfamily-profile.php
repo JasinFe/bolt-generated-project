@@ -271,9 +271,8 @@ class KMFamily_Profile {
                 if ( KMFamily_Security::is_rate_limited( 'change_email', 5, 15 * MINUTE_IN_SECONDS ) ) {
                     KMFamily_Security::rate_limit_response();
                 }
-                $pwd = (string) ( $in['current_password'] ?? '' );
-                if ( $pwd === '' || ( ! wp_check_password( $pwd, $current_user->user_pass, $user_id )
-                                      && ! wp_check_password( wp_slash( $pwd ), $current_user->user_pass, $user_id ) ) ) {
+                $pwd = (string) ( $_POST['current_password'] ?? '' ); // forme slashée, comme le cœur WP
+                if ( $pwd === '' || ! wp_check_password( $pwd, $current_user->user_pass, $user_id ) ) {
                     wp_send_json_error( array( 'message' => __( 'Pour changer d\'e-mail, saisissez votre mot de passe actuel.', 'km-family' ) ) );
                 }
             }
