@@ -9,13 +9,14 @@
 #
 # Idempotent : peut être relancé sans casse.
 set -euo pipefail
+trap 'echo; echo "ÉCHEC à la ligne $LINENO : installation INCOMPLÈTE. Corrigez puis relancez (le script est relançable)."' ERR
 
 : "${DOMAINE:?Définissez DOMAINE (ex. finakopcore.kophisgroup.com)}"
 : "${EMAIL:?Définissez EMAIL (contact Let’s Encrypt)}"
 RELAIS="${RELAIS:-}"
 SANS_CERT="${SANS_CERT:-0}"
 KIT="$(cd "$(dirname "$0")/.." && pwd)"
-PHPV=8.4
+PHPV="${PHPV:-8.4}"   # surchargeable (ex. PHPV=8.5 plus tard)
 
 [ "$(id -u)" -eq 0 ] || { echo "À lancer en root."; exit 1; }
 . /etc/os-release
@@ -77,11 +78,15 @@ install -m 0644 "$KIT/deploiement/php/99-finakop.ini"    /etc/php/${PHPV}/fpm/co
 install -m 0644 "$KIT/deploiement/php/99-finakop.ini"    /etc/php/${PHPV}/cli/conf.d/99-finakop.ini
 # Le pool « www » par défaut ne sert à rien ici.
 [ -f /etc/php/${PHPV}/fpm/pool.d/www.conf ] && mv /etc/php/${PHPV}/fpm/pool.d/www.conf /etc/php/${PHPV}/fpm/pool.d/www.conf.desactive
-# Ajuste le nombre de processus à la mémoire réelle (~60 Mo par processus, 40 % de la RAM).
+# Nombre de processus PHP : borné par la mémoire (~60 Mo chacun, 40 % de la RAM)
+# ET par le processeur (6 par cœur) — au-delà, ils ne font qu'attendre SQLite et le CPU.
 RAM_MO=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
-ENFANTS=$(( RAM_MO * 40 / 100 / 60 )); [ "$ENFANTS" -lt 6 ] && ENFANTS=6
+PAR_RAM=$(( RAM_MO * 40 / 100 / 60 ))
+PAR_CPU=$(( $(nproc) * 6 ))
+ENFANTS=$(( PAR_RAM < PAR_CPU ? PAR_RAM : PAR_CPU ))
+[ "$ENFANTS" -lt 6 ] && ENFANTS=6
 sed -i "s/^pm.max_children .*/pm.max_children      = ${ENFANTS}/" /etc/php/${PHPV}/fpm/pool.d/finakop.conf
-echo "   → pm.max_children = ${ENFANTS} (RAM ${RAM_MO} Mo)"
+echo "   → pm.max_children = ${ENFANTS} (RAM ${RAM_MO} Mo, $(nproc) cœurs)"
 php-fpm${PHPV} -t
 systemctl enable --now php${PHPV}-fpm
 systemctl reload php${PHPV}-fpm
@@ -130,14 +135,20 @@ fi
 
 echo "==> Mémoire d'échange (2 Go) si absente"
 if ! swapon --show | grep -q .; then
-  fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+  fallocate -l 2G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=2048 status=none
+  chmod 600 /swapfile
+  mkswap /swapfile >/dev/null
+  swapon /swapfile
   grep -q '/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
   sysctl -w vm.swappiness=10 >/dev/null; echo 'vm.swappiness=10' > /etc/sysctl.d/90-finakop.conf
 fi
 
 echo "==> nginx"
 rm -f /etc/nginx/sites-enabled/default
+# Serveur sans IPv6 : nginx refuserait de démarrer sur « listen [::] ».
+sans_ipv6() { [ -s /proc/net/if_inet6 ] || sed -i '/listen \[::\]/d' "$1"; }
 sed "s/finakopcore.kophisgroup.com/${DOMAINE}/g" "$KIT/deploiement/nginx/finakop.conf" > /etc/nginx/sites-available/finakop.conf
+sans_ipv6 /etc/nginx/sites-available/finakop.conf
 CERT=/etc/letsencrypt/live/${DOMAINE}/fullchain.pem
 
 obtenir_cert() {  # $1 = domaine
@@ -150,6 +161,7 @@ server { listen 80; listen [::]:80; server_name ${d};
   location ^~ /.well-known/acme-challenge/ { root /var/www/acme; }
   location / { return 503; } }
 EOF
+  sans_ipv6 /etc/nginx/sites-enabled/00-acme.conf
   nginx -t && systemctl reload nginx
   certbot certonly --webroot -w /var/www/acme -d "$d" -m "$EMAIL" --agree-tos -n
   rm -f /etc/nginx/sites-enabled/00-acme.conf
@@ -173,12 +185,15 @@ if [ -n "$RELAIS" ]; then
   fi
   install -m 0644 "$KIT/deploiement/systemd/finakop-relais.service" /etc/systemd/system/finakop-relais.service
   sed "s/relais.kophisgroup.com/${RELAIS}/g" "$KIT/deploiement/nginx/relais.conf" > /etc/nginx/sites-available/relais.conf
+  sans_ipv6 /etc/nginx/sites-available/relais.conf
   if obtenir_cert "$RELAIS"; then ln -sf /etc/nginx/sites-available/relais.conf /etc/nginx/sites-enabled/relais.conf; fi
   systemctl daemon-reload
   [ -L /srv/finakop/current ] && systemctl enable --now finakop-relais || echo "   (le relais démarrera après le premier déploiement du code)"
 fi
 
-nginx -t && systemctl enable --now nginx && systemctl reload nginx
+nginx -t
+systemctl enable --now nginx
+systemctl reload nginx
 systemctl enable --now certbot.timer 2>/dev/null || true
 # Recharger nginx après chaque renouvellement de certificat.
 install -d /etc/letsencrypt/renewal-hooks/deploy

@@ -8,7 +8,7 @@
 # Le code est installé en lecture seule (root) : le pool PHP ne peut pas le modifier.
 set -euo pipefail
 R=/srv/finakop/releases
-PHPV=8.4
+PHPV="${PHPV:-$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')}"
 [ "$(id -u)" -eq 0 ] || { echo "À lancer en root."; exit 1; }
 
 recharger() {

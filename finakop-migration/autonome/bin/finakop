@@ -49,12 +49,17 @@ function fka_verrou( $nom ) {
  * de l'API), mise en cache par version, puis les amorçages sans session. Aucune
  * modification de app/ n'est nécessaire.
  *
- * RECOMMANDATION ÉDITEUR : ajouter dans app/index.php, juste avant
- * « $fkc_req_path = fkc_rel_path(); », la ligne
- *     if ( defined( 'FKC_CLI_NOYAU' ) ) { return; }
- * rendrait cette extraction inutile. Elle reste compatible avec les deux.
+ * Depuis la 1.875.6, l'extension fournit app/noyau.php, qui fait exactement
+ * cela ; l'extraction ci-dessous ne sert plus qu'aux versions antérieures.
  */
 function fka_charger_noyau() {
+	// 1.875.6 et suivantes : point de chargement officiel, fourni par l'extension.
+	if ( is_file( FKC_ROOT . 'noyau.php' ) ) {
+		if ( true !== ( require FKC_ROOT . 'noyau.php' ) ) { fka_fatal( 'Registre absent : FinaKop n\'a encore jamais été ouvert sur ce dossier de données.' ); }
+		return;
+	}
+
+	// Versions antérieures : on exécute app/index.php jusqu'à l'aiguillage de l'API.
 	$marqueur = '$fkc_req_path = fkc_rel_path();';
 	$src = (string) file_get_contents( FKC_ROOT . 'index.php' );
 	$pos = strpos( $src, $marqueur );
