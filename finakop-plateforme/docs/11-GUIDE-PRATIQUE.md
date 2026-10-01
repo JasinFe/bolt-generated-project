@@ -34,17 +34,13 @@ Règles d'or :
 
 Cette mise à jour ajoute la double authentification et rend la plateforme invisible aux moteurs et aux IA. Elle ne demande aucune migration de base, et une sauvegarde de tous les clients est faite automatiquement avant la bascule.
 
-1. Envoyez `finakop-plateforme-1.876.2.zip` dans votre **dossier personnel** (`~/`), pas dans `domains/`. Avec PowerShell depuis votre poste :
-
-    ```powershell
-    scp -P 65002 .\finakop-plateforme-1.876.2.zip u581636075@195.179.239.165:~/
-    ```
+1. Avec le gestionnaire de fichiers hPanel, déposez `finakop-plateforme-1.876.2.zip` là où il s'ouvre : `domains/finakoperp.com/` (à côté de `public_html`, **pas dedans**). En SSH, ce dossier s'écrit `~/domains/finakoperp.com/`.
 
 2. En SSH, lancez le script **extrait de l'archive**. Pour cette version seulement, celui déjà installé (1.876.1) ne connaît pas encore les nouvelles règles :
 
     ```bash
-    unzip -o -j ~/finakop-plateforme-1.876.2.zip finakop-plateforme/scripts/deployer.sh -d /tmp/fkdep \
-      && PHP=/opt/alt/php84/usr/bin/php bash /tmp/fkdep/deployer.sh ~/finakop-plateforme-1.876.2.zip
+    unzip -o -j ~/domains/finakoperp.com/finakop-plateforme-1.876.2.zip finakop-plateforme/scripts/deployer.sh -d /tmp/fkdep \
+      && PHP=/opt/alt/php84/usr/bin/php bash /tmp/fkdep/deployer.sh ~/domains/finakoperp.com/finakop-plateforme-1.876.2.zip
     ```
 
 3. Attendu en fin de sortie : `FinaKop Plateforme 1.876.2 en service.`
@@ -62,7 +58,7 @@ Cette mise à jour ajoute la double authentification et rend la plateforme invis
 **Mises à jour suivantes** (à partir de 1.876.3), la commande habituelle suffit :
 
 ```bash
-PHP=/opt/alt/php84/usr/bin/php bash ~/finakop/current/scripts/deployer.sh ~/finakop-plateforme-X.Y.Z.zip
+PHP=/opt/alt/php84/usr/bin/php bash ~/finakop/current/scripts/deployer.sh ~/domains/finakoperp.com/finakop-plateforme-X.Y.Z.zip
 ```
 
 **Revenir à la version précédente** en cas de souci :
@@ -74,8 +70,8 @@ PHP=/opt/alt/php84/usr/bin/php bash ~/finakop/current/scripts/deployer.sh --reto
 Astuces :
 
 - Chaque livraison porte un **nouveau numéro** : renvoyer le même numéro ne fait qu'une « réactivation », sans nouveau code.
-- Le message `Usage : bash deployer.sh <finakop-plateforme-X.Y.Z.zip>` signifie que le chemin du ZIP est faux : vérifiez avec `ls ~/*.zip`.
-- Une fois la mise à jour faite, supprimez le ZIP : `rm ~/finakop-plateforme-1.876.2.zip`.
+- Le message `Usage : bash deployer.sh <finakop-plateforme-X.Y.Z.zip>` signifie que le chemin du ZIP est faux : vérifiez avec `ls ~/domains/finakoperp.com/*.zip`.
+- Une fois la mise à jour faite, supprimez le ZIP : `rm ~/domains/finakoperp.com/finakop-plateforme-1.876.2.zip`.
 
 ## 3. Installer le site vitrine finakoperp.com
 
@@ -107,19 +103,13 @@ public_html/
 
 ### Méthode B — SSH (le plus rapide)
 
-Envoyez d'abord le ZIP dans votre dossier personnel (PowerShell, depuis votre poste) :
-
-```powershell
-scp -P 65002 .\finakop-site-vitrine-1.876.2.zip u581636075@195.179.239.165:~/
-```
-
-Puis, en SSH :
+Déposez d'abord le ZIP avec le gestionnaire de fichiers dans `domains/finakoperp.com/` (à côté de `public_html`), puis, en SSH :
 
 ```bash
 cd ~/domains/finakoperp.com/public_html \
   && rm -f index.html default.php \
   && { [ -f .htaccess ] && cp .htaccess ~/htaccess-public_html.ancien || true; } \
-  && unzip -o ~/finakop-site-vitrine-1.876.2.zip \
+  && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-1.876.2.zip \
   && chmod 644 index.html robots.txt sitemap.xml .htaccess assets/* \
   && chmod 755 assets \
   && ls -la
@@ -283,7 +273,7 @@ tail -5 ~/finakop-data/plateforme/logs/cron.log  # le cron tourne-t-il ?
 | Symptôme | Cause probable | Solution |
 | --- | --- | --- |
 | `sodium` ou `extension manquante` en SSH | Le `php` par défaut est la 8.5, sans sodium | Préfixez la commande par `PHP=/opt/alt/php84/usr/bin/php`, ou utilisez l'alias `fk` |
-| `Usage : bash deployer.sh …` | Chemin du ZIP faux | `ls ~/*.zip`, puis relancez avec le bon chemin |
+| `Usage : bash deployer.sh …` | Chemin du ZIP faux | `ls ~/domains/finakoperp.com/*.zip`, puis relancez avec le bon chemin |
 | « Version déjà présente : réactivation » | Même numéro que la version installée | Normal si voulu ; sinon, il faut une livraison au numéro supérieur |
 | L'espace renvoie vers l'écran *Licence* | Licence absente, expirée ou émise pour une autre adresse | Émettez un jeton pour `<client>.finakoperp.com`, puis `fk --tenant=<client> licence:installer 'JETON'` |
 | « Code incorrect » à la 2FA | Heure du téléphone décalée, ou code déjà utilisé | Heure automatique ; attendez le code suivant ; sinon un code de secours |

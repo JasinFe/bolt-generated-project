@@ -71,7 +71,7 @@ Contenu du ZIP `finakop-site-vitrine.zip` : `index.html`, `assets/`, `robots.txt
 3. Envoyez le ZIP dans `public_html`, puis *Extraire* (fichier `.htaccess` compris : activez l'affichage des fichiers cachés pour le vérifier).
    En SSH, au lieu des étapes 1 à 3 :
    ```bash
-   cd ~/domains/finakoperp.com/public_html && rm -f index.html default.php && unzip -o ~/finakop-site-vitrine.zip && chmod 644 index.html robots.txt sitemap.xml .htaccess assets/*
+   cd ~/domains/finakoperp.com/public_html && rm -f index.html default.php && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-1.876.2.zip && chmod 644 index.html robots.txt sitemap.xml .htaccess assets/*
    ```
 4. Adresse de contact : la page propose `contact@finakoperp.com`. Créez cette boîte dans hPanel (Emails), ou remplacez l'adresse dans `index.html`.
 5. Contrôle :
@@ -86,8 +86,8 @@ Contenu du ZIP `finakop-site-vitrine.zip` : `index.html`, `assets/`, `robots.txt
 Cette fois, utilisez le script **de l'archive** : celui installé (1.876.1) ne sait pas encore publier les nouvelles règles. Les versions suivantes le feront d'elles-mêmes.
 
 ```bash
-unzip -o -j ~/finakop-plateforme-1.876.2.zip finakop-plateforme/scripts/deployer.sh -d /tmp/fkdep \
-  && PHP=/opt/alt/php84/usr/bin/php bash /tmp/fkdep/deployer.sh ~/finakop-plateforme-1.876.2.zip
+unzip -o -j ~/domains/finakoperp.com/finakop-plateforme-1.876.2.zip finakop-plateforme/scripts/deployer.sh -d /tmp/fkdep \
+  && PHP=/opt/alt/php84/usr/bin/php bash /tmp/fkdep/deployer.sh ~/domains/finakoperp.com/finakop-plateforme-1.876.2.zip
 ```
 
 Aucune migration de base n'est nécessaire : la table de la 2FA se crée d'elle-même.
