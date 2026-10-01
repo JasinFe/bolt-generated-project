@@ -1,0 +1,67 @@
+{
+  "plans": [
+    {
+      "id": "romains",
+      "title": "Le chemin des Romains",
+      "intro": "Présentation simple de l'Évangile en cinq étapes, toutes tirées de l'épître aux Romains.",
+      "steps": [
+        {"title": "Tous ont péché", "ref": "Romains 3:23", "point": "Personne n'est à la hauteur de la sainteté de Dieu."},
+        {"title": "Le salaire du péché", "ref": "Romains 6:23", "point": "Le péché sépare de Dieu ; mais Dieu offre un don gratuit."},
+        {"title": "Dieu prouve son amour", "ref": "Romains 5:8", "point": "Christ est mort pour nous alors que nous étions encore pécheurs."},
+        {"title": "Confesser et croire", "ref": "Romains 10:9-10", "point": "Le salut se reçoit par la foi en Jésus, mort et ressuscité."},
+        {"title": "Quiconque invoque", "ref": "Romains 10:13", "point": "L'invitation est ouverte à tous, aujourd'hui."},
+        {"title": "Paix avec Dieu", "ref": "Romains 5:1", "point": "Justifiés par la foi, nous avons la paix avec Dieu."}
+      ]
+    },
+    {
+      "id": "pont",
+      "title": "Le pont (illustration de la croix)",
+      "intro": "Dessinez deux falaises : l'homme et Dieu, séparés par le péché ; la croix forme le pont.",
+      "steps": [
+        {"title": "Dieu nous aime et nous a créés pour lui", "ref": "Jean 10:10", "point": "Dieu veut donner une vie abondante."},
+        {"title": "Le gouffre du péché", "ref": "Ésaïe 59:2", "point": "Nos fautes ont creusé une séparation."},
+        {"title": "Nos efforts ne suffisent pas", "ref": "Éphésiens 2:8-9", "point": "Ni la religion ni les bonnes œuvres ne franchissent le gouffre."},
+        {"title": "La croix est le pont", "ref": "1 Pierre 3:18", "point": "Christ, le juste, est mort pour les injustes afin de nous amener à Dieu."},
+        {"title": "Le seul chemin", "ref": "Jean 14:6", "point": "Jésus est le chemin, la vérité et la vie."},
+        {"title": "Traverser : recevoir Jésus", "ref": "Jean 1:12", "point": "Le recevoir, c'est devenir enfant de Dieu."},
+        {"title": "L'assurance", "ref": "1 Jean 5:11-13", "point": "Celui qui a le Fils a la vie."}
+      ]
+    },
+    {
+      "id": "temoignage",
+      "title": "Mon témoignage en 3 minutes",
+      "intro": "Structure pour partager votre propre histoire, appuyée sur l'exemple de Paul (Actes 26).",
+      "steps": [
+        {"title": "Avant de connaître Christ", "ref": "Actes 26:4-11", "point": "Ma vie, mes besoins, ce que je cherchais."},
+        {"title": "Comment je l'ai rencontré", "ref": "Actes 26:12-18", "point": "Le moment, la parole, la décision."},
+        {"title": "Ce qui a changé", "ref": "2 Corinthiens 5:17", "point": "Les fruits concrets de cette nouvelle vie."},
+        {"title": "L'invitation", "ref": "Apocalypse 3:20", "point": "Jésus frappe à la porte : voulez-vous lui ouvrir ?"}
+      ]
+    },
+    {
+      "id": "jean",
+      "title": "Les 7 signes de l'Évangile de Jean",
+      "intro": "Parcours pour une étude d'évangélisation en 7 rencontres : « afin que vous croyiez » (Jean 20:31).",
+      "steps": [
+        {"title": "L'eau changée en vin", "ref": "Jean 2:1-11", "point": "Jésus transforme ce qui manque."},
+        {"title": "Le fils de l'officier", "ref": "Jean 4:46-54", "point": "Sa parole suffit, même à distance."},
+        {"title": "Le paralytique de Béthesda", "ref": "Jean 5:1-9", "point": "Veux-tu être guéri ?"},
+        {"title": "Les pains multipliés", "ref": "Jean 6:1-14", "point": "Il est le pain de vie."},
+        {"title": "Jésus marche sur la mer", "ref": "Jean 6:16-21", "point": "C'est moi, n'ayez pas peur."},
+        {"title": "L'aveugle-né", "ref": "Jean 9:1-7", "point": "Il est la lumière du monde."},
+        {"title": "La résurrection de Lazare", "ref": "Jean 11:38-44", "point": "Il est la résurrection et la vie."}
+      ]
+    }
+  ],
+  "questions": [
+    {"q": "Dieu existe-t-il ?", "refs": ["Romains 1:20", "Psaumes 19:2-5", "Hébreux 11:6", "Actes 17:24-28"]},
+    {"q": "Pourquoi la souffrance ?", "refs": ["Romains 8:18-22", "Jean 16:33", "2 Corinthiens 4:16-18", "Apocalypse 21:4"]},
+    {"q": "Toutes les religions se valent-elles ?", "refs": ["Jean 14:6", "Actes 4:12", "1 Timothée 2:5"]},
+    {"q": "Je suis trop mauvais pour être pardonné", "refs": ["1 Timothée 1:15", "Ésaïe 1:18", "Luc 23:39-43", "1 Jean 1:9"]},
+    {"q": "Je suis quelqu'un de bien, cela ne suffit pas ?", "refs": ["Romains 3:10-12", "Ésaïe 64:5", "Éphésiens 2:8-9", "Tite 3:5"]},
+    {"q": "Jésus est-il vraiment ressuscité ?", "refs": ["1 Corinthiens 15:3-8", "Luc 24:36-43", "Actes 1:3"]},
+    {"q": "La Bible est-elle fiable ?", "refs": ["2 Timothée 3:16-17", "2 Pierre 1:20-21", "Ésaïe 40:8", "Luc 1:1-4"]},
+    {"q": "Comment être sûr d'être sauvé ?", "refs": ["1 Jean 5:13", "Jean 10:27-29", "Romains 8:1", "Jean 5:24"]}
+  ],
+  "votd": ["Jean 3:16","Psaumes 23:1","Philippiens 4:13","Jérémie 29:11","Romains 8:28","Ésaïe 41:10","Proverbes 3:5-6","Matthieu 11:28","Josué 1:9","Psaumes 46:2","Ésaïe 40:31","2 Corinthiens 5:17","Galates 2:20","Psaumes 119:105","Lamentations 3:22-23","Romains 12:2","Hébreux 11:1","1 Pierre 5:7","Psaumes 37:4","Matthieu 6:33","Jean 14:27","Romains 15:13","Éphésiens 3:20","2 Timothée 1:7","Psaumes 91:1","Ésaïe 26:3","Jean 15:5","1 Jean 4:19","Psaumes 27:1","Michée 6:8","Sophonie 3:17"]
+}

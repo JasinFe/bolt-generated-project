@@ -1,0 +1,15 @@
+{
+  "name": "mister-preacher",
+  "version": "1.0.0",
+  "description": "Mister Preacher (MP) — plateforme d'étude biblique : recherche, références croisées, mots originaux, sermons, chants et évangélisation.",
+  "main": "server/index.js",
+  "private": true,
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "data": "node scripts/build-data.js",
+    "test": "node --test test/*.test.js"
+  }
+}

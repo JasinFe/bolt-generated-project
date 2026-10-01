@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mister Preacher</title>
+  <meta name="description" content="Mister Preacher (MP) — étude biblique : recherche, références croisées, mots originaux (Strong), sermons, chants et évangélisation.">
+  <meta name="theme-color" content="#7a2e2e">
+  <link rel="icon" href="/img/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <a class="brand" href="#/">
+      <span class="logo">MP</span>
+      <span class="name">Mister Preacher<small>Étude biblique</small></span>
+    </a>
+    <form class="global-search" id="globalSearch" role="search">
+      <input type="search" id="globalQ" placeholder="Référence (Jean 3:16) ou mots (« vie éternelle »)…" aria-label="Rechercher">
+      <button class="btn primary" type="submit">Chercher</button>
+    </form>
+    <a class="icon-btn search-link" href="#/recherche" style="display:none" aria-label="Rechercher">🔎</a>
+    <select id="versionSel" aria-label="Version de la Bible" title="Version principale"></select>
+    <button class="icon-btn" id="themeBtn" title="Thème clair / sombre" aria-label="Changer de thème">◐</button>
+  </header>
+
+  <div class="layout">
+    <nav class="sidenav" id="sidenav">
+      <a href="#/" data-nav="home"><span class="ico">⌂</span>Accueil</a>
+      <div class="sep">Bible</div>
+      <a href="#/lire" data-nav="lire"><span class="ico">📖</span>Lire</a>
+      <a href="#/recherche" data-nav="recherche"><span class="ico">🔎</span>Rechercher</a>
+      <a href="#/comparer" data-nav="comparer"><span class="ico">⇄</span>Comparer</a>
+      <a href="#/lexique" data-nav="lexique"><span class="ico">א</span>Mots originaux</a>
+      <a href="#/themes" data-nav="themes"><span class="ico">✦</span>Thèmes</a>
+      <a href="#/paralleles" data-nav="paralleles"><span class="ico">∥</span>Passages parallèles</a>
+      <div class="sep">Atelier</div>
+      <a href="#/etude" data-nav="etude"><span class="ico">✎</span>Mes études</a>
+      <a href="#/sermon" data-nav="sermon"><span class="ico">🎤</span>Sermons</a>
+      <a href="#/chant" data-nav="chant"><span class="ico">🎵</span>Chants &amp; textes</a>
+      <a href="#/evangelisation" data-nav="evangelisation"><span class="ico">🌍</span>Évangélisation</a>
+      <div class="sep">Infos</div>
+      <a href="#/apropos" data-nav="apropos"><span class="ico">ⓘ</span>Versions &amp; sources</a>
+    </nav>
+    <main id="view" tabindex="-1"></main>
+  </div>
+
+  <aside class="panel" id="panel" aria-live="polite">
+    <header><h3 id="panelTitle"></h3><button class="icon-btn" id="panelClose" aria-label="Fermer">✕</button></header>
+    <div class="body" id="panelBody"></div>
+  </aside>
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

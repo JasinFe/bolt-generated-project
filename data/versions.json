@@ -1,0 +1,124 @@
+[
+  {
+    "id": "JND",
+    "name": "Bible J.N. Darby (1885)",
+    "short": "Darby",
+    "lang": "fr",
+    "year": 1885,
+    "license": "Domaine public",
+    "strong": true,
+    "description": "Traduction littérale très prisée pour l'étude, avec numéros Strong et notes de Darby.",
+    "stats": {
+      "books": 66,
+      "verses": 31167
+    },
+    "source": "https://github.com/scrollmapper/bible_databases/tree/master/sources/fr/FreJND",
+    "dir": "ltr"
+  },
+  {
+    "id": "MAR",
+    "name": "Bible David Martin (1744)",
+    "short": "Martin",
+    "lang": "fr",
+    "year": 1744,
+    "license": "Domaine public",
+    "description": "Révision protestante de la Bible de Genève, avec titres de sections.",
+    "stats": {
+      "books": 66,
+      "verses": 31166
+    },
+    "source": "https://github.com/scrollmapper/bible_databases/tree/master/sources/fr/FreBDM1744",
+    "dir": "ltr"
+  },
+  {
+    "id": "CRA",
+    "name": "Bible Augustin Crampon (1923)",
+    "short": "Crampon",
+    "lang": "fr",
+    "year": 1923,
+    "license": "Domaine public",
+    "description": "Traduction catholique incluant les livres deutérocanoniques.",
+    "stats": {
+      "books": 73,
+      "verses": 35486
+    },
+    "source": "https://github.com/scrollmapper/bible_databases/tree/master/sources/fr/FreCrampon",
+    "dir": "ltr"
+  },
+  {
+    "id": "LXX",
+    "name": "Septante — trad. Giguet (1872)",
+    "short": "Septante",
+    "lang": "fr",
+    "year": 1872,
+    "license": "Domaine public",
+    "description": "L'Ancien Testament grec (LXX) traduit en français : apocryphes, Hénoch, 3–4 Maccabées, Psaumes de Salomon.",
+    "stats": {
+      "books": 55,
+      "verses": 29309
+    },
+    "source": "https://github.com/scrollmapper/bible_databases/tree/master/sources/fr/FreLXXGiguet",
+    "dir": "ltr"
+  },
+  {
+    "id": "KJVA",
+    "name": "King James Version + Apocrypha (1769)",
+    "short": "KJV",
+    "lang": "en",
+    "year": 1769,
+    "license": "Domaine public (texte) — balisage CrossWire GPL",
+    "strong": true,
+    "description": "La KJV avec numéros Strong et les apocryphes.",
+    "stats": {
+      "books": 80,
+      "verses": 36819
+    },
+    "source": "https://github.com/scrollmapper/bible_databases/tree/master/sources/en/KJVA",
+    "dir": "ltr"
+  },
+  {
+    "id": "WLC",
+    "name": "Codex de Leningrad (Westminster)",
+    "short": "Hébreu",
+    "lang": "he",
+    "dir": "rtl",
+    "license": "Domaine public",
+    "description": "Texte hébreu massorétique de l'Ancien Testament.",
+    "stats": {
+      "books": 39,
+      "verses": 23213
+    },
+    "source": "https://github.com/scrollmapper/bible_databases/tree/master/sources/hbo/WLC"
+  },
+  {
+    "id": "SRGNT",
+    "name": "Nouveau Testament grec (Statistical Restoration)",
+    "short": "Grec",
+    "lang": "grc",
+    "year": 2022,
+    "license": "CC BY 4.0 — Alan Bunning, Center for New Testament Restoration",
+    "strong": true,
+    "description": "Texte grec du Nouveau Testament avec numéros Strong.",
+    "stats": {
+      "books": 27,
+      "verses": 7914
+    },
+    "source": "https://github.com/scrollmapper/bible_databases/tree/master/sources/grc/StatResGNT",
+    "dir": "ltr"
+  },
+  {
+    "id": "VUL",
+    "name": "Vulgate Clémentine",
+    "short": "Vulgate",
+    "lang": "la",
+    "year": 1592,
+    "license": "Domaine public",
+    "description": "La Bible latine de l'Église, avec deutérocanoniques.",
+    "stats": {
+      "books": 73,
+      "verses": 35809
+    },
+    "source": "https://github.com/scrollmapper/bible_databases/tree/master/sources/la/VulgClementine",
+    "dir": "ltr"
+  }
+]

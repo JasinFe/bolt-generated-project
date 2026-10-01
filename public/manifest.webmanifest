@@ -1,0 +1,11 @@
+{
+  "name": "Mister Preacher",
+  "short_name": "MP",
+  "description": "Étude biblique pour prédicateurs, pasteurs, lecteurs et artistes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf7f2",
+  "theme_color": "#7a2e2e",
+  "lang": "fr",
+  "icons": [{ "src": "/img/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
