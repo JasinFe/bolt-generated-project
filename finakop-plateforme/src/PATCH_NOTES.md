@@ -1,3 +1,14 @@
+# Patch 1.876.5 — Lecteur des vidéos d'aide
+
+Base : 1.876.4.
+
+- `Modules/Aide/Views/videos.php` : bouton de lecture superposé (`.ah-vlire`), masqué dès que la vidéo démarre et rétabli à la fin ; bouton « Plein écran » (`.ah-vplein`) et double-clic — `requestFullscreen`, préfixe WebKit, repli `webkitEnterFullscreen` sur iPhone.
+- `app.css` : `.ah-vlire[hidden]` (l'attribut l'emporte sur le style), lecteur en plein écran (`object-fit: contain`).
+
+Tests : `tests/aide_videos_plein_ecran_1876_5.php`.
+
+---
+
 # Patch 1.876.4 — Application d'authentification privilégiée, centre d'aide refait
 
 Base : 1.876.3.

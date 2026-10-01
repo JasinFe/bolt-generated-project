@@ -2,6 +2,7 @@
 /**
  * Vidéos d'aide (1.876.4) : écrans réels de FinaKop, données d'un espace de
  * démonstration. Fichiers servis par la plateforme (aucun service extérieur).
+ * 1.876.5 : bouton de lecture masqué pendant la lecture, bouton plein écran.
  */
 defined( 'FKC_ROOT' ) || die( 'Accès direct interdit.' ); ?>
 <div class="bar"><a class="btn btn-ghost btn-sm" href="<?= e( url( 'aide' ) ) ?>"><span aria-hidden="true">←</span> Centre d'aide</a></div>
@@ -20,6 +21,8 @@ defined( 'FKC_ROOT' ) || die( 'Accès direct interdit.' ); ?>
 				<source src="<?= e( fkc_asset( $v['fichier'] ) ) ?>" type="video/mp4">
 				Votre navigateur ne lit pas cette vidéo.
 			</video>
+			<button type="button" class="ah-vlire" data-video="vid-<?= e( $v['id'] ) ?>" aria-label="Lire la vidéo « <?= e( $v['titre'] ) ?> »"><span class="ah-play" aria-hidden="true"></span></button>
+			<button type="button" class="ah-vplein" data-video="vid-<?= e( $v['id'] ) ?>" aria-label="Afficher la vidéo en plein écran">⛶ <b>Plein écran</b></button>
 		</div>
 		<div class="ah-vinfo">
 			<span class="ah-vnum"><?= $i + 1 ?></span>
@@ -44,6 +47,19 @@ defined( 'FKC_ROOT' ) || die( 'Accès direct interdit.' ); ?>
 	</div>
 </div>
 <script>
+function ahPlein(v) {
+	var c = v.parentNode;
+	if (document.fullscreenElement || document.webkitFullscreenElement) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+	if (c.requestFullscreen) { c.requestFullscreen(); } else if (c.webkitRequestFullscreen) { c.webkitRequestFullscreen(); } else if (v.webkitEnterFullscreen) { v.webkitEnterFullscreen(); }
+}
+document.querySelectorAll('.ah-vplayer video').forEach(function (v) {
+	var lire = v.parentNode.querySelector('.ah-vlire'), plein = v.parentNode.querySelector('.ah-vplein');
+	lire.addEventListener('click', function () { lire.hidden = true; v.play(); });
+	plein.addEventListener('click', function () { if (v.paused) { v.play(); } ahPlein(v); });
+	v.addEventListener('dblclick', function () { ahPlein(v); });
+	v.addEventListener('play', function () { lire.hidden = true; });
+	v.addEventListener('ended', function () { lire.hidden = false; });
+});
 document.querySelectorAll('.ah-chap').forEach(function (g) {
 	var v = document.getElementById(g.dataset.video);
 	g.querySelectorAll('button').forEach(function (b) {
