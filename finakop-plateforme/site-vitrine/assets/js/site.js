@@ -251,6 +251,22 @@
       });
     });
 
+    /* Tarifs : bascule mensuel / annuel et gamme FinaKop / Creative Suite */
+    var trfs = $('#trfs');
+    if (trfs) {
+      var basc = function (sel, attr, rejouer) {
+        $$(sel + ' button').forEach(function (b) {
+          b.addEventListener('click', function () {
+            $$(sel + ' button').forEach(function (o) { var on = o === b; o.classList.toggle('actif', on); o.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+            trfs.dataset[attr] = b.dataset[attr];
+            if (rejouer && !calme) $$('.trf', trfs).forEach(function (c, i) { c.style.animation = 'none'; void c.offsetWidth; c.style.animation = ''; c.style.animationDelay = (i % 6) * 0.05 + 's'; });
+          });
+        });
+      };
+      basc('.trf-bascule', 'periode', false);
+      basc('.trf-gammes', 'gamme', true);
+    }
+
     /* Visionneuse d'images */
     var vis = $('#visionneuse'), visImg = $('img', vis);
     $$('#galerieImgs figure').forEach(function (f) {

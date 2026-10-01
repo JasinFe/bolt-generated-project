@@ -98,13 +98,13 @@ Le formulaire envoie chaque demande à **supports@finakoperp.com**, et l'expédi
 
 ### Méthode A — SSH (le plus sûr)
 
-Déposez `finakop-site-vitrine-2.4.zip` avec le gestionnaire de fichiers dans `domains/finakoperp.com/` (à côté de `public_html`, pas dedans), puis :
+Déposez `finakop-site-vitrine-2.5.zip` avec le gestionnaire de fichiers dans `domains/finakoperp.com/` (à côté de `public_html`, pas dedans), puis :
 
 ```bash
 cd ~/domains/finakoperp.com/public_html \
   && rm -rf assets index.html default.php merci.html contact.php robots.txt sitemap.xml \
   && { [ -f .htaccess ] && cp .htaccess ~/htaccess-public_html.ancien || true; } \
-  && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-2.4.zip \
+  && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-2.5.zip \
   && find assets -type d -exec chmod 755 {} + && find assets -type f -exec chmod 644 {} + \
   && chmod 644 index.html merci.html contact.php robots.txt sitemap.xml .htaccess \
   && ls -la
@@ -117,7 +117,7 @@ La première ligne retire l'ancienne vitrine (pas `finakop-app`).
 1. hPanel → **Sites web** → finakoperp.com → **Gestionnaire de fichiers** → `public_html`.
 2. Supprimez l'ancienne vitrine : le dossier `assets` et les fichiers `index.html`, `robots.txt`, `sitemap.xml` (et `default.php` s'il existe). **Ne touchez pas** à `finakop-app`.
 3. Affichez les fichiers cachés (réglages du gestionnaire) et renommez l'ancien `.htaccess` en `.htaccess.ancien`.
-4. **Téléverser** → `finakop-site-vitrine-2.4.zip` dans `public_html`, puis clic droit → **Extraire** dans `public_html` même.
+4. **Téléverser** → `finakop-site-vitrine-2.5.zip` dans `public_html`, puis clic droit → **Extraire** dans `public_html` même.
 5. Vérifiez que `index.html`, `contact.php` et `assets/` sont directement dans `public_html`, puis supprimez le ZIP.
 
 ### Lire les demandes reçues

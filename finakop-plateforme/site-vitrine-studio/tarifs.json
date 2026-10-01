@@ -1,0 +1,265 @@
+{
+ "_source": "Grille tarifaire validée par KOPHI'S GROUP SAS (octobre 2026). Prix nets en F CFA, TVA non applicable (régime TEE). Annuel = 10 mois.",
+ "core": [
+  {
+   "nom": "START",
+   "tier": "starter",
+   "mensuel": 5000,
+   "annuel": 50000,
+   "cible": "TPE",
+   "badge": "Offre TPE",
+   "quotas": [
+    1,
+    2,
+    1,
+    "1 Go"
+   ],
+   "points": [
+    "Comptabilité SYSCOHADA, facture normalisée (FNE)",
+    "Caisse avec Mobile Money, stocks, scan",
+    "1 pack métier"
+   ]
+  },
+  {
+   "nom": "ESSENTIEL",
+   "tier": "starter",
+   "mensuel": 9900,
+   "annuel": 99000,
+   "cible": "Petite entreprise",
+   "quotas": [
+    1,
+    5,
+    1,
+    "2 Go"
+   ],
+   "points": [
+    "Tout START",
+    "Jusqu'à 5 utilisateurs",
+    "Tableaux de bord"
+   ]
+  },
+  {
+   "nom": "BUSINESS",
+   "tier": "business",
+   "mensuel": 19900,
+   "annuel": 199000,
+   "cible": "PME",
+   "badge": "Le plus choisi",
+   "quotas": [
+    3,
+    10,
+    3,
+    "5 Go"
+   ],
+   "points": [
+    "Tout ESSENTIEL",
+    "Comptabilité analytique",
+    "Fiscalité et déclarations DGI",
+    "Recouvrement des créances"
+   ]
+  },
+  {
+   "nom": "PRO",
+   "tier": "pro",
+   "mensuel": 34900,
+   "annuel": 349000,
+   "cible": "PME structurée",
+   "quotas": [
+    5,
+    25,
+    10,
+    "10 Go"
+   ],
+   "points": [
+    "Tout BUSINESS",
+    "Ressources humaines",
+    "API et clés API"
+   ]
+  },
+  {
+   "nom": "ENTREPRISE",
+   "tier": "enterprise_standard",
+   "mensuel": 59900,
+   "annuel": 599000,
+   "cible": "Groupe, entreprise",
+   "quotas": [
+    10,
+    50,
+    25,
+    "25 Go"
+   ],
+   "points": [
+    "Tout PRO",
+    "Paie",
+    "Circuits de validation, BI avancée"
+   ]
+  },
+  {
+   "nom": "ENTREPRISE+",
+   "tier": "enterprise_avancee",
+   "mensuel": 99900,
+   "annuel": null,
+   "des": true,
+   "cible": "Grand compte",
+   "quotas": [
+    "25 à 50",
+    "150 à 300",
+    "60 à 150",
+    "50 à 100 Go"
+   ],
+   "points": [
+    "Tout ENTREPRISE",
+    "Serveur dédié",
+    "Multi-devises, entrepôt de données (Premium)",
+    "Support premium"
+   ]
+  }
+ ],
+ "creative": [
+  {
+   "nom": "Creative STARTER",
+   "mensuel": 7900,
+   "annuel": 79000,
+   "cible": "Créateur",
+   "points": [
+    "Gestion FinaKop ESSENTIEL",
+    "Royalties & droits d'auteur",
+    "5 artistes · 100 œuvres"
+   ],
+   "quotas": [
+    1,
+    5,
+    1,
+    "2 Go"
+   ]
+  },
+  {
+   "nom": "Creative BUSINESS",
+   "mensuel": 14900,
+   "annuel": 149000,
+   "cible": "Professionnel créatif",
+   "points": [
+    "Gestion FinaKop BUSINESS",
+    "Portail artiste",
+    "Distribution musicale (base)",
+    "50 artistes · 500 œuvres"
+   ],
+   "quotas": [
+    3,
+    10,
+    3,
+    "5 Go"
+   ]
+  },
+  {
+   "nom": "Creative PRO",
+   "mensuel": 29900,
+   "annuel": 299000,
+   "cible": "Studio, label, agence",
+   "badge": "Studios et labels",
+   "points": [
+    "Gestion FinaKop PRO",
+    "Distribution complète, publishing",
+    "200 artistes · 5 000 œuvres"
+   ],
+   "quotas": [
+    5,
+    25,
+    10,
+    "10 Go"
+   ]
+  },
+  {
+   "nom": "Creative ENTERPRISE STANDARD",
+   "mensuel": 49900,
+   "annuel": 499000,
+   "cible": "PME créative",
+   "points": [
+    "Gestion FinaKop ENTREPRISE (paie)",
+    "1 000 artistes · 20 000 œuvres",
+    "Circuits de validation, BI avancée"
+   ],
+   "quotas": [
+    10,
+    50,
+    25,
+    "25 Go"
+   ]
+  },
+  {
+   "nom": "Creative ENTERPRISE AVANCÉE",
+   "mensuel": 79900,
+   "annuel": 799000,
+   "cible": "Groupe créatif",
+   "points": [
+    "Tout STANDARD",
+    "5 000 artistes · 100 000 œuvres",
+    "Serveur dédié"
+   ],
+   "quotas": [
+    25,
+    150,
+    60,
+    "50 Go"
+   ]
+  },
+  {
+   "nom": "Creative ENTERPRISE PREMIUM",
+   "mensuel": 129900,
+   "annuel": 1299000,
+   "des": true,
+   "cible": "Grand compte",
+   "points": [
+    "Tout AVANCÉE",
+    "20 000 artistes · 500 000 œuvres",
+    "Support premium"
+   ],
+   "quotas": [
+    50,
+    300,
+    150,
+    "100 Go"
+   ]
+  }
+ ],
+ "frais": [
+  [
+   "Activation standard",
+   "25 000 F"
+  ],
+  [
+   "Configuration métier",
+   "50 000 F"
+  ],
+  [
+   "Installation + formation",
+   "100 000 F"
+  ],
+  [
+   "Migration simple de données",
+   "à partir de 100 000 F"
+  ],
+  [
+   "Migration complexe",
+   "sur devis"
+  ],
+  [
+   "Formation supplémentaire",
+   "sur devis"
+  ],
+  [
+   "Développement spécifique",
+   "sur devis"
+  ],
+  [
+   "Intégration API spécifique",
+   "sur devis"
+  ]
+ ],
+ "lancement": [
+  "-25 % pour les 20 premiers clients",
+  "30 jours d'essai gratuit, sur votre propre espace",
+  "Activation offerte avec l'abonnement annuel",
+  "Configuration initiale offerte ou fortement réduite"
+ ]
+}
