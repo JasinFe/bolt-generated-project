@@ -1,3 +1,16 @@
+# Patch 1.876.7 — Quotas des éditions réalistes
+
+Base : 1.876.6.
+
+- `FKC_Plans::tiers()` : plus aucun quota de socle illimité. Core : Starter 1/5/1/2 Go, Business 3/10/3/5 Go, Pro 5/25/10/10 Go (API 50 000), Entreprise Standard 10/50/25/25 Go (150 000), Avancée 25/150/60/50 Go (500 000), Premium 50/300/150/100 Go (2 000 000) — sociétés/utilisateurs/établissements/stockage. Creative : mêmes socles au même rang, compteurs créatifs bornés.
+- « Entreprise Illimitée » → « Entreprise Premium », « Creative Enterprise Illimitée » → « Creative Enterprise Premium » ; clés et alias inchangés (jetons existants valides, leurs limites embarquées restent les leurs jusqu'au renouvellement).
+- Capacités `replication` et `haute_dispo` retirées des paliers (non fournies par l'infrastructure) ; libellés conservés pour l'affichage des anciens jetons.
+- Aide « Éditions, paliers et quotas » mise à jour. Analyse et règles de dimensionnement : `docs/12-EDITIONS-ET-CAPACITE.md`.
+
+Tests : `tests/editions_quotas_realistes_1876_7.php`.
+
+---
+
 # Patch 1.876.6 — Nouveau logo, libellé des bases
 
 Base : 1.876.5.

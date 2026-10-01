@@ -89,14 +89,18 @@ MODULES = [
     ('paie', '💵', 'Paie'),
     ('royalties', '🎵', 'Royalties & droits'),
 ]
+# Capacités affichées : uniquement celles qui existent réellement dans FinaKop (1.876.7).
+# Consolidation de groupe, inter-sociétés, multi-pays, réplication et haute
+# disponibilité figurent dans d'anciens jetons mais ne sont pas des fonctions
+# livrées : elles ne sont pas annoncées.
 CAPS = [
-    ('consolidation', 'Consolidation'), ('inter_societes', 'Opérations inter-sociétés'), ('dashboards_consolides', 'Tableaux de bord consolidés'),
-    ('etats_consolides', 'États consolidés'), ('api_keys', 'Clés API'), ('workflow', 'Circuits de validation'), ('bi_avancee', 'BI avancée'),
-    ('multi_pays', 'Multi-pays'), ('multi_devises', 'Multi-devises'), ('multi_plans', 'Multi-plans comptables'), ('gouvernance', 'Gouvernance'),
-    ('audit_centralise', 'Audit centralisé'), ('portails', 'Portails'), ('data_warehouse', 'Entrepôt de données'), ('replication', 'Réplication'),
-    ('haute_dispo', 'Haute disponibilité'), ('support_premium', 'Support premium'), ('sauvegardes', 'Sauvegardes renforcées'),
+    ('api_keys', 'Clés API'), ('workflow', 'Circuits de validation'), ('bi_avancee', 'BI avancée'),
+    ('data_warehouse', 'Entrepôt de données'), ('multi_devises', 'Multi-devises'),
+    ('support_premium', 'Support premium'), ('sauvegardes', 'Sauvegardes renforcées'),
     ('portail_artiste', 'Portail artiste'), ('distribution', 'Distribution musicale'), ('publishing', 'Publishing / édition'),
 ]
+# Inclus dans toutes les éditions (fonctionnement de la plateforme).
+CAPS_TOUS = ['Sauvegarde chiffrée chaque nuit, gardée 14 jours', 'Double authentification', 'Espace isolé par entreprise']
 CAPVAL = {'simple': 'simple', 'complete': 'complète', 'basique': 'basique', 'quotidiennes': 'quotidiennes', 'quotidiennes+replication': 'quotidiennes + réplication', 'personnalisees': 'personnalisées'}
 T = D['tiers']
 
@@ -106,6 +110,12 @@ def lim(v, unite=''):
         return 'Illimité'
     s = '{:,}'.format(v).replace(',', ' ')
     return s + unite
+
+
+def titre(lab):
+    """Libellé de ligne de tableau : majuscule initiale, sigles préservés."""
+    lab = {'de stockage': 'stockage'}.get(lab, lab)
+    return lab[:1].upper() + lab[1:]
 
 
 def chiffres(t, cles):
@@ -140,16 +150,16 @@ def caps_html(t):
         if v in (True, 1) or (isinstance(v, str) and v):
             extra = (' ' + CAPVAL.get(v, v)) if isinstance(v, str) else ''
             out.append('<li>✓ %s%s</li>' % (e(lab), e(extra)))
-    return ''.join(out) or '<li class="muet">Les capacités avancées arrivent avec Business et Pro.</li>'
+    return ''.join('<li>✓ %s</li>' % e(x) for x in CAPS_TOUS) + ''.join(out)
 
 
 EDITIONS = [
     ('starter', 'Démarrer', 'Starter', "L'essentiel pour vendre et tenir vos comptes", "Commerces, TPE, indépendants : une société, une équipe réduite.",
      "Dès le premier jour : comptabilité SYSCOHADA, facturation normalisée, stock, caisse et scan. Tout ce qu'il faut pour vendre, encaisser et tenir des comptes justes, sans rien installer.", None),
     ('business', 'Croître', 'Business', 'Pour les PME qui se développent', "PME avec plusieurs sites ou plusieurs sociétés, qui veulent piloter leurs marges et leurs impayés.",
-     "Tout Starter, plus la comptabilité analytique, la fiscalité et les déclarations DGI, et le recouvrement des créances. Jusqu'à 3 sociétés et 10 établissements, avec une première consolidation.", 'starter'),
+     "Tout Starter, plus la comptabilité analytique, la fiscalité et les déclarations DGI, et le recouvrement des créances. Jusqu'à 3 sociétés, 3 établissements et 10 utilisateurs.", 'starter'),
     ('pro', 'Performer', 'Pro', 'Les outils complets des structures exigeantes', "Groupes et entreprises structurées : équipes nombreuses, filiales, besoin d'intégrations.",
-     "Tout Business, plus les ressources humaines et l'API pour connecter vos autres outils. Utilisateurs illimités, jusqu'à 10 sociétés, consolidation complète, opérations inter-sociétés et états consolidés.", 'business'),
+     "Tout Business, plus les ressources humaines et l'API pour connecter vos autres outils. Jusqu'à 5 sociétés, 10 établissements et 25 utilisateurs, avec des clés API (50 000 appels par mois).", 'business'),
 ]
 
 
@@ -169,30 +179,30 @@ def section_editions():
             ' actif' if i == 0 else '', t, kick, nom, e(accroche), e(desc), e(ideal), chiffres(t, CLES), nom, nom,
             modules_html(t, base), caps_html(t)))
     # Entreprise : trois niveaux
-    carte(3, 'entreprise', 'Grands comptes', 'Entreprise', 'Standard, Avancée ou Illimitée')
-    niv = [('enterprise_standard', 'Standard'), ('enterprise_avancee', 'Avancée'), ('enterprise_illimitee', 'Illimitée')]
+    carte(3, 'entreprise', 'Grands comptes', 'Entreprise', 'Standard, Avancée ou Premium')
+    niv = [('enterprise_standard', 'Standard'), ('enterprise_avancee', 'Avancée'), ('enterprise_illimitee', 'Premium')]
     lignes = ''
     for k, ic, lab, unit in CLES + [('api', '🔌', 'appels API / mois', '')]:
-        lignes += '<tr><th>%s %s</th>%s</tr>' % (ic, lab.capitalize(), ''.join('<td>%s</td>' % lim(T[t]['limits'].get(k, 0), unit) for t, _ in niv))
-    for code, lab in CAPS[:18]:
+        lignes += '<tr><th>%s %s</th>%s</tr>' % (ic, titre(lab), ''.join('<td>%s</td>' % lim(T[t]['limits'].get(k, 0), unit) for t, _ in niv))
+    for code, lab in CAPS:
         vals = [T[t]['caps'].get(code) for t, _ in niv]
         if not any(vals):
             continue
         lignes += '<tr><th>%s</th>%s</tr>' % (e(lab), ''.join('<td>%s</td>' % (('✓ ' + CAPVAL.get(v, '')).strip() if isinstance(v, str) else ('✓' if v else '—')) for v in vals))
     panneaux.append('''<div class="edp" data-ed="entreprise" role="tabpanel"><div class="edp-g">
-  <span class="kicker">Grands comptes</span><h3>FinaKop Entreprise</h3><p class="edp-acc">Pour les groupes, réseaux et organisations multi-pays</p>
-  <p>Tout Pro, plus la <b>paie</b>, les circuits de validation et la BI avancée. Trois niveaux selon la taille de votre organisation : jusqu'au multi-pays, multi-devises et multi-plans comptables, avec gouvernance, audit centralisé, réplication et haute disponibilité.</p>
-  <p class="edp-ideal"><b>Idéal pour :</b> groupes, réseaux de points de vente, organisations présentes dans plusieurs pays.</p>
+  <span class="kicker">Grands comptes</span><h3>FinaKop Entreprise</h3><p class="edp-acc">Pour les groupes, réseaux et organisations multi-sites</p>
+  <p>Tout Pro, plus la <b>paie</b>, les circuits de validation et la BI avancée. Trois niveaux selon la taille de votre organisation : de 10 à 50 sociétés et de 50 à 300 utilisateurs. Les niveaux Avancée et Premium sont servis sur un serveur dédié, avec support prioritaire.</p>
+  <p class="edp-ideal"><b>Idéal pour :</b> groupes, réseaux de points de vente, organisations à plusieurs sites et nombreuses équipes.</p>
   <ul class="mods mods-court">%s</ul>
   <a class="btn btn-or" href="#contact" data-edition="Entreprise">Demander un devis Entreprise →</a></div>
   <div class="edp-d"><h4>Les trois niveaux</h4><div class="tab-w"><table class="niv"><thead><tr><th></th>%s</tr></thead><tbody>%s</tbody></table></div></div></div>''' % (
         modules_html('enterprise_standard', 'pro'), ''.join('<th>%s</th>' % n for _, n in niv), lignes))
     # Creative Suite
     carte(4, 'creative', 'Industries créatives', 'Creative Suite', 'Labels, studios, artistes, médias')
-    cniv = [('creative_starter', 'Starter'), ('creative_business', 'Business'), ('creative_pro', 'Pro'), ('creative_enterprise_illimitee', 'Enterprise')]
+    cniv = [('creative_starter', 'Starter'), ('creative_business', 'Business'), ('creative_pro', 'Pro'), ('creative_enterprise_illimitee', 'Enterprise Premium')]
     lc = ''
     for k, ic, lab, unit in CLES_CR + [('contrats', '📝', 'contrats', ''), ('royalties', '💿', 'calculs de royalties / mois', '')]:
-        lc += '<tr><th>%s %s</th>%s</tr>' % (ic, lab.capitalize(), ''.join('<td>%s</td>' % lim(T[t]['limits'].get(k, 0), unit) for t, _ in cniv))
+        lc += '<tr><th>%s %s</th>%s</tr>' % (ic, titre(lab), ''.join('<td>%s</td>' % lim(T[t]['limits'].get(k, 0), unit) for t, _ in cniv))
     for code, lab in [('portail_artiste', 'Portail artiste'), ('distribution', 'Distribution musicale'), ('publishing', 'Publishing / édition')]:
         vals = [T[t]['caps'].get(code) for t, _ in cniv]
         lc += '<tr><th>%s</th>%s</tr>' % (e(lab), ''.join('<td>%s</td>' % (('✓ ' + CAPVAL.get(v, '')).strip() if isinstance(v, str) else ('✓' if v else '—')) for v in vals))
@@ -211,8 +221,8 @@ def section_editions():
     for k, ic, lab, unit in CLES:
         vals = [lim(T[t]['limits'].get(k, 0), unit) for t, _ in cols]
         vals[3] = vals[3] + ' → ' + lim(T['enterprise_illimitee']['limits'].get(k, 0), unit)
-        comp += '<tr><th>%s %s</th>%s</tr>' % (ic, lab.capitalize(), ''.join('<td>%s</td>' % v for v in vals))
-    for code, lab in [('consolidation', 'Consolidation'), ('inter_societes', 'Inter-sociétés'), ('api_keys', 'Clés API'), ('workflow', 'Circuits de validation'), ('bi_avancee', 'BI avancée')]:
+        comp += '<tr><th>%s %s</th>%s</tr>' % (ic, titre(lab), ''.join('<td>%s</td>' % v for v in vals))
+    for code, lab in [('api_keys', 'Clés API'), ('workflow', 'Circuits de validation'), ('bi_avancee', 'BI avancée'), ('data_warehouse', 'Entrepôt de données')]:
         comp += '<tr><th>%s</th>%s</tr>' % (lab, ''.join('<td>%s</td>' % (('✓ ' + CAPVAL.get(T[t]['caps'].get(code), '')).strip() if isinstance(T[t]['caps'].get(code), str) else ('✓' if T[t]['caps'].get(code) else '—')) for t, _ in cols))
     return '''<!-- ═══════════ ÉDITIONS ═══════════ -->
 <section id="editions" style="background:linear-gradient(180deg,transparent,rgba(76,125,255,.05),transparent)">
@@ -221,7 +231,7 @@ def section_editions():
     <div class="eds rv" role="tablist" aria-label="Éditions">%s</div>
     <div class="edps rv">%s</div>
     <details class="comparatif rv"><summary>📊 Comparer les éditions en détail</summary><div class="tab-w"><table class="niv comp"><thead><tr><th></th>%s</tr></thead><tbody>%s</tbody></table></div>
-      <p class="mention" style="text-align:left">Votre pack métier s'ajoute à l'édition choisie. Les quotas peuvent être ajustés sur devis.</p></details>
+      <p class="mention" style="text-align:left">Votre pack métier s'ajoute à l'édition choisie. Le stockage compte vos bases et vos pièces jointes (scans, PDF) ; la sauvegarde chiffrée de chaque nuit est incluse. Les quotas peuvent être ajustés sur devis.</p></details>
   </div>
 </section>
 

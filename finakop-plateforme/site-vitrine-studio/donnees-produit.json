@@ -1,894 +1,890 @@
 {
-    "packs": {
-        "agriculture": {
-            "agriculture": {
-                "code": "agriculture",
-                "label": "FinaKop Agriculture",
-                "icone": "🌾",
-                "description": "Exploitations agricoles & agro-business : campagnes et parcelles, ventes de récoltes, coûts par campagne."
-            },
-            "elevage": {
-                "code": "elevage",
-                "label": "FinaKop Élevage",
-                "icone": "🐄",
-                "description": "Fermes d'élevage (volaille, bovins, porcins, aquaculture) : bandes et lots, ventes d'animaux et de sous-produits, coût de l'aliment."
-            }
-        },
-        "btp": {
-            "btp": {
-                "code": "btp",
-                "label": "FinaKop BTP",
-                "icone": "🏗️",
-                "description": "Bâtiment & Travaux Publics : chantiers, situations de travaux, retenues de garantie, marge par chantier."
-            }
-        },
-        "commerce": {
-            "bazar": {
-                "code": "bazar",
-                "label": "FinaKop Bazar, Maison & Textile",
-                "icone": "🧺",
-                "description": "Commerces généralistes et multi-produits : catalogue entièrement libre, toutes marchandises, catégories, unités et modes de vente — avec une spécialisation articles de maison, textiles, literie, tapisserie et produits divers."
-            },
-            "cosmetiques": {
-                "code": "cosmetiques",
-                "label": "FinaKop Cosmétiques & Mèches",
-                "icone": "💄",
-                "description": "Boutiques de cosmétiques, mèches et produits de beauté : catalogue, stock valorisé au CUMP, ventes au comptoir et par point de vente."
-            },
-            "distribution": {
-                "code": "distribution",
-                "label": "FinaKop Distribution",
-                "icone": "🚛",
-                "description": "Distributeurs et grossistes : comptes clients revendeurs, facturation de gros, suivi des tournées et de la marge par client."
-            },
-            "electromenager": {
-                "code": "electromenager",
-                "label": "FinaKop Électroménager & Équipements",
-                "icone": "🧊",
-                "description": "Magasins d'électroménager et d'équipement de la maison : catalogue métier préconfiguré et extensible, numéros de série, garanties, SAV, livraison et installation, commandes avec acomptes."
-            },
-            "pretaporter": {
-                "code": "pretaporter",
-                "label": "FinaKop Prêt-à-porter & Friperie",
-                "icone": "👗",
-                "description": "Boutiques de prêt-à-porter et friperies : gestion des articles et tailles, stock au CUMP, ventes par boutique."
-            },
-            "quincaillerie": {
-                "code": "quincaillerie",
-                "label": "FinaKop Quincaillerie",
-                "icone": "🔩",
-                "description": "Quincailleries et magasins de matériaux : catalogue outillage et matériaux, stock au CUMP, ventes au comptoir et aux professionnels."
-            },
-            "retail": {
-                "code": "retail",
-                "label": "FinaKop Retail",
-                "icone": "🏪",
-                "description": "Superette, supermarché, hypermarché : cockpit directeur, POS multi-caisses, stocks avancés (péremption, lots), intelligence décisionnelle et recommandations."
-            },
-            "stationservice": {
-                "code": "stationservice",
-                "label": "FinaKop Station-service",
-                "icone": "⛽",
-                "description": "Stations-service : cuves et carburants au CUMP, ventes à la pompe, gaz, lubrifiants et boutique, marge au litre sous contrôle."
-            },
-            "superette": {
-                "code": "superette",
-                "label": "FinaKop Supérette",
-                "icone": "🛒",
-                "description": "Supérettes et alimentations de quartier : gestion d'un large catalogue, stock au CUMP, ventes au comptoir."
-            },
-            "telephonie": {
-                "code": "telephonie",
-                "label": "FinaKop Téléphonie",
-                "icone": "📱",
-                "description": "Boutiques de téléphonie & mobile money : terminaux et accessoires au CUMP, commissions transferts et crédits, SAV."
-            }
-        },
-        "creatif": {
-            "agence_com": {
-                "code": "agence_com",
-                "label": "FinaKop Communication",
-                "icone": "📢",
-                "description": "Agences de communication : missions clients, brief commercial, budget, contrats de freelances reliés aux droits de création, marge par mission."
-            },
-            "agence_digitale": {
-                "code": "agence_digitale",
-                "label": "FinaKop Digital",
-                "icone": "💻",
-                "description": "Agences digitales : missions clients (projets web), brief commercial, budget, contrats de freelances reliés aux droits de création, marge par mission."
-            },
-            "artiste": {
-                "code": "artiste",
-                "label": "FinaKop Artist — Artiste, Producteur & Revenus",
-                "icone": "🎵",
-                "description": "Le cockpit financier et administratif de l'artiste et du producteur : tous les revenus (streaming, droits, ventes, cachets, prestations) consolidés dans un registre unique, distinction stricte entre revenu généré et argent encaissé, comptabilisation automatique et préparation des déclarations — sans dépendre du Pack Gestion Collective des Droits."
-            },
-            "audiovisuel": {
-                "code": "audiovisuel",
-                "label": "FinaKop Audiovisuel",
-                "icone": "🎬",
-                "description": "Production audiovisuelle : films, séries, spots et documentaires — production centrale, budget six étages, contrats individuels reliés aux droits, équipe\/planning\/matériel, livrables."
-            },
-            "createur_contenu": {
-                "code": "createur_contenu",
-                "label": "FinaKop Créateur",
-                "icone": "✍️",
-                "description": "Créateurs de contenus : missions marques\/plateformes, brief commercial, budget, contrats de freelances reliés aux droits, marge par mission."
-            },
-            "creative": {
-                "code": "creative",
-                "label": "Creative Suite — Label musical",
-                "icone": "🎵",
-                "description": "Label musical : artistes, catalogue, royalties, concerts, portail artiste — avec terminologie adaptable à 17 secteurs créatifs voisins pour les structures qui n'ont pas besoin d'un pack métier dédié."
-            },
-            "distribution_musicale": {
-                "code": "distribution_musicale",
-                "label": "FinaKop Distribution Musicale",
-                "icone": "🎧",
-                "description": "Distributeurs & agrégateurs musicaux : catalogue d'artistes et d'œuvres, contrats de distribution, imports de relevés de streaming, répartition par ayant droit, décomptes et paiements."
-            },
-            "evenementiel": {
-                "code": "evenementiel",
-                "label": "FinaKop Événementiel",
-                "icone": "🎪",
-                "description": "Agences événementielles : événements et budgets, prestations d'organisation, billetterie et sponsoring, marge par événement."
-            },
-            "gestion_collective": {
-                "code": "gestion_collective",
-                "label": "FinaKop Gestion Collective des Droits",
-                "icone": "⚖️",
-                "description": "Organisme de gestion collective du droit d'auteur et des droits voisins : répertoire œuvre\/fixation\/support, adhérents et titularité historisée, autorisations et DRM, perception, répartition, décomptes et paiements — moteur générique configuré par profil pays."
-            },
-            "influenceur": {
-                "code": "influenceur",
-                "label": "FinaKop Influence",
-                "icone": "🌟",
-                "description": "Influenceurs & créateurs : missions marques\/agences, brief commercial, budget, contrats de freelances reliés aux droits, marge par mission."
-            },
-            "maison_edition": {
-                "code": "maison_edition",
-                "label": "FinaKop Édition",
-                "icone": "📚",
-                "description": "Maisons d'édition : catalogue d'ouvrages, ventes continues aux libraires\/diffuseurs, droits d'auteur calculés automatiquement, budget de fabrication, production (manuscrit → impression)."
-            },
-            "medias": {
-                "code": "medias",
-                "label": "FinaKop Médias",
-                "icone": "📰",
-                "description": "Médias (radio, TV, presse, web) : campagne annonceur centrale, brief commercial, étapes de projet, droits engagés, plan de diffusion planifié vs réellement diffusé."
-            },
-            "structure_culturelle": {
-                "code": "structure_culturelle",
-                "label": "FinaKop Culture",
-                "icone": "🎭",
-                "description": "Structures culturelles : programmations (expositions, concerts, résidences, ateliers, festivals), brief partenaires, budget, contrats de prestataires reliés aux droits, marge par programmation."
-            },
-            "studio": {
-                "code": "studio",
-                "label": "FinaKop Studio",
-                "icone": "🎚️",
-                "description": "Studios d'enregistrement : missions clients (sessions, mixage, location), brief commercial, budget, contrats de musiciens\/ingénieurs reliés aux droits, marge par mission."
-            },
-            "studio_graphique": {
-                "code": "studio_graphique",
-                "label": "FinaKop Studio Graphique",
-                "icone": "🎨",
-                "description": "Studios graphiques : missions clients (créations), brief commercial, budget, contrats de freelances reliés aux droits de création, marge par mission."
-            }
-        },
-        "economie_sociale": {
-            "association": {
-                "code": "association",
-                "label": "FinaKop Association",
-                "icone": "🤲",
-                "description": "Associations et organisations de la société civile : membres et adhésions, cotisations, vie associative (AG, CA, bureau), activités et dons."
-            },
-            "cooperative": {
-                "code": "cooperative",
-                "label": "FinaKop Coopérative",
-                "icone": "🤝",
-                "description": "Coopératives agricoles (cacao, café, anacarde, vivrier) : sections de producteurs, commercialisation groupée, cotisations des membres."
-            },
-            "eglise": {
-                "code": "eglise",
-                "label": "FinaKop Église",
-                "icone": "⛪",
-                "description": "Églises & communautés religieuses : caisses et projets, dîmes, offrandes et dons, transparence par projet."
-            },
-            "ong": {
-                "code": "ong",
-                "label": "FinaKop ONG",
-                "icone": "🤝",
-                "description": "ONG & associations : projets et conventions de bailleurs, subventions et dons, suivi budgétaire par projet."
-            }
-        },
-        "education": {
-            "ecole": {
-                "code": "ecole",
-                "label": "FinaKop École",
-                "icone": "🎓",
-                "description": "Écoles & établissements d'enseignement : dossiers élèves, scolarité, inscription et cantine, suivi par classe."
-            },
-            "universite": {
-                "code": "universite",
-                "label": "FinaKop Université",
-                "icone": "🏛️",
-                "description": "Universités & grandes écoles privées : dossiers étudiants par filière, inscription et tranches de scolarité, formation continue."
-            }
-        },
-        "finance": {
-            "assurance_compagnie": {
-                "code": "assurance_compagnie",
-                "label": "FinaKop Assurance — Compagnie",
-                "icone": "🏛️",
-                "description": "Compagnies d'assurance : émission de polices, primes et PPNA, provisions sinistres (PSAP), risques en cours (PREC), réassurance. Comptabilité CIMA."
-            },
-            "assurance_courtage": {
-                "code": "assurance_courtage",
-                "label": "FinaKop Assurance — Courtage",
-                "icone": "🛡️",
-                "description": "Courtiers et agents d'assurance : contrats, encaissement des primes pour le compte des compagnies, reversement net de commission, commissions et frais de dossier."
-            },
-            "banque": {
-                "code": "banque",
-                "label": "FinaKop Banque",
-                "icone": "🏦",
-                "description": "Établissements financiers & agences bancaires : produit net par agence, commissions sur services, intérêts perçus, TOB collectée."
-            },
-            "microfinance": {
-                "code": "microfinance",
-                "label": "FinaKop Microfinance",
-                "icone": "💳",
-                "description": "Institutions de microfinance (IMF, SFD) : agences et portefeuilles, intérêts sur microcrédits, frais de dossier, pénalités de retard."
-            }
-        },
-        "industrie": {
-            "industrie": {
-                "code": "industrie",
-                "label": "FinaKop Industrie",
-                "icone": "🏭",
-                "description": "Unités industrielles & manufactures : lignes de production, ventes de produits finis, sous-traitance, taux de réalisation des objectifs."
-            },
-            "menuiserie": {
-                "code": "menuiserie",
-                "label": "FinaKop Menuiserie",
-                "icone": "🪚",
-                "description": "Menuiseries & ateliers bois\/alu : commandes d'ouvrages, ventes et pose, marge par commande."
-            }
-        },
-        "restauration_hotellerie_loisirs": {
-            "bar": {
-                "code": "bar",
-                "label": "FinaKop Bar",
-                "icone": "🍺",
-                "description": "Bars, lounges et débits de boissons : tables et comptoir, carte (bières, vins, spiritueux, cocktails, softs, café, jus, shots), dosages, inventaire de bouteilles, happy hour."
-            },
-            "boulangerie": {
-                "code": "boulangerie",
-                "label": "FinaKop Boulangerie",
-                "icone": "🥖",
-                "description": "Boulangeries & pâtisseries : matière première, recette, ordre de fabrication, fournée, transfert fournil→boutique, vente, invendu — régime fiscal paramétrable par produit, jamais figé dans le code."
-            },
-            "fastfood": {
-                "code": "fastfood",
-                "label": "FinaKop Fast-food",
-                "icone": "🍔",
-                "description": "Fast-foods & restauration rapide : comptoir, à emporter et livraison — commande payée d'avance, file cuisine par numéro, suivi livreur jusqu'à la remise."
-            },
-            "hotel": {
-                "code": "hotel",
-                "label": "FinaKop Hôtel",
-                "icone": "🏨",
-                "description": "Hôtels, résidences et maquis-hôtels : chambres et séjours, facturation hébergement et restauration, taux d'occupation."
-            },
-            "loisirs": {
-                "code": "loisirs",
-                "label": "FinaKop Loisirs",
-                "icone": "🎡",
-                "description": "Spas, piscines, salles de sport, clubs, parcs de loisirs, campings, bowlings, cinémas, plages\/beach clubs, centres de loisirs, tourisme & excursions."
-            },
-            "maquis": {
-                "code": "maquis",
-                "label": "FinaKop Maquis",
-                "icone": "🍢",
-                "description": "Maquis et restauration populaire : grillades (poulet\/poisson\/viande braisés, escargots), attiéké, alloco, foutou, sauces, boissons — même moteur salle\/cuisine\/caisse que le Restaurant, carte et seuils adaptés."
-            },
-            "restaurant": {
-                "code": "restaurant",
-                "label": "FinaKop Restaurant",
-                "icone": "🍽️",
-                "description": "Restaurants & traiteurs : points de vente, recettes journalières repas et boissons, marge par point de vente."
-            }
-        },
-        "sante": {
-            "cabinet_medical": {
-                "code": "cabinet_medical",
-                "label": "FinaKop Cabinet Médical",
-                "icone": "🩺",
-                "description": "Cabinets médicaux & centres de consultation : dossiers patients, consultations, actes et soins, conventions d'assurance."
-            },
-            "clinique": {
-                "code": "clinique",
-                "label": "FinaKop Clinique",
-                "icone": "🩺",
-                "description": "Cliniques & centres de santé : dossiers patients, facturation des soins et de la pharmacie, suivi par service."
-            },
-            "hopital": {
-                "code": "hopital",
-                "label": "FinaKop Hôpital",
-                "icone": "🏥",
-                "description": "Hôpitaux & polycliniques : dossiers d'hospitalisation, actes et séjours, suivi par service hospitalier."
-            },
-            "laboratoire": {
-                "code": "laboratoire",
-                "label": "FinaKop Laboratoire",
-                "icone": "🔬",
-                "description": "Laboratoires d'analyses médicales : dossiers patients, facturation des bilans et examens, suivi par paillasse."
-            },
-            "optique": {
-                "code": "optique",
-                "label": "FinaKop Optique",
-                "icone": "👓",
-                "description": "Magasins d'optique et opticiens : dossiers clients avec prescription, ventes de montures et verres, prise en charge assurance."
-            },
-            "pharmacie": {
-                "code": "pharmacie",
-                "label": "FinaKop Pharmacie",
-                "icone": "💊",
-                "description": "Officines & pharmacies : catalogue de médicaments au CUMP, ventes au comptoir, ruptures et péremptions sous contrôle."
-            }
-        },
-        "services": {
-            "cabinet": {
-                "code": "cabinet",
-                "label": "FinaKop Cabinet Comptable",
-                "icone": "📚",
-                "description": "Cabinets comptables & d'expertise : dossiers clients, missions, notes d'honoraires, rentabilité par dossier."
-            },
-            "cabinet_juridique": {
-                "code": "cabinet_juridique",
-                "label": "FinaKop Cabinet Juridique",
-                "icone": "⚖️",
-                "description": "Cabinets d'avocats, notaires et huissiers : dossiers et affaires, honoraires, débours (frais de justice) avancés pour les clients."
-            },
-            "garage": {
-                "code": "garage",
-                "label": "FinaKop Garage",
-                "icone": "🔧",
-                "description": "Garages & ateliers mécaniques : véhicules en réparation, ordres de réparation, ventes de pièces, rentabilité par véhicule."
-            },
-            "immobilier": {
-                "code": "immobilier",
-                "label": "FinaKop Immobilier",
-                "icone": "🏘️",
-                "description": "Gestion immobilière & promotion : biens et locataires, quittances de loyers, honoraires de gestion, rendement par bien."
-            },
-            "imprimerie": {
-                "code": "imprimerie",
-                "label": "FinaKop Imprimerie",
-                "icone": "🖨️",
-                "description": "Imprimeries & ateliers graphiques : travaux d'impression, création graphique, grand format, marge par travail."
-            }
-        },
-        "socle": {
-            "generique": {
-                "code": "generique",
-                "label": "Gestion générale",
-                "icone": "🏢",
-                "description": "ERP universel : comptabilité SYSCOHADA, facturation FNE, trésorerie, fiscalité DGI, paie, RH, inventaire."
-            }
-        },
-        "transport_logistique": {
-            "importexport": {
-                "code": "importexport",
-                "label": "FinaKop Import-Export",
-                "icone": "🚢",
-                "description": "Négoce international : dossiers d'importation et d'exportation, ventes de marchandises, frais d'approche et marge par dossier."
-            },
-            "logistique": {
-                "code": "logistique",
-                "label": "FinaKop Logistique",
-                "icone": "📦",
-                "description": "Prestataires logistiques : entrepôts et clients, prestations d'entreposage, manutention et distribution, marge par client."
-            },
-            "transit": {
-                "code": "transit",
-                "label": "FinaKop Transit",
-                "icone": "🛃",
-                "description": "Transitaires & commissionnaires en douane : dossiers de dédouanement, honoraires (HAD), débours avancés pour le compte des clients."
-            },
-            "transport": {
-                "code": "transport",
-                "label": "FinaKop Transport",
-                "icone": "🚚",
-                "description": "Transporteurs & logistique : véhicules et lignes, factures de transport, rentabilité par véhicule."
-            }
-        }
-    },
-    "tiers": {
-        "starter": {
-            "edition": "core",
-            "label": "Starter",
-            "rang": 0,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse"
-            ],
-            "limits": {
-                "societes": 1,
-                "etablissements": 1,
-                "utilisateurs": 5,
-                "entrepots": 5,
-                "api": 0,
-                "stockage_go": 5
-            },
-            "caps": {
-                "consolidation": false,
-                "inter_societes": false,
-                "api_keys": false
-            }
-        },
-        "business": {
-            "edition": "core",
-            "label": "Business",
-            "rang": 1,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "analytique",
-                "fiscalite",
-                "recouvrement"
-            ],
-            "limits": {
-                "societes": 3,
-                "etablissements": 10,
-                "utilisateurs": 10,
-                "entrepots": 20,
-                "api": 0,
-                "stockage_go": 20
-            },
-            "caps": {
-                "consolidation": "simple",
-                "inter_societes": false,
-                "api_keys": false
-            }
-        },
-        "pro": {
-            "edition": "core",
-            "label": "Pro",
-            "rang": 2,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "analytique",
-                "fiscalite",
-                "recouvrement",
-                "rh",
-                "api"
-            ],
-            "limits": {
-                "societes": 10,
-                "etablissements": 50,
-                "utilisateurs": -1,
-                "entrepots": 100,
-                "api": 100000,
-                "stockage_go": 100
-            },
-            "caps": {
-                "consolidation": "complete",
-                "inter_societes": true,
-                "api_keys": true,
-                "dashboards_consolides": true,
-                "etats_consolides": true
-            }
-        },
-        "enterprise_standard": {
-            "edition": "core",
-            "label": "Entreprise Standard",
-            "rang": 3,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "analytique",
-                "fiscalite",
-                "recouvrement",
-                "rh",
-                "api",
-                "paie"
-            ],
-            "limits": {
-                "societes": 25,
-                "etablissements": 100,
-                "utilisateurs": 300,
-                "entrepots": 200,
-                "api": 500000,
-                "stockage_go": 500
-            },
-            "caps": {
-                "consolidation": "complete",
-                "inter_societes": true,
-                "api_keys": true,
-                "dashboards_consolides": true,
-                "etats_consolides": true,
-                "workflow": true,
-                "bi_avancee": true,
-                "sauvegardes": "quotidiennes"
-            }
-        },
-        "enterprise_avancee": {
-            "edition": "core",
-            "label": "Entreprise Avancée",
-            "rang": 4,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "analytique",
-                "fiscalite",
-                "recouvrement",
-                "rh",
-                "api",
-                "paie"
-            ],
-            "limits": {
-                "societes": 100,
-                "etablissements": 500,
-                "utilisateurs": 1000,
-                "entrepots": 1000,
-                "api": 5000000,
-                "stockage_go": 2000
-            },
-            "caps": {
-                "consolidation": "complete",
-                "inter_societes": true,
-                "api_keys": true,
-                "dashboards_consolides": true,
-                "etats_consolides": true,
-                "workflow": true,
-                "bi_avancee": true,
-                "multi_pays": true,
-                "multi_devises": true,
-                "multi_plans": true,
-                "gouvernance": true,
-                "audit_centralise": true,
-                "portails": true,
-                "sauvegardes": "quotidiennes+replication"
-            }
-        },
-        "enterprise_illimitee": {
-            "edition": "core",
-            "label": "Entreprise Illimitée",
-            "rang": 5,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "analytique",
-                "fiscalite",
-                "recouvrement",
-                "rh",
-                "api",
-                "paie"
-            ],
-            "limits": {
-                "societes": -1,
-                "etablissements": -1,
-                "utilisateurs": -1,
-                "entrepots": -1,
-                "projets": -1,
-                "api": -1,
-                "stockage_go": -1
-            },
-            "caps": {
-                "consolidation": "complete",
-                "inter_societes": true,
-                "api_keys": true,
-                "dashboards_consolides": true,
-                "etats_consolides": true,
-                "workflow": true,
-                "bi_avancee": true,
-                "multi_pays": true,
-                "multi_devises": true,
-                "multi_plans": true,
-                "gouvernance": true,
-                "audit_centralise": true,
-                "portails": true,
-                "data_warehouse": true,
-                "replication": true,
-                "haute_dispo": true,
-                "support_premium": true,
-                "sauvegardes": "personnalisees"
-            }
-        },
-        "creative_starter": {
-            "edition": "creative",
-            "label": "Creative Starter",
-            "rang": 0,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "royalties"
-            ],
-            "limits": {
-                "societes": 1,
-                "entites_creatives": 1,
-                "utilisateurs": 3,
-                "artistes": 5,
-                "projets": 20,
-                "oeuvres": 100,
-                "contrats": 20,
-                "royalties": 1000,
-                "etablissements": 1,
-                "entrepots": 5,
-                "api": 0,
-                "stockage_go": 5,
-                "packs_complementaires": 0
-            },
-            "caps": {
-                "portail_artiste": false,
-                "distribution": false,
-                "publishing": false,
-                "api_keys": false
-            }
-        },
-        "creative_business": {
-            "edition": "creative",
-            "label": "Creative Business",
-            "rang": 1,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "analytique",
-                "fiscalite",
-                "recouvrement",
-                "royalties"
-            ],
-            "limits": {
-                "societes": 2,
-                "entites_creatives": 5,
-                "utilisateurs": 15,
-                "artistes": 50,
-                "projets": 100,
-                "oeuvres": 300,
-                "contrats": 500,
-                "royalties": 20000,
-                "etablissements": 10,
-                "entrepots": 20,
-                "api": 0,
-                "stockage_go": 20,
-                "packs_complementaires": 2
-            },
-            "caps": {
-                "portail_artiste": true,
-                "distribution": "basique",
-                "publishing": false,
-                "consolidation": "simple",
-                "api_keys": false
-            }
-        },
-        "creative_pro": {
-            "edition": "creative",
-            "label": "Creative Pro",
-            "rang": 2,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "analytique",
-                "fiscalite",
-                "recouvrement",
-                "rh",
-                "api",
-                "royalties"
-            ],
-            "limits": {
-                "societes": 5,
-                "entites_creatives": 20,
-                "utilisateurs": -1,
-                "artistes": 200,
-                "projets": -1,
-                "oeuvres": 2000,
-                "contrats": -1,
-                "royalties": 200000,
-                "etablissements": 50,
-                "entrepots": 100,
-                "api": 100000,
-                "stockage_go": 100,
-                "packs_complementaires": 4
-            },
-            "caps": {
-                "portail_artiste": true,
-                "distribution": "complete",
-                "publishing": true,
-                "consolidation": "complete",
-                "inter_societes": true,
-                "api_keys": true
-            }
-        },
-        "creative_enterprise_standard": {
-            "edition": "creative",
-            "label": "Creative Enterprise Standard",
-            "rang": 3,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "analytique",
-                "fiscalite",
-                "recouvrement",
-                "rh",
-                "api",
-                "paie",
-                "royalties"
-            ],
-            "limits": {
-                "societes": 10,
-                "entites_creatives": 50,
-                "utilisateurs": -1,
-                "artistes": -1,
-                "projets": -1,
-                "oeuvres": -1,
-                "contrats": -1,
-                "royalties": -1,
-                "etablissements": 100,
-                "entrepots": 200,
-                "api": 500000,
-                "stockage_go": 500,
-                "packs_complementaires": 8
-            },
-            "caps": {
-                "portail_artiste": true,
-                "distribution": "complete",
-                "publishing": true,
-                "consolidation": "complete",
-                "inter_societes": true,
-                "api_keys": true,
-                "workflow": true,
-                "bi_avancee": true
-            }
-        },
-        "creative_enterprise_avancee": {
-            "edition": "creative",
-            "label": "Creative Enterprise Avancée",
-            "rang": 4,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "analytique",
-                "fiscalite",
-                "recouvrement",
-                "rh",
-                "api",
-                "paie",
-                "royalties"
-            ],
-            "limits": {
-                "societes": 25,
-                "entites_creatives": 150,
-                "utilisateurs": -1,
-                "artistes": -1,
-                "projets": -1,
-                "oeuvres": -1,
-                "contrats": -1,
-                "royalties": -1,
-                "etablissements": 500,
-                "entrepots": 1000,
-                "api": 5000000,
-                "stockage_go": 2000,
-                "packs_complementaires": -1
-            },
-            "caps": {
-                "portail_artiste": true,
-                "distribution": "complete",
-                "publishing": true,
-                "consolidation": "complete",
-                "inter_societes": true,
-                "api_keys": true,
-                "workflow": true,
-                "bi_avancee": true,
-                "multi_pays": true,
-                "multi_devises": true,
-                "multi_plans": true,
-                "gouvernance": true,
-                "audit_centralise": true,
-                "portails": true
-            }
-        },
-        "creative_enterprise_illimitee": {
-            "edition": "creative",
-            "label": "Creative Enterprise Illimitée",
-            "rang": 5,
-            "modules": [
-                "comptabilite",
-                "facturation",
-                "inventaire",
-                "scan",
-                "caisse",
-                "analyse",
-                "analytique",
-                "fiscalite",
-                "recouvrement",
-                "rh",
-                "api",
-                "paie",
-                "royalties"
-            ],
-            "limits": {
-                "societes": -1,
-                "entites_creatives": -1,
-                "utilisateurs": -1,
-                "artistes": -1,
-                "projets": -1,
-                "oeuvres": -1,
-                "contrats": -1,
-                "royalties": -1,
-                "etablissements": -1,
-                "entrepots": -1,
-                "api": -1,
-                "stockage_go": -1,
-                "packs_complementaires": -1
-            },
-            "caps": {
-                "portail_artiste": true,
-                "distribution": "complete",
-                "publishing": true,
-                "consolidation": "complete",
-                "inter_societes": true,
-                "api_keys": true,
-                "workflow": true,
-                "bi_avancee": true,
-                "multi_pays": true,
-                "multi_devises": true,
-                "multi_plans": true,
-                "gouvernance": true,
-                "audit_centralise": true,
-                "portails": true,
-                "data_warehouse": true,
-                "replication": true,
-                "haute_dispo": true,
-                "support_premium": true,
-                "sauvegardes": "personnalisees"
-            }
-        }
-    }
+ "packs": {
+  "agriculture": {
+   "agriculture": {
+    "code": "agriculture",
+    "label": "FinaKop Agriculture",
+    "icone": "🌾",
+    "description": "Exploitations agricoles & agro-business : campagnes et parcelles, ventes de récoltes, coûts par campagne."
+   },
+   "elevage": {
+    "code": "elevage",
+    "label": "FinaKop Élevage",
+    "icone": "🐄",
+    "description": "Fermes d'élevage (volaille, bovins, porcins, aquaculture) : bandes et lots, ventes d'animaux et de sous-produits, coût de l'aliment."
+   }
+  },
+  "btp": {
+   "btp": {
+    "code": "btp",
+    "label": "FinaKop BTP",
+    "icone": "🏗️",
+    "description": "Bâtiment & Travaux Publics : chantiers, situations de travaux, retenues de garantie, marge par chantier."
+   }
+  },
+  "commerce": {
+   "bazar": {
+    "code": "bazar",
+    "label": "FinaKop Bazar, Maison & Textile",
+    "icone": "🧺",
+    "description": "Commerces généralistes et multi-produits : catalogue entièrement libre, toutes marchandises, catégories, unités et modes de vente — avec une spécialisation articles de maison, textiles, literie, tapisserie et produits divers."
+   },
+   "cosmetiques": {
+    "code": "cosmetiques",
+    "label": "FinaKop Cosmétiques & Mèches",
+    "icone": "💄",
+    "description": "Boutiques de cosmétiques, mèches et produits de beauté : catalogue, stock valorisé au CUMP, ventes au comptoir et par point de vente."
+   },
+   "distribution": {
+    "code": "distribution",
+    "label": "FinaKop Distribution",
+    "icone": "🚛",
+    "description": "Distributeurs et grossistes : comptes clients revendeurs, facturation de gros, suivi des tournées et de la marge par client."
+   },
+   "electromenager": {
+    "code": "electromenager",
+    "label": "FinaKop Électroménager & Équipements",
+    "icone": "🧊",
+    "description": "Magasins d'électroménager et d'équipement de la maison : catalogue métier préconfiguré et extensible, numéros de série, garanties, SAV, livraison et installation, commandes avec acomptes."
+   },
+   "pretaporter": {
+    "code": "pretaporter",
+    "label": "FinaKop Prêt-à-porter & Friperie",
+    "icone": "👗",
+    "description": "Boutiques de prêt-à-porter et friperies : gestion des articles et tailles, stock au CUMP, ventes par boutique."
+   },
+   "quincaillerie": {
+    "code": "quincaillerie",
+    "label": "FinaKop Quincaillerie",
+    "icone": "🔩",
+    "description": "Quincailleries et magasins de matériaux : catalogue outillage et matériaux, stock au CUMP, ventes au comptoir et aux professionnels."
+   },
+   "retail": {
+    "code": "retail",
+    "label": "FinaKop Retail",
+    "icone": "🏪",
+    "description": "Superette, supermarché, hypermarché : cockpit directeur, POS multi-caisses, stocks avancés (péremption, lots), intelligence décisionnelle et recommandations."
+   },
+   "stationservice": {
+    "code": "stationservice",
+    "label": "FinaKop Station-service",
+    "icone": "⛽",
+    "description": "Stations-service : cuves et carburants au CUMP, ventes à la pompe, gaz, lubrifiants et boutique, marge au litre sous contrôle."
+   },
+   "superette": {
+    "code": "superette",
+    "label": "FinaKop Supérette",
+    "icone": "🛒",
+    "description": "Supérettes et alimentations de quartier : gestion d'un large catalogue, stock au CUMP, ventes au comptoir."
+   },
+   "telephonie": {
+    "code": "telephonie",
+    "label": "FinaKop Téléphonie",
+    "icone": "📱",
+    "description": "Boutiques de téléphonie & mobile money : terminaux et accessoires au CUMP, commissions transferts et crédits, SAV."
+   }
+  },
+  "creatif": {
+   "agence_com": {
+    "code": "agence_com",
+    "label": "FinaKop Communication",
+    "icone": "📢",
+    "description": "Agences de communication : missions clients, brief commercial, budget, contrats de freelances reliés aux droits de création, marge par mission."
+   },
+   "agence_digitale": {
+    "code": "agence_digitale",
+    "label": "FinaKop Digital",
+    "icone": "💻",
+    "description": "Agences digitales : missions clients (projets web), brief commercial, budget, contrats de freelances reliés aux droits de création, marge par mission."
+   },
+   "artiste": {
+    "code": "artiste",
+    "label": "FinaKop Artist — Artiste, Producteur & Revenus",
+    "icone": "🎵",
+    "description": "Le cockpit financier et administratif de l'artiste et du producteur : tous les revenus (streaming, droits, ventes, cachets, prestations) consolidés dans un registre unique, distinction stricte entre revenu généré et argent encaissé, comptabilisation automatique et préparation des déclarations — sans dépendre du Pack Gestion Collective des Droits."
+   },
+   "audiovisuel": {
+    "code": "audiovisuel",
+    "label": "FinaKop Audiovisuel",
+    "icone": "🎬",
+    "description": "Production audiovisuelle : films, séries, spots et documentaires — production centrale, budget six étages, contrats individuels reliés aux droits, équipe/planning/matériel, livrables."
+   },
+   "createur_contenu": {
+    "code": "createur_contenu",
+    "label": "FinaKop Créateur",
+    "icone": "✍️",
+    "description": "Créateurs de contenus : missions marques/plateformes, brief commercial, budget, contrats de freelances reliés aux droits, marge par mission."
+   },
+   "creative": {
+    "code": "creative",
+    "label": "Creative Suite — Label musical",
+    "icone": "🎵",
+    "description": "Label musical : artistes, catalogue, royalties, concerts, portail artiste — avec terminologie adaptable à 17 secteurs créatifs voisins pour les structures qui n'ont pas besoin d'un pack métier dédié."
+   },
+   "distribution_musicale": {
+    "code": "distribution_musicale",
+    "label": "FinaKop Distribution Musicale",
+    "icone": "🎧",
+    "description": "Distributeurs & agrégateurs musicaux : catalogue d'artistes et d'œuvres, contrats de distribution, imports de relevés de streaming, répartition par ayant droit, décomptes et paiements."
+   },
+   "evenementiel": {
+    "code": "evenementiel",
+    "label": "FinaKop Événementiel",
+    "icone": "🎪",
+    "description": "Agences événementielles : événements et budgets, prestations d'organisation, billetterie et sponsoring, marge par événement."
+   },
+   "gestion_collective": {
+    "code": "gestion_collective",
+    "label": "FinaKop Gestion Collective des Droits",
+    "icone": "⚖️",
+    "description": "Organisme de gestion collective du droit d'auteur et des droits voisins : répertoire œuvre/fixation/support, adhérents et titularité historisée, autorisations et DRM, perception, répartition, décomptes et paiements — moteur générique configuré par profil pays."
+   },
+   "influenceur": {
+    "code": "influenceur",
+    "label": "FinaKop Influence",
+    "icone": "🌟",
+    "description": "Influenceurs & créateurs : missions marques/agences, brief commercial, budget, contrats de freelances reliés aux droits, marge par mission."
+   },
+   "maison_edition": {
+    "code": "maison_edition",
+    "label": "FinaKop Édition",
+    "icone": "📚",
+    "description": "Maisons d'édition : catalogue d'ouvrages, ventes continues aux libraires/diffuseurs, droits d'auteur calculés automatiquement, budget de fabrication, production (manuscrit → impression)."
+   },
+   "medias": {
+    "code": "medias",
+    "label": "FinaKop Médias",
+    "icone": "📰",
+    "description": "Médias (radio, TV, presse, web) : campagne annonceur centrale, brief commercial, étapes de projet, droits engagés, plan de diffusion planifié vs réellement diffusé."
+   },
+   "structure_culturelle": {
+    "code": "structure_culturelle",
+    "label": "FinaKop Culture",
+    "icone": "🎭",
+    "description": "Structures culturelles : programmations (expositions, concerts, résidences, ateliers, festivals), brief partenaires, budget, contrats de prestataires reliés aux droits, marge par programmation."
+   },
+   "studio": {
+    "code": "studio",
+    "label": "FinaKop Studio",
+    "icone": "🎚️",
+    "description": "Studios d'enregistrement : missions clients (sessions, mixage, location), brief commercial, budget, contrats de musiciens/ingénieurs reliés aux droits, marge par mission."
+   },
+   "studio_graphique": {
+    "code": "studio_graphique",
+    "label": "FinaKop Studio Graphique",
+    "icone": "🎨",
+    "description": "Studios graphiques : missions clients (créations), brief commercial, budget, contrats de freelances reliés aux droits de création, marge par mission."
+   }
+  },
+  "economie_sociale": {
+   "association": {
+    "code": "association",
+    "label": "FinaKop Association",
+    "icone": "🤲",
+    "description": "Associations et organisations de la société civile : membres et adhésions, cotisations, vie associative (AG, CA, bureau), activités et dons."
+   },
+   "cooperative": {
+    "code": "cooperative",
+    "label": "FinaKop Coopérative",
+    "icone": "🤝",
+    "description": "Coopératives agricoles (cacao, café, anacarde, vivrier) : sections de producteurs, commercialisation groupée, cotisations des membres."
+   },
+   "eglise": {
+    "code": "eglise",
+    "label": "FinaKop Église",
+    "icone": "⛪",
+    "description": "Églises & communautés religieuses : caisses et projets, dîmes, offrandes et dons, transparence par projet."
+   },
+   "ong": {
+    "code": "ong",
+    "label": "FinaKop ONG",
+    "icone": "🤝",
+    "description": "ONG & associations : projets et conventions de bailleurs, subventions et dons, suivi budgétaire par projet."
+   }
+  },
+  "education": {
+   "ecole": {
+    "code": "ecole",
+    "label": "FinaKop École",
+    "icone": "🎓",
+    "description": "Écoles & établissements d'enseignement : dossiers élèves, scolarité, inscription et cantine, suivi par classe."
+   },
+   "universite": {
+    "code": "universite",
+    "label": "FinaKop Université",
+    "icone": "🏛️",
+    "description": "Universités & grandes écoles privées : dossiers étudiants par filière, inscription et tranches de scolarité, formation continue."
+   }
+  },
+  "finance": {
+   "assurance_compagnie": {
+    "code": "assurance_compagnie",
+    "label": "FinaKop Assurance — Compagnie",
+    "icone": "🏛️",
+    "description": "Compagnies d'assurance : émission de polices, primes et PPNA, provisions sinistres (PSAP), risques en cours (PREC), réassurance. Comptabilité CIMA."
+   },
+   "assurance_courtage": {
+    "code": "assurance_courtage",
+    "label": "FinaKop Assurance — Courtage",
+    "icone": "🛡️",
+    "description": "Courtiers et agents d'assurance : contrats, encaissement des primes pour le compte des compagnies, reversement net de commission, commissions et frais de dossier."
+   },
+   "banque": {
+    "code": "banque",
+    "label": "FinaKop Banque",
+    "icone": "🏦",
+    "description": "Établissements financiers & agences bancaires : produit net par agence, commissions sur services, intérêts perçus, TOB collectée."
+   },
+   "microfinance": {
+    "code": "microfinance",
+    "label": "FinaKop Microfinance",
+    "icone": "💳",
+    "description": "Institutions de microfinance (IMF, SFD) : agences et portefeuilles, intérêts sur microcrédits, frais de dossier, pénalités de retard."
+   }
+  },
+  "industrie": {
+   "industrie": {
+    "code": "industrie",
+    "label": "FinaKop Industrie",
+    "icone": "🏭",
+    "description": "Unités industrielles & manufactures : lignes de production, ventes de produits finis, sous-traitance, taux de réalisation des objectifs."
+   },
+   "menuiserie": {
+    "code": "menuiserie",
+    "label": "FinaKop Menuiserie",
+    "icone": "🪚",
+    "description": "Menuiseries & ateliers bois/alu : commandes d'ouvrages, ventes et pose, marge par commande."
+   }
+  },
+  "restauration_hotellerie_loisirs": {
+   "bar": {
+    "code": "bar",
+    "label": "FinaKop Bar",
+    "icone": "🍺",
+    "description": "Bars, lounges et débits de boissons : tables et comptoir, carte (bières, vins, spiritueux, cocktails, softs, café, jus, shots), dosages, inventaire de bouteilles, happy hour."
+   },
+   "boulangerie": {
+    "code": "boulangerie",
+    "label": "FinaKop Boulangerie",
+    "icone": "🥖",
+    "description": "Boulangeries & pâtisseries : matière première, recette, ordre de fabrication, fournée, transfert fournil→boutique, vente, invendu — régime fiscal paramétrable par produit, jamais figé dans le code."
+   },
+   "fastfood": {
+    "code": "fastfood",
+    "label": "FinaKop Fast-food",
+    "icone": "🍔",
+    "description": "Fast-foods & restauration rapide : comptoir, à emporter et livraison — commande payée d'avance, file cuisine par numéro, suivi livreur jusqu'à la remise."
+   },
+   "hotel": {
+    "code": "hotel",
+    "label": "FinaKop Hôtel",
+    "icone": "🏨",
+    "description": "Hôtels, résidences et maquis-hôtels : chambres et séjours, facturation hébergement et restauration, taux d'occupation."
+   },
+   "loisirs": {
+    "code": "loisirs",
+    "label": "FinaKop Loisirs",
+    "icone": "🎡",
+    "description": "Spas, piscines, salles de sport, clubs, parcs de loisirs, campings, bowlings, cinémas, plages/beach clubs, centres de loisirs, tourisme & excursions."
+   },
+   "maquis": {
+    "code": "maquis",
+    "label": "FinaKop Maquis",
+    "icone": "🍢",
+    "description": "Maquis et restauration populaire : grillades (poulet/poisson/viande braisés, escargots), attiéké, alloco, foutou, sauces, boissons — même moteur salle/cuisine/caisse que le Restaurant, carte et seuils adaptés."
+   },
+   "restaurant": {
+    "code": "restaurant",
+    "label": "FinaKop Restaurant",
+    "icone": "🍽️",
+    "description": "Restaurants & traiteurs : points de vente, recettes journalières repas et boissons, marge par point de vente."
+   }
+  },
+  "sante": {
+   "cabinet_medical": {
+    "code": "cabinet_medical",
+    "label": "FinaKop Cabinet Médical",
+    "icone": "🩺",
+    "description": "Cabinets médicaux & centres de consultation : dossiers patients, consultations, actes et soins, conventions d'assurance."
+   },
+   "clinique": {
+    "code": "clinique",
+    "label": "FinaKop Clinique",
+    "icone": "🩺",
+    "description": "Cliniques & centres de santé : dossiers patients, facturation des soins et de la pharmacie, suivi par service."
+   },
+   "hopital": {
+    "code": "hopital",
+    "label": "FinaKop Hôpital",
+    "icone": "🏥",
+    "description": "Hôpitaux & polycliniques : dossiers d'hospitalisation, actes et séjours, suivi par service hospitalier."
+   },
+   "laboratoire": {
+    "code": "laboratoire",
+    "label": "FinaKop Laboratoire",
+    "icone": "🔬",
+    "description": "Laboratoires d'analyses médicales : dossiers patients, facturation des bilans et examens, suivi par paillasse."
+   },
+   "optique": {
+    "code": "optique",
+    "label": "FinaKop Optique",
+    "icone": "👓",
+    "description": "Magasins d'optique et opticiens : dossiers clients avec prescription, ventes de montures et verres, prise en charge assurance."
+   },
+   "pharmacie": {
+    "code": "pharmacie",
+    "label": "FinaKop Pharmacie",
+    "icone": "💊",
+    "description": "Officines & pharmacies : catalogue de médicaments au CUMP, ventes au comptoir, ruptures et péremptions sous contrôle."
+   }
+  },
+  "services": {
+   "cabinet": {
+    "code": "cabinet",
+    "label": "FinaKop Cabinet Comptable",
+    "icone": "📚",
+    "description": "Cabinets comptables & d'expertise : dossiers clients, missions, notes d'honoraires, rentabilité par dossier."
+   },
+   "cabinet_juridique": {
+    "code": "cabinet_juridique",
+    "label": "FinaKop Cabinet Juridique",
+    "icone": "⚖️",
+    "description": "Cabinets d'avocats, notaires et huissiers : dossiers et affaires, honoraires, débours (frais de justice) avancés pour les clients."
+   },
+   "garage": {
+    "code": "garage",
+    "label": "FinaKop Garage",
+    "icone": "🔧",
+    "description": "Garages & ateliers mécaniques : véhicules en réparation, ordres de réparation, ventes de pièces, rentabilité par véhicule."
+   },
+   "immobilier": {
+    "code": "immobilier",
+    "label": "FinaKop Immobilier",
+    "icone": "🏘️",
+    "description": "Gestion immobilière & promotion : biens et locataires, quittances de loyers, honoraires de gestion, rendement par bien."
+   },
+   "imprimerie": {
+    "code": "imprimerie",
+    "label": "FinaKop Imprimerie",
+    "icone": "🖨️",
+    "description": "Imprimeries & ateliers graphiques : travaux d'impression, création graphique, grand format, marge par travail."
+   }
+  },
+  "socle": {
+   "generique": {
+    "code": "generique",
+    "label": "Gestion générale",
+    "icone": "🏢",
+    "description": "ERP universel : comptabilité SYSCOHADA, facturation FNE, trésorerie, fiscalité DGI, paie, RH, inventaire."
+   }
+  },
+  "transport_logistique": {
+   "importexport": {
+    "code": "importexport",
+    "label": "FinaKop Import-Export",
+    "icone": "🚢",
+    "description": "Négoce international : dossiers d'importation et d'exportation, ventes de marchandises, frais d'approche et marge par dossier."
+   },
+   "logistique": {
+    "code": "logistique",
+    "label": "FinaKop Logistique",
+    "icone": "📦",
+    "description": "Prestataires logistiques : entrepôts et clients, prestations d'entreposage, manutention et distribution, marge par client."
+   },
+   "transit": {
+    "code": "transit",
+    "label": "FinaKop Transit",
+    "icone": "🛃",
+    "description": "Transitaires & commissionnaires en douane : dossiers de dédouanement, honoraires (HAD), débours avancés pour le compte des clients."
+   },
+   "transport": {
+    "code": "transport",
+    "label": "FinaKop Transport",
+    "icone": "🚚",
+    "description": "Transporteurs & logistique : véhicules et lignes, factures de transport, rentabilité par véhicule."
+   }
+  }
+ },
+ "tiers": {
+  "starter": {
+   "edition": "core",
+   "label": "Starter",
+   "rang": 0,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse"
+   ],
+   "limits": {
+    "societes": 1,
+    "etablissements": 1,
+    "utilisateurs": 5,
+    "entrepots": 2,
+    "api": 0,
+    "stockage_go": 2
+   },
+   "caps": {
+    "consolidation": false,
+    "inter_societes": false,
+    "api_keys": false
+   }
+  },
+  "business": {
+   "edition": "core",
+   "label": "Business",
+   "rang": 1,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "analytique",
+    "fiscalite",
+    "recouvrement"
+   ],
+   "limits": {
+    "societes": 3,
+    "etablissements": 3,
+    "utilisateurs": 10,
+    "entrepots": 5,
+    "api": 0,
+    "stockage_go": 5
+   },
+   "caps": {
+    "consolidation": "simple",
+    "inter_societes": false,
+    "api_keys": false
+   }
+  },
+  "pro": {
+   "edition": "core",
+   "label": "Pro",
+   "rang": 2,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "analytique",
+    "fiscalite",
+    "recouvrement",
+    "rh",
+    "api"
+   ],
+   "limits": {
+    "societes": 5,
+    "etablissements": 10,
+    "utilisateurs": 25,
+    "entrepots": 15,
+    "api": 50000,
+    "stockage_go": 10
+   },
+   "caps": {
+    "consolidation": "complete",
+    "inter_societes": true,
+    "api_keys": true,
+    "dashboards_consolides": true,
+    "etats_consolides": true
+   }
+  },
+  "enterprise_standard": {
+   "edition": "core",
+   "label": "Entreprise Standard",
+   "rang": 3,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "analytique",
+    "fiscalite",
+    "recouvrement",
+    "rh",
+    "api",
+    "paie"
+   ],
+   "limits": {
+    "societes": 10,
+    "etablissements": 25,
+    "utilisateurs": 50,
+    "entrepots": 40,
+    "api": 150000,
+    "stockage_go": 25
+   },
+   "caps": {
+    "consolidation": "complete",
+    "inter_societes": true,
+    "api_keys": true,
+    "dashboards_consolides": true,
+    "etats_consolides": true,
+    "workflow": true,
+    "bi_avancee": true,
+    "sauvegardes": "quotidiennes"
+   }
+  },
+  "enterprise_avancee": {
+   "edition": "core",
+   "label": "Entreprise Avancée",
+   "rang": 4,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "analytique",
+    "fiscalite",
+    "recouvrement",
+    "rh",
+    "api",
+    "paie"
+   ],
+   "limits": {
+    "societes": 25,
+    "etablissements": 60,
+    "utilisateurs": 150,
+    "entrepots": 100,
+    "api": 500000,
+    "stockage_go": 50
+   },
+   "caps": {
+    "consolidation": "complete",
+    "inter_societes": true,
+    "api_keys": true,
+    "dashboards_consolides": true,
+    "etats_consolides": true,
+    "workflow": true,
+    "bi_avancee": true,
+    "multi_pays": true,
+    "multi_devises": true,
+    "multi_plans": true,
+    "gouvernance": true,
+    "audit_centralise": true,
+    "portails": true,
+    "sauvegardes": "quotidiennes"
+   }
+  },
+  "enterprise_illimitee": {
+   "edition": "core",
+   "label": "Entreprise Premium",
+   "rang": 5,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "analytique",
+    "fiscalite",
+    "recouvrement",
+    "rh",
+    "api",
+    "paie"
+   ],
+   "limits": {
+    "societes": 50,
+    "etablissements": 150,
+    "utilisateurs": 300,
+    "entrepots": 300,
+    "projets": -1,
+    "api": 2000000,
+    "stockage_go": 100
+   },
+   "caps": {
+    "consolidation": "complete",
+    "inter_societes": true,
+    "api_keys": true,
+    "dashboards_consolides": true,
+    "etats_consolides": true,
+    "workflow": true,
+    "bi_avancee": true,
+    "multi_pays": true,
+    "multi_devises": true,
+    "multi_plans": true,
+    "gouvernance": true,
+    "audit_centralise": true,
+    "portails": true,
+    "data_warehouse": true,
+    "support_premium": true,
+    "sauvegardes": "personnalisees"
+   }
+  },
+  "creative_starter": {
+   "edition": "creative",
+   "label": "Creative Starter",
+   "rang": 0,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "royalties"
+   ],
+   "limits": {
+    "societes": 1,
+    "entites_creatives": 1,
+    "utilisateurs": 5,
+    "artistes": 5,
+    "projets": 20,
+    "oeuvres": 100,
+    "contrats": 20,
+    "royalties": 1000,
+    "etablissements": 1,
+    "entrepots": 2,
+    "api": 0,
+    "stockage_go": 2,
+    "packs_complementaires": 0
+   },
+   "caps": {
+    "portail_artiste": false,
+    "distribution": false,
+    "publishing": false,
+    "api_keys": false
+   }
+  },
+  "creative_business": {
+   "edition": "creative",
+   "label": "Creative Business",
+   "rang": 1,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "analytique",
+    "fiscalite",
+    "recouvrement",
+    "royalties"
+   ],
+   "limits": {
+    "societes": 3,
+    "entites_creatives": 5,
+    "utilisateurs": 10,
+    "artistes": 50,
+    "projets": 100,
+    "oeuvres": 500,
+    "contrats": 500,
+    "royalties": 20000,
+    "etablissements": 3,
+    "entrepots": 5,
+    "api": 0,
+    "stockage_go": 5,
+    "packs_complementaires": 2
+   },
+   "caps": {
+    "portail_artiste": true,
+    "distribution": "basique",
+    "publishing": false,
+    "consolidation": "simple",
+    "api_keys": false
+   }
+  },
+  "creative_pro": {
+   "edition": "creative",
+   "label": "Creative Pro",
+   "rang": 2,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "analytique",
+    "fiscalite",
+    "recouvrement",
+    "rh",
+    "api",
+    "royalties"
+   ],
+   "limits": {
+    "societes": 5,
+    "entites_creatives": 20,
+    "utilisateurs": 25,
+    "artistes": 200,
+    "projets": 500,
+    "oeuvres": 5000,
+    "contrats": 2000,
+    "royalties": 200000,
+    "etablissements": 10,
+    "entrepots": 15,
+    "api": 50000,
+    "stockage_go": 10,
+    "packs_complementaires": 4
+   },
+   "caps": {
+    "portail_artiste": true,
+    "distribution": "complete",
+    "publishing": true,
+    "consolidation": "complete",
+    "inter_societes": true,
+    "api_keys": true
+   }
+  },
+  "creative_enterprise_standard": {
+   "edition": "creative",
+   "label": "Creative Enterprise Standard",
+   "rang": 3,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "analytique",
+    "fiscalite",
+    "recouvrement",
+    "rh",
+    "api",
+    "paie",
+    "royalties"
+   ],
+   "limits": {
+    "societes": 10,
+    "entites_creatives": 50,
+    "utilisateurs": 50,
+    "artistes": 1000,
+    "projets": 2000,
+    "oeuvres": 20000,
+    "contrats": 5000,
+    "royalties": 500000,
+    "etablissements": 25,
+    "entrepots": 40,
+    "api": 150000,
+    "stockage_go": 25,
+    "packs_complementaires": 8
+   },
+   "caps": {
+    "portail_artiste": true,
+    "distribution": "complete",
+    "publishing": true,
+    "consolidation": "complete",
+    "inter_societes": true,
+    "api_keys": true,
+    "workflow": true,
+    "bi_avancee": true
+   }
+  },
+  "creative_enterprise_avancee": {
+   "edition": "creative",
+   "label": "Creative Enterprise Avancée",
+   "rang": 4,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "analytique",
+    "fiscalite",
+    "recouvrement",
+    "rh",
+    "api",
+    "paie",
+    "royalties"
+   ],
+   "limits": {
+    "societes": 25,
+    "entites_creatives": 150,
+    "utilisateurs": 150,
+    "artistes": 5000,
+    "projets": 10000,
+    "oeuvres": 100000,
+    "contrats": 20000,
+    "royalties": 2000000,
+    "etablissements": 60,
+    "entrepots": 100,
+    "api": 500000,
+    "stockage_go": 50,
+    "packs_complementaires": -1
+   },
+   "caps": {
+    "portail_artiste": true,
+    "distribution": "complete",
+    "publishing": true,
+    "consolidation": "complete",
+    "inter_societes": true,
+    "api_keys": true,
+    "workflow": true,
+    "bi_avancee": true,
+    "multi_pays": true,
+    "multi_devises": true,
+    "multi_plans": true,
+    "gouvernance": true,
+    "audit_centralise": true,
+    "portails": true
+   }
+  },
+  "creative_enterprise_illimitee": {
+   "edition": "creative",
+   "label": "Creative Enterprise Premium",
+   "rang": 5,
+   "modules": [
+    "comptabilite",
+    "facturation",
+    "inventaire",
+    "scan",
+    "caisse",
+    "analyse",
+    "analytique",
+    "fiscalite",
+    "recouvrement",
+    "rh",
+    "api",
+    "paie",
+    "royalties"
+   ],
+   "limits": {
+    "societes": 50,
+    "entites_creatives": 300,
+    "utilisateurs": 300,
+    "artistes": 20000,
+    "projets": 50000,
+    "oeuvres": 500000,
+    "contrats": 100000,
+    "royalties": 5000000,
+    "etablissements": 150,
+    "entrepots": 300,
+    "api": 2000000,
+    "stockage_go": 100,
+    "packs_complementaires": -1
+   },
+   "caps": {
+    "portail_artiste": true,
+    "distribution": "complete",
+    "publishing": true,
+    "consolidation": "complete",
+    "inter_societes": true,
+    "api_keys": true,
+    "workflow": true,
+    "bi_avancee": true,
+    "multi_pays": true,
+    "multi_devises": true,
+    "multi_plans": true,
+    "gouvernance": true,
+    "audit_centralise": true,
+    "portails": true,
+    "data_warehouse": true,
+    "support_premium": true,
+    "sauvegardes": "personnalisees"
+   }
+  }
+ }
 }

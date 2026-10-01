@@ -98,8 +98,8 @@ class FKC_Aide {
 			'titre' => "Éditions, paliers et quotas",
 			'tags' => 'licence édition starter business pro entreprise creative quota limite palier',
 			'corps' =>
-			"<p>Les fonctions disponibles dépendent de votre <strong>palier</strong> : Starter, Business, Pro, Entreprise Standard, Avancée et Illimitée — déclinés en gamme <em>Core</em> et en gamme <em>Creative</em>.</p>"
-			. "<p>Trois choses varient d'un palier à l'autre : les <strong>modules</strong> ouverts (les autres apparaissent verrouillés 🔒), les <strong>quotas</strong> (entités, utilisateurs, appels API mensuels) et les <strong>capacités</strong> optionnelles.</p>"
+			"<p>Les fonctions disponibles dépendent de votre <strong>palier</strong> : Starter, Business, Pro, Entreprise Standard, Avancée et Premium — déclinés en gamme <em>Core</em> et en gamme <em>Creative</em>.</p>"
+			. "<p>Trois choses varient d'un palier à l'autre : les <strong>modules</strong> ouverts (les autres apparaissent verrouillés 🔒), les <strong>quotas</strong> (sociétés, utilisateurs, établissements, stockage, appels API mensuels) et les <strong>capacités</strong> optionnelles. Les quotas exacts de votre palier et votre consommation s'affichent dans <em>Paramètres → Licence</em> ; aucun palier n'est illimité.</p>"
 			. "<p>Sans clé installée, l'application fonctionne en <strong>Starter</strong> : elle reste pleinement utilisable, avec les limites de ce palier. Vous ne perdez jamais l'accès à vos données parce qu'une licence a expiré.</p>" ),
 
 		array( 'id' => 'licence-installer', 'cat' => 'demarrage',
@@ -1168,7 +1168,7 @@ class FKC_Aide {
 			'corps' =>
 			"<p>Dans l'ordre de fréquence.</p>"
 			. "<p><strong>1. Le module n'est pas accordé à votre compte.</strong> C'est la cause la plus courante après une mise à jour : Connect est un module comme un autre, et <strong>aucun compte existant ne l'a tant qu'un administrateur ne l'a pas accordé, un par un</strong>. Écran <em>Utilisateurs</em>, ouvrez le compte, cochez Connect.</p>"
-			. "<p><strong>2. Votre licence ne porte pas le service.</strong> Connect se vend à part des paliers : même une Entreprise Illimitée ne l'a pas d'office. Contactez votre partenaire.</p>"
+			. "<p><strong>2. Votre licence ne porte pas le service.</strong> Connect se vend à part des paliers : même une Entreprise Premium ne l'a pas d'office. Contactez votre partenaire.</p>"
 			. "<p><strong>3. La fonction précise manque.</strong> Le service peut être ouvert sans le partage de documents, sans la visio ou sans les invités externes. L'écran d'administration liste ce que votre licence ouvre.</p>" ),
 
 		);
@@ -1381,7 +1381,7 @@ class FKC_Aide {
 			'r' => "Votre session a expiré pendant la saisie. Rechargez la page et recommencez. Si cela se répète en quelques minutes, c'est souvent un problème de cookies, ou une bascule entre le domaine avec et sans www." ),
 
 		array( 'grp' => 'Connect', 'q' => "Je ne vois pas Connect dans le menu",
-			'r' => "Trois causes, par ordre de fréquence. (1) Le module n'est pas accordé à votre compte : c'est le cas de TOUS les comptes existants après l'installation, tant qu'un administrateur ne l'a pas coché un par un dans l'écran Utilisateurs. (2) Votre licence ne porte pas le service : Connect se vend à part des paliers, même une Entreprise Illimitée ne l'a pas d'office. (3) La fonction précise manque — partage de documents, visio, invités externes se souscrivent séparément." ),
+			'r' => "Trois causes, par ordre de fréquence. (1) Le module n'est pas accordé à votre compte : c'est le cas de TOUS les comptes existants après l'installation, tant qu'un administrateur ne l'a pas coché un par un dans l'écran Utilisateurs. (2) Votre licence ne porte pas le service : Connect se vend à part des paliers, même une Entreprise Premium ne l'a pas d'office. (3) La fonction précise manque — partage de documents, visio, invités externes se souscrivent séparément." ),
 
 		array( 'grp' => 'Connect', 'q' => "Mes collègues ne reçoivent pas de notification",
 			'r' => "Ouvrez Connect → Administration et regardez la ligne « Tâche planifiée (WP-Cron) ». Si elle est désactivée, les notifications s'accumulent en file sans jamais partir — et rien ne le signale ailleurs. Demandez à votre hébergeur d'appeler wp-cron.php toutes les 5 minutes. Vérifiez aussi que le site est servi en HTTPS : les navigateurs refusent les notifications hors contexte sûr.",
