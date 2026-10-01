@@ -361,3 +361,9 @@ TEST 27 — 1.876.3 : double authentification par e-mail, design du portail
   [RÉUSSI] console 2fa:etat : « 2FA active (code par e-mail) »
   [RÉUSSI] portail redessiné : ordinateur et téléphone sans débordement, aucune erreur, aucune ressource extérieure ; pages d'erreur au même style ; page « robots » minimale
   [RÉUSSI] plateforme : plus aucun appel à Google Fonts (vie privée)
+
+TEST 28 — 1.876.4 : application d'authentification privilégiée, centre d'aide et vidéos
+  [RÉUSSI] harnais tests/aide_2fa_application_1876_4.php (règle e-mail/administrateur, passage forcé à l'application, contenu d'aide de la plateforme, vidéos)
+  [RÉUSSI] parcours réel : mot de passe provisoire → écran d'activation proposant l'application seule → QR code → code TOTP → 10 codes de secours → espace ouvert
+  [RÉUSSI] centre d'aide : accueil redessiné, page Vidéos (4 vidéos, chapitres), article « double authentification », dépannage — aucune erreur JavaScript
+  [RÉUSSI] vidéos d'aide rendues depuis les vrais écrans de l'espace de démonstration (codes de secours floutés)

@@ -1,6 +1,6 @@
 # FinaKop — Guide pratique : installation, astuces et commandes
 
-Version 1.876.3 · 1er octobre 2026
+Version 1.876.4 · 1er octobre 2026
 
 ## 1. Repères
 
@@ -182,39 +182,34 @@ Une règle WAF gratuite bloque les robots sur tous les sous-domaines de la plate
 
 ## 5. Double authentification (2FA)
 
-Avec la 2FA, un mot de passe volé ne suffit plus : il faut aussi un code à 6 chiffres. Elle est **obligatoire pour les administrateurs** et facultative pour les autres comptes. Depuis la 1.876.3, chaque utilisateur choisit sa méthode :
+Avec la 2FA, un mot de passe volé ne suffit plus : il faut aussi le **code à 6 chiffres affiché par une application** sur votre téléphone. Ce code change toutes les 30 secondes et fonctionne même sans réseau. Elle est **obligatoire pour les administrateurs**, recommandée pour tous.
 
-| Méthode | Comment | Pour qui |
-| --- | --- | --- |
-| **Application** (recommandé) | Code affiché par Google Authenticator, Microsoft Authenticator, Authy, 2FAS ou Aegis ; change toutes les 30 secondes ; fonctionne sans réseau | Tous, et surtout les administrateurs |
-| **Code par e-mail** | Code envoyé à l'adresse du compte à chaque connexion ; valable 10 minutes, usage unique ; bouton « Renvoyer » (3 envois au plus, 1 par minute) | Utilisateurs sans smartphone adapté. Moins sûr : quelqu'un qui pirate la boîte mail peut recevoir le code |
-| **SMS** | Non disponible : demande un fournisseur d'envoi de SMS payant (voir plus bas) | — |
+Depuis la 1.876.4, **l'application est la méthode de référence** :
 
-**Activer avec l'application** :
+- les administrateurs utilisent uniquement l'application ;
+- le code par e-mail n'est plus proposé par défaut. Il ne peut être réactivé que pour les non-administrateurs, avec `fk config:set securite.2fa_email true`, et seulement une fois les courriels fiables (DKIM, voir section 9) ;
+- un compte resté réglé sur l'e-mail est invité, à sa connexion suivante, à passer à l'application.
 
-1. Installez l'application sur votre téléphone.
+**Activer (2 minutes)** :
+
+1. Installez sur votre téléphone : Google Authenticator, Microsoft Authenticator, Authy, 2FAS ou Aegis.
 2. Connectez-vous. Un administrateur est conduit d'office à l'écran *Double authentification* ; les autres comptes y vont par *Mot de passe → Double authentification*.
-3. Option 1 : **scannez le QR code** (ou saisissez la clé affichée), tapez le code à 6 chiffres, validez.
+3. **Scannez le QR code** (ou saisissez la clé affichée), tapez le code à 6 chiffres, puis **Activer avec l'application**.
+4. Notez les **10 codes de secours** (8 caractères, par exemple 3F9A-0B7C). Ils ne seront plus jamais affichés : imprimez-les ou rangez-les dans un coffre de mots de passe. Chacun ne sert qu'une fois.
 
-**Activer par e-mail** :
+La vidéo « Sécuriser votre compte » du centre d'aide (*Aide → Vidéos*) montre ces étapes sur les vrais écrans.
 
-1. Le compte doit avoir une adresse e-mail (l'administrateur la renseigne dans *Utilisateurs*). L'envoi utilise le SMTP de la plateforme (`fk --tenant=<client> mail:test vous@exemple.com` pour vérifier).
-2. Écran *Double authentification* → Option 2 → **Recevoir un code à a\*\*\*@…** → saisissez le code reçu → **Activer par e-mail**.
-
-Dans les deux cas, FinaKop affiche ensuite **10 codes de secours** (8 caractères, par exemple 3F9A-0B7C). Ils ne seront plus jamais affichés : imprimez-les ou rangez-les dans un coffre de mots de passe. Chacun ne sert qu'une fois. Un compte « e-mail » peut passer à l'application à tout moment, depuis le même écran.
-
-**Se connecter ensuite** : identifiant et mot de passe comme d'habitude, puis le code de l'application, ou celui reçu par e-mail. 5 essais au plus.
+**Se connecter ensuite** : identifiant et mot de passe, puis le code de l'application. 5 essais au plus.
 
 | Situation | Que faire |
 | --- | --- |
-| Code refusé alors qu'il est juste (application) | Réglez l'heure du téléphone en automatique : le code dépend de l'heure, à 30 secondes près |
-| E-mail non reçu | Regardez les courriers indésirables, puis « Renvoyer un nouveau code » (après 1 minute) |
-| Le même code a déjà servi | Attendez le code suivant (application) ou demandez-en un nouveau (e-mail) |
+| Code refusé alors qu'il est juste | Réglez l'heure du téléphone en automatique : le code dépend de l'heure, à 30 secondes près |
+| Compte encore réglé sur l'e-mail, code non reçu | Tapez un **code de secours** : FinaKop vous fait aussitôt passer à l'application. Sans code de secours : `2fa:desactiver` (ci-dessous) |
 | Téléphone oublié ou perdu | Tapez un **code de secours** à la place du code à 6 chiffres |
-| Nouveau téléphone | Autre compte : connectez-vous, désactivez puis réactivez la 2FA (mot de passe + code) et scannez le nouveau QR code. Administrateur : la 2FA obligatoire ne se désactive pas depuis l'écran ; faites 2fa:desactiver en SSH, puis reconnectez-vous pour scanner le nouveau QR code |
+| Nouveau téléphone | Autre compte : désactivez puis réactivez la 2FA et scannez le nouveau QR code. Administrateur : `2fa:desactiver` en SSH, puis reconnectez-vous pour scanner le nouveau QR code |
 | Téléphone ET codes de secours perdus | Le super administrateur lève la 2FA du compte en SSH (ci-dessous). Le compte la reconfigure à la connexion suivante |
 
-**Et le SMS ?** C'est possible, mais il faut un **fournisseur d'envoi de SMS** (par exemple un opérateur ou une passerelle SMS proposant une API pour la Côte d'Ivoire). Chaque SMS est facturé, et il faut un compte et une clé d'API chez ce fournisseur. Le SMS est aussi moins sûr que l'application : une carte SIM peut être dupliquée. Quand vous aurez choisi un fournisseur, FinaKop pourra l'utiliser comme troisième méthode.
+**Et le SMS ?** Il demanderait un fournisseur d'envoi de SMS payant, et il est moins sûr que l'application (une carte SIM peut être dupliquée). Il n'est pas prévu.
 
 Commandes du super administrateur (SSH) :
 
@@ -317,8 +312,29 @@ tail -5 ~/finakop-data/plateforme/logs/cron.log  # le cron tourne-t-il ?
 | Erreur 503 ou 508 aux heures chargées | Limite de processus de l'offre Business | Surveillez ; au-delà, passez sur un VPS |
 | Courriels non reçus | SMTP, SPF ou DKIM | `fk --tenant=<client> mail:test vous@exemple.com`, puis regardez les indésirables |
 | La vitrine s'affiche mais pas la plateforme (ou l'inverse) | Fichiers mal placés | La vitrine va dans `public_html/`, la plateforme reste dans `public_html/finakop-app/` ; ne mélangez pas les `.htaccess` |
+| Courriels en indésirables ou refusés (alerte « enregistrements manquants » dans hPanel) | DKIM absent dans Cloudflare | Section 9 : recopier le DKIM de hPanel dans Cloudflare, en DNS only |
 | Le formulaire répond « n'a pas pu être transmise » | Boîte supports@ absente, ou dossier `vitrine-donnees` non inscriptible | Créez la boîte dans hPanel ; vérifiez `ls -ld ~/domains/finakoperp.com/vitrine-donnees` |
 | La vitrine affiche encore l'ancienne page | Cache Cloudflare ou navigateur | Cloudflare → Caching → Purge Everything, puis Ctrl+F5 |
 | Le cron ne tourne pas | Tâche absente ou mauvais PHP | hPanel → Tâches Cron : `~/finakop-cron.sh` toutes les 5 minutes ; vérifiez `cron.log` |
 
 En cas de doute après une mise à jour, revenez en arrière (section 2, `--retour`), puis envoyez la sortie de `fk plateforme:verifier`, **après `clear`** et sans aucun secret visible.
+
+## 9. Courriels : SPF, DKIM et DMARC avec Cloudflare
+
+hPanel → Emails → finakoperp.com → **Paramètres du nom de domaine** contrôle quatre enregistrements. Tant que l'un d'eux manque, vos courriels (factures, relances, formulaire du site) risquent de finir en indésirables, ou d'être refusés par Gmail et Outlook.
+
+Vos DNS sont gérés par **Cloudflare** : Hostinger ne peut donc pas les créer lui-même. Il faut les recopier.
+
+**DKIM** (le plus souvent celui qui manque) :
+
+1. Dans hPanel, dépliez la ligne **DKIM** (« Évitez que vos emails finissent dans le dossier spam ») : elle affiche un ou plusieurs enregistrements (type, nom, valeur). Chez Hostinger, ce sont généralement des **CNAME** de la forme `hostingermail-a._domainkey`, `hostingermail-b._domainkey`, `hostingermail-c._domainkey`.
+2. Cloudflare → finakoperp.com → **DNS → Records → Add record**, pour **chacun** d'eux :
+   - **Type** : celui indiqué par hPanel (CNAME ou TXT) ;
+   - **Name** : le nom indiqué, sans `.finakoperp.com` à la fin (par exemple `hostingermail-a._domainkey`) ;
+   - **Target / Content** : la valeur indiquée, recopiée **exactement** ;
+   - **Proxy status** : **DNS only** (nuage **gris**). Un enregistrement de courriel ne doit jamais passer par le proxy (nuage orange).
+3. Revenez dans hPanel et cliquez **Vérifier le statut**. Comptez de quelques minutes à quelques heures.
+
+**SPF, MX, DMARC** : déjà valides sur votre capture. Si l'un passe un jour en orange, même méthode : recopiez la valeur affichée par hPanel dans Cloudflare, en **DNS only**.
+
+**Contrôle** : `fk --tenant=kophisgroup mail:test votre-adresse@gmail.com`. Dans Gmail, ouvrez le message → ⋮ → **Afficher l'original** : les lignes `SPF`, `DKIM` et `DMARC` doivent indiquer **PASS**.

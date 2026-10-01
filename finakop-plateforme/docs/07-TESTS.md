@@ -17,7 +17,7 @@ Il reproduit Hostinger Business **sans** en être une copie :
 | Courriel | Serveur SMTP de test local (SSL, AUTH) | `smtp.hostinger.com` |
 | Système | Ubuntu 24.04 | CloudLinux |
 
-## 2. Tests de la plateforme : 266 vérifications, 0 échec
+## 2. Tests de la plateforme : 270 vérifications, 0 échec
 
 | Test | Objet | Réussies | Échecs |
 | --- | --- | ---: | ---: |
@@ -49,7 +49,8 @@ Il reproduit Hostinger Business **sans** en être une copie :
 | 25 | Site vitrine au-dessus du dossier de la plateforme | 6 | 0 |
 | 26 | Site vitrine 2.0 : affichage, vidéos, formulaire de devis et ses protections | 9 | 0 |
 | 27 | 1.876.3 : 2FA par e-mail (harnais + parcours réel) et portail redessiné | 6 | 0 |
-| **Total** | | **266** | **0** |
+| 28 | 1.876.4 : 2FA par application privilégiée, centre d'aide et vidéos | 4 | 0 |
+| **Total** | | **270** | **0** |
 
 Points saillants :
 - **Hôte forgé** (test 13) : `evil.com`, `newloock.finakoperp.com.evil.com`, `newloock..finakoperp.com`, `-x.…`, `a_b.…`, port `:99999`, `[::1]` → refusés ; noms réservés → page neutre.
