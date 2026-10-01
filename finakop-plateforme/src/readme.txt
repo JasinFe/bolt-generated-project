@@ -2,7 +2,7 @@
 Contributors: kophisgroup
 Requires at least: 5.9
 Requires PHP: 8.1
-Stable tag: 1.876.0
+Stable tag: 1.876.1
 License: Proprietary
 
 ERP modulaire mono-produit (SYSCOHADA), application plein écran servie sur le sous-domaine finakopcore.*. Éditions sous licence Starter→Creative. Indépendant de l'extension FinaKop ERP (km-compta).
@@ -31,6 +31,13 @@ replis UTF-8, mais l'extension est plus rapide.
    Son changement est impose a la premiere connexion.
 
 == Changelog ==
+= 1.876.1 =
+* LICENCE OBLIGATOIRE (plateforme) : un espace sans licence active ne donne accès qu'à l'écran Licence ; l'administrateur y installe la clé de sa société, tout s'ouvre aussitôt
+* SÉCURITÉ — seul l'administrateur peut installer ou remplacer la licence (avant : tout utilisateur connecté)
+* REPRISE dans un espace existant : « finakop tenant:importer <id> <export> --remplacer » — contenu actuel mis de côté, retour à l'identique si le contrôle échoue
+* HÉBERGEMENT MUTUALISÉ — le dossier web est rendu lisible par le serveur web (755/644) et la page par défaut de l'hébergeur retirée : corrige un 403 constaté chez Hostinger
+* HÉBERGEMENT MUTUALISÉ — les scripts (installation, déploiement, cron) choisissent seuls un PHP disposant de pdo_sqlite et sodium (Hostinger : « php » en 8.5 sans sodium, 8.4 sous /opt/alt)
+
 = 1.876.0 =
 * PLATEFORME AUTONOME, SANS WORDPRESS. FinaKop démarre directement par public/index.php : un seul code pour tous les clients, chaque client (entreprise) servi sur son sous-domaine (newloock.finakoperp.com) avec SA propre instance — registre, utilisateurs, licence, clé de chiffrement, bases et documents — dans un dossier de données distinct. Nouveau dossier app/Plateforme : configuration système (FKC_Config), registre des clients, résolution hôte → client (FKC_TenantResolver), relais Cloudflare (IP réelle depuis les plages officielles uniquement, garde de l'origine par en-tête secret), portail app., pages neutres, console bin/finakop, cron unique (un sous-processus par client, verrous, délais), sauvegardes chiffrées relues et contrôlées, restauration de vérification
 * COURRIELS SANS WORDPRESS : nouveau FKC_Mailer (SMTP SSL/STARTTLS, authentification, pièces jointes, texte + HTML, repli mail()). FKC_Courriel l'utilise dès qu'il est configuré ; wp_mail reste le transport de l'extension
@@ -39,8 +46,6 @@ replis UTF-8, mais l'extension est plus rapide.
 * Purge du plan comptable : 28 s → 0,07 s (classement calculé une fois par analyse, résultat identique)
 * DÉFAUT — erreur fatale « Cannot declare class FKC_IndMrp » sur toutes les pages quand le pack principal est industrie ou distribution (fichiers de pack inclus deux fois) : corrigé
 * DÉFAUT — un jeton CSRF expiré produisait une erreur 500 (code 419 non standard) : réponse 403 et message clair
-* LICENCE OBLIGATOIRE (plateforme) : un espace sans licence active ne donne accès qu'à l'écran Licence ; l'administrateur y installe la clé de sa société, tout s'ouvre aussitôt
-* SÉCURITÉ — seul l'administrateur peut installer ou remplacer la licence (avant : tout utilisateur connecté)
 * SÉCURITÉ — exports CSV : une cellule saisie commençant par = + - @ ne peut plus devenir une formule à l'ouverture dans Excel (injection CSV) ; les montants négatifs restent des nombres
 * Migration : la clé de chiffrement définie dans wp-config.php (FKC_ENCRYPTION_KEY) est reprise automatiquement par l'export, secrets chiffrés relisibles après import
 * Traitements planifiés : prochain passage annoncé d'après le cron système en mode autonome

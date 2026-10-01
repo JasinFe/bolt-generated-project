@@ -9,6 +9,11 @@ L'espace `kophisgroup` existe déjà, vide. L'import le **remplace** (`--remplac
 - Après l'import, l'espace demandera une **licence émise pour `kophisgroup.finakoperp.com`**, car l'ancienne est liée à l'ancien domaine. Préparez-la avec l'outil LICENCES.
 - Les identifiants et mots de passe des utilisateurs restent ceux de l'ancien site.
 
+## 0 bis. Mettre la plateforme en 1.876.1 (option --remplacer)
+```bash
+PHP=/opt/alt/php84/usr/bin/php bash ~/finakop/current/scripts/deployer.sh ~/finakop-plateforme-1.876.1.zip
+```
+
 ## 1. Trouver les données de l'ancien site (SSH)
 Si l'ancien site est **sur le même compte Hostinger** :
 ```bash

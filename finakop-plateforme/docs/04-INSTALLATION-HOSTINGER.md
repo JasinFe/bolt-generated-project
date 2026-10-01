@@ -263,6 +263,8 @@ Le déploiement :
 - installe la nouvelle version à côté de l'ancienne, puis bascule d'un coup ;
 - garde les 5 dernières versions.
 
+Depuis 1.876.1, les scripts choisissent seuls un PHP disposant de `sodium`. Pour passer **de 1.876.0 à 1.876.1**, l'ancien script ne le sait pas encore : préfixez la commande par `PHP=/opt/alt/php84/usr/bin/php`.
+
 Retour arrière : `bash ~/finakop/current/scripts/deployer.sh --retour`. Si la version abandonnée avait déjà migré des bases, restaurez la sauvegarde prise avant son déploiement.
 
 ## 14. Recette (staging), facultatif

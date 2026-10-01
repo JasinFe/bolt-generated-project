@@ -11,7 +11,18 @@ set -euo pipefail
 trap 'echo; echo "ÉCHEC à la ligne $LINENO : rien n a été basculé si l échec précède « Bascule »."' ERR
 
 R="${FINAKOP_RACINE:-$HOME/finakop}"
-PHP="${PHP:-php}"
+# PHP : celui imposé par $PHP, sinon le premier qui a pdo_sqlite ET sodium.
+# Chez Hostinger, « php » en SSH peut être une autre version que celle du site
+# (8.5 sans sodium constaté) ; les versions alternatives sont sous /opt/alt.
+choisir_php() {
+  if [ -n "${PHP:-}" ]; then return 0; fi
+  for c in php /opt/alt/php84/usr/bin/php /opt/alt/php83/usr/bin/php /opt/alt/php85/usr/bin/php /opt/alt/php82/usr/bin/php php8.4 php8.3; do
+    command -v "$c" >/dev/null 2>&1 || [ -x "$c" ] || continue
+    if "$c" -r 'exit(version_compare(PHP_VERSION,"8.1",">=") && extension_loaded("pdo_sqlite") && extension_loaded("sodium") ? 0 : 1);' 2>/dev/null; then PHP="$c"; return 0; fi
+  done
+  PHP=php
+}
+choisir_php
 ARCHIVE=""; WEB=""; RETOUR=0
 for a in "$@"; do
   case "$a" in
@@ -21,6 +32,7 @@ for a in "$@"; do
   esac
 done
 mkdir -p "$R/releases"
+echo "PHP utilisé : $PHP ($("$PHP" -r 'echo PHP_VERSION;'))"
 [ -z "$WEB" ] && [ -f "$R/.dossier-web" ] && WEB="$(cat "$R/.dossier-web")"
 [ -n "$WEB" ] || { echo "Dossier web inconnu : --web=\$HOME/domains/finakoperp.com/public_html/finakop-app"; exit 1; }
 mkdir -p "$WEB"; echo "$WEB" > "$R/.dossier-web"

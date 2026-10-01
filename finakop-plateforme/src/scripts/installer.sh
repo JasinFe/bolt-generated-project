@@ -8,7 +8,18 @@
 set -euo pipefail
 R="${FINAKOP_RACINE:-$HOME/finakop}"
 D="${FINAKOP_DONNEES:-$HOME/finakop-data}"
-PHP="${PHP:-php}"
+# PHP : celui imposé par $PHP, sinon le premier qui a pdo_sqlite ET sodium.
+# Chez Hostinger, « php » en SSH peut être une autre version que celle du site
+# (8.5 sans sodium constaté) ; les versions alternatives sont sous /opt/alt.
+choisir_php() {
+  if [ -n "${PHP:-}" ]; then return 0; fi
+  for c in php /opt/alt/php84/usr/bin/php /opt/alt/php83/usr/bin/php /opt/alt/php85/usr/bin/php /opt/alt/php82/usr/bin/php php8.4 php8.3; do
+    command -v "$c" >/dev/null 2>&1 || [ -x "$c" ] || continue
+    if "$c" -r 'exit(version_compare(PHP_VERSION,"8.1",">=") && extension_loaded("pdo_sqlite") && extension_loaded("sodium") ? 0 : 1);' 2>/dev/null; then PHP="$c"; return 0; fi
+  done
+  PHP=php
+}
+choisir_php
 ARCHIVE=""; WEB=""
 for a in "$@"; do case "$a" in --web=*) WEB="${a#--web=}" ;; *) ARCHIVE="$a" ;; esac; done
 [ -f "$ARCHIVE" ] && [ -n "$WEB" ] || { echo "Usage : bash installer.sh <archive.zip> --web=<dossier web des sous-domaines>"; exit 1; }
