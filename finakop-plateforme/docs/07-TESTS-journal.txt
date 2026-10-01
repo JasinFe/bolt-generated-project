@@ -342,3 +342,14 @@ TEST 25 — Site vitrine dans public_html, au-dessus du dossier de la plateforme
   [RÉUSSI] finakoperp.com/finakop-app/ et /finakop-app/index.php : 404
   [RÉUSSI] app. et newloock. : CSP, no-store et X-Robots-Tag de la plateforme, intacts malgré le .htaccess parent
   [RÉUSSI] robot sur la plateforme : 403 ; connexion d'un espace : 200
+
+TEST 26 — Site vitrine 2.0 (animations, vidéos, formulaire de devis)
+  [RÉUSSI] pages ordinateur (1440 px) et téléphone (390 px) : aucun débordement horizontal, aucune erreur JavaScript, aucune violation CSP
+  [RÉUSSI] vidéos MP4 H.264 1600×900 (démo 60 s, guide 65 s) servies en 200, affiches et galerie présentes
+  [RÉUSSI] formulaire en 3 étapes : étape refusée si champs obligatoires vides ; édition préremplie depuis « Demander un devis » ; résumé correct
+  [RÉUSSI] envoi refusé sans consentement ; envoi valide → 200, message « Merci », copie de secours 0600 hors web
+  [RÉUSSI] origine étrangère → 403 ; champ piège → réponse neutre, rien d'enregistré ; envoi trop rapide → refus ; injection d'en-tête dans l'e-mail → refus
+  [RÉUSSI] limite par adresse : 6e demande de l'heure → 429
+  [RÉUSSI] seul contact.php s'exécute (autre .php → 403) ; .json/.jsonl refusés ; GET contact.php → redirection
+  [RÉUSSI] courriel impossible ET copie impossible → réponse d'échec honnête (503), plus de faux « envoyé »
+  [RÉUSSI] plateforme (app., newloock.) : CSP, no-store et X-Robots-Tag inchangés sous la vitrine

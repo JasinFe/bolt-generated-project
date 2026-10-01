@@ -75,66 +75,87 @@ Astuces :
 
 ## 3. Installer le site vitrine finakoperp.com
 
-Le site vitrine est une page statique, publique et indexable. Il ne contient aucun lien vers la plateforme. Ses fichiers vont **directement** dans `public_html`, à côté du dossier `finakop-app`, **sans jamais toucher à ce dossier**.
+Le site vitrine (version 2.0) est public et indexable : animations, démonstration interactive, graphiques, galerie, deux vidéos (démo et guide), FAQ et formulaire **« Nous contacter / devis »**. Il ne contient aucun lien vers la plateforme. Ses fichiers vont **directement** dans `public_html`, à côté du dossier `finakop-app`, **sans jamais toucher à ce dossier**.
 
-Résultat attendu dans `domains/finakoperp.com/public_html/` :
+Résultat attendu dans `domains/finakoperp.com/` :
 
 ```text
-public_html/
-├── .htaccess          ← celui de la vitrine
-├── index.html         ← la page
-├── robots.txt
-├── sitemap.xml
-├── assets/            ← logo, icône
-└── finakop-app/       ← la plateforme : NE PAS TOUCHER
+domains/finakoperp.com/
+├── public_html/
+│   ├── .htaccess        ← celui de la vitrine
+│   ├── index.html       ← la page
+│   ├── contact.php      ← reçoit le formulaire de devis
+│   ├── merci.html
+│   ├── robots.txt, sitemap.xml
+│   ├── assets/          ← css, js, images, vidéos
+│   └── finakop-app/     ← la plateforme : NE PAS TOUCHER
+└── vitrine-donnees/     ← créé tout seul : copie des demandes (hors web)
 ```
 
-### Méthode A — Gestionnaire de fichiers hPanel (sans SSH)
+### Avant tout : la boîte supports@finakoperp.com
 
-1. hPanel → **Sites web** → finakoperp.com → **Gestionnaire de fichiers**.
-2. Ouvrez `public_html`.
-3. Si un fichier `index.html` ou `default.php` d'Hostinger s'y trouve (page d'attente), supprimez-le. Ne supprimez rien d'autre.
-4. S'il existe déjà un `.htaccess` dans `public_html`, renommez-le `.htaccess.ancien` (copie de sécurité).
-5. Cliquez **Téléverser** (icône flèche vers le haut) et envoyez `finakop-site-vitrine-1.876.2.zip` dans `public_html`.
-6. Clic droit sur le ZIP → **Extraire** → laissez le dossier de destination vide ou mettez `.` pour extraire **dans `public_html` même**, pas dans un sous-dossier.
-7. Vérifiez que `index.html`, `robots.txt`, `sitemap.xml` et le dossier `assets` sont bien directement dans `public_html`. S'ils sont dans un sous-dossier (par exemple `finakop-site-vitrine-1.876.2/`), déplacez-les d'un niveau vers le haut.
-8. Affichez les fichiers cachés (Réglages du gestionnaire → *Afficher les fichiers cachés*) et vérifiez la présence de `.htaccess`.
-9. Supprimez le ZIP de `public_html`.
+Le formulaire envoie chaque demande à **supports@finakoperp.com**, et l'expéditeur des messages est cette même adresse (exigence d'Hostinger : l'expéditeur doit être une boîte du domaine). Créez-la dans hPanel → **Emails** → *Créer un compte de messagerie*, si ce n'est pas déjà fait.
 
-### Méthode B — SSH (le plus rapide)
+### Méthode A — SSH (le plus sûr)
 
-Déposez d'abord le ZIP avec le gestionnaire de fichiers dans `domains/finakoperp.com/` (à côté de `public_html`), puis, en SSH :
+Déposez `finakop-site-vitrine-2.0.zip` avec le gestionnaire de fichiers dans `domains/finakoperp.com/` (à côté de `public_html`, pas dedans), puis :
 
 ```bash
 cd ~/domains/finakoperp.com/public_html \
-  && rm -f index.html default.php \
+  && rm -rf assets index.html default.php merci.html contact.php robots.txt sitemap.xml \
   && { [ -f .htaccess ] && cp .htaccess ~/htaccess-public_html.ancien || true; } \
-  && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-1.876.2.zip \
-  && chmod 644 index.html robots.txt sitemap.xml .htaccess assets/* \
-  && chmod 755 assets \
+  && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-2.0.zip \
+  && find assets -type d -exec chmod 755 {} + && find assets -type f -exec chmod 644 {} + \
+  && chmod 644 index.html merci.html contact.php robots.txt sitemap.xml .htaccess \
   && ls -la
 ```
 
-### Adresse de contact
+La première ligne retire l'ancienne vitrine (pas `finakop-app`).
 
-Le bouton « Demander une démo » écrit à `contact@finakoperp.com`. Créez cette boîte dans hPanel → **Emails**. Pour une autre adresse, remplacez-la partout dans `index.html` :
+### Méthode B — Gestionnaire de fichiers hPanel (sans SSH)
+
+1. hPanel → **Sites web** → finakoperp.com → **Gestionnaire de fichiers** → `public_html`.
+2. Supprimez l'ancienne vitrine : le dossier `assets` et les fichiers `index.html`, `robots.txt`, `sitemap.xml` (et `default.php` s'il existe). **Ne touchez pas** à `finakop-app`.
+3. Affichez les fichiers cachés (réglages du gestionnaire) et renommez l'ancien `.htaccess` en `.htaccess.ancien`.
+4. **Téléverser** → `finakop-site-vitrine-2.0.zip` dans `public_html`, puis clic droit → **Extraire** dans `public_html` même.
+5. Vérifiez que `index.html`, `contact.php` et `assets/` sont directement dans `public_html`, puis supprimez le ZIP.
+
+### Lire les demandes reçues
+
+- Chaque demande arrive par e-mail dans **supports@finakoperp.com** (bouton *Répondre* = répondre au client).
+- Une copie est aussi gardée sur le serveur, hors web, au cas où un e-mail se perdrait :
+
+  ```bash
+  ls ~/domains/finakoperp.com/vitrine-donnees/
+  tail -n 5 ~/domains/finakoperp.com/vitrine-donnees/demandes-$(date +%Y-%m).jsonl
+  ```
+
+- Le bouton **« Envoyer via WhatsApp »** du formulaire ouvre WhatsApp avec la demande déjà rédigée, vers le +225 05 03 40 43 89.
+- Protections intégrées : champ piège pour les robots, 5 demandes par heure et par adresse, 60 par heure au total, envoi refusé depuis un autre site.
+
+### Changer une coordonnée
+
+Les coordonnées (e-mail, téléphone, WhatsApp) apparaissent dans `index.html`, `merci.html` et `contact.php` (constante `DESTINATAIRE`). Exemple pour l'e-mail :
 
 ```bash
-sed -i 's/contact@finakoperp.com/votre-adresse@finakoperp.com/g' ~/domains/finakoperp.com/public_html/index.html
+cd ~/domains/finakoperp.com/public_html && sed -i 's/supports@finakoperp.com/nouvelle@finakoperp.com/g' index.html merci.html contact.php
 ```
+
+Les vidéos contiennent aussi les coordonnées : elles se régénèrent avec `site-vitrine-studio/rendre.sh` (sur un poste avec Node, Playwright et ffmpeg).
 
 ### Contrôles
 
 | Adresse | Attendu |
 | --- | --- |
-| https://finakoperp.com | La page s'affiche |
+| https://finakoperp.com | La page s'affiche, animée |
 | https://www.finakoperp.com | Redirige vers https://finakoperp.com |
 | https://finakoperp.com/finakop-app/ | Erreur 404 (la plateforme n'est pas atteignable par là) |
 | https://kophisgroup.finakoperp.com | La connexion fonctionne comme avant |
+| Formulaire de devis (test avec votre adresse) | Message « Merci », e-mail reçu dans supports@finakoperp.com |
 
-Si la page ne change pas : videz le cache Cloudflare (Caching → Configuration → **Purge Everything**) et rechargez avec Ctrl+F5.
+Si l'ancienne page reste affichée : Cloudflare → Caching → Configuration → **Purge Everything**, puis Ctrl+F5.
 
-Pour le référencement, déclarez ensuite le site dans Google Search Console (https://search.google.com/search-console) et Bing Webmaster Tools (https://www.bing.com/webmasters), avec le plan du site `https://finakoperp.com/sitemap.xml`. Ne déclarez **jamais** les sous-domaines de la plateforme.
+Pour le référencement, déclarez le site dans Google Search Console (https://search.google.com/search-console) et Bing Webmaster Tools (https://www.bing.com/webmasters), avec le plan du site `https://finakoperp.com/sitemap.xml`. Ne déclarez **jamais** les sous-domaines de la plateforme.
 
 ## 4. Cloudflare : bloquer les robots sur la plateforme seulement
 
@@ -282,6 +303,7 @@ tail -5 ~/finakop-data/plateforme/logs/cron.log  # le cron tourne-t-il ?
 | Erreur 503 ou 508 aux heures chargées | Limite de processus de l'offre Business | Surveillez ; au-delà, passez sur un VPS |
 | Courriels non reçus | SMTP, SPF ou DKIM | `fk --tenant=<client> mail:test vous@exemple.com`, puis regardez les indésirables |
 | La vitrine s'affiche mais pas la plateforme (ou l'inverse) | Fichiers mal placés | La vitrine va dans `public_html/`, la plateforme reste dans `public_html/finakop-app/` ; ne mélangez pas les `.htaccess` |
+| Le formulaire répond « n'a pas pu être transmise » | Boîte supports@ absente, ou dossier `vitrine-donnees` non inscriptible | Créez la boîte dans hPanel ; vérifiez `ls -ld ~/domains/finakoperp.com/vitrine-donnees` |
 | La vitrine affiche encore l'ancienne page | Cache Cloudflare ou navigateur | Cloudflare → Caching → Purge Everything, puis Ctrl+F5 |
 | Le cron ne tourne pas | Tâche absente ou mauvais PHP | hPanel → Tâches Cron : `~/finakop-cron.sh` toutes les 5 minutes ; vérifiez `cron.log` |
 

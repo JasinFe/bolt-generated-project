@@ -47,9 +47,10 @@ cp "$ICI/outils-export/maintenance-wp.php" "$ICI/outils-export/LISEZ-MOI.md" "$X
 
 # 4. Site vitrine finakoperp.com (contenu à extraire DANS public_html)
 if [ -d "$ICI/site-vitrine" ]; then
-  rm -f "$OUT/finakop-site-vitrine-$V.zip"
-  (cd "$ICI/site-vitrine" && zip -qr -X "$OUT/finakop-site-vitrine-$V.zip" .)
+  VV="$(tr -d ' \n' < "$ICI/site-vitrine-studio/VERSION-VITRINE" 2>/dev/null || echo "$V")"
+  rm -f "$OUT"/finakop-site-vitrine-*.zip
+  (cd "$ICI/site-vitrine" && zip -qr -X "$OUT/finakop-site-vitrine-$VV.zip" .)
 fi
 
-( cd "$OUT" && sha256sum finakop-*-"$V".zip > SHA256SUMS-"$V".txt )
+( cd "$OUT" && sha256sum finakop-*.zip > SHA256SUMS-"$V".txt )
 ls -la "$OUT"

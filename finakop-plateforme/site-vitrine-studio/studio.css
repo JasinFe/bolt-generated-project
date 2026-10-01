@@ -1,0 +1,101 @@
+/* Studio vidéo : scènes animées en CSS, rendues image par image (render.js).
+   Toutes les animations partent de t = 0 : le rendu fixe currentTime = t pour chaque image. */
+@property --n{syntax:'<integer>';inherits:false;initial-value:0}
+html,body{margin:0;background:#060A15}
+body{width:1280px;height:720px;overflow:hidden}
+.stage{position:relative;width:1280px;height:720px;overflow:hidden;isolation:isolate;background:radial-gradient(900px 500px at 80% -10%,rgba(76,125,255,.22),transparent),radial-gradient(700px 400px at -10% 110%,rgba(247,147,30,.16),transparent),#060A15}
+.stage .aura{animation-duration:9s}
+.grille-fond{position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(148,170,230,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(148,170,230,.05) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(circle at 60% 40%,#000,transparent 75%)}
+.logo-v{position:absolute;top:26px;left:40px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;z-index:5;opacity:0;animation:up .6s var(--logo,7.6s) both}
+.logo-v img{width:34px;height:34px;border-radius:10px;background:#fff;padding:2px}
+.chap{position:absolute;top:30px;right:40px;z-index:5;font-size:13px;font-weight:700;color:var(--mut);letter-spacing:.08em;text-transform:uppercase}
+.temps-v{position:absolute;left:0;bottom:0;height:4px;width:100%;background:linear-gradient(90deg,var(--orange),var(--cyan));transform-origin:left;animation:barre var(--total) linear both;z-index:6}
+@keyframes barre{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+.sc{position:absolute;inset:0;padding:80px 60px 50px;display:grid;grid-template-columns:400px 1fr;gap:46px;align-items:center;opacity:0;animation:scIn .6s var(--a) both,scOut .5s calc(var(--b) - .5s) forwards}
+.sc.centre{grid-template-columns:1fr;text-align:center;justify-items:center}
+@keyframes scIn{from{opacity:0;transform:scale(1.03)}to{opacity:1;transform:none}}
+@keyframes scOut{to{opacity:0;transform:scale(.98)}}
+.cap .tag-v{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);margin-bottom:14px}
+.cap h2{font-size:44px;line-height:1.08;margin:0 0 16px}
+.cap p{font-size:19px;color:var(--mut);margin:0 0 18px;line-height:1.5}
+.cap ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+.cap li{display:flex;gap:10px;align-items:center;font-size:17px;font-weight:600}
+.cap li::before{content:"✓";width:24px;height:24px;border-radius:8px;background:rgba(34,197,94,.18);color:#4ADE80;display:grid;place-items:center;font-size:14px;flex:none}
+.num-etape{width:74px;height:74px;border-radius:22px;display:grid;place-items:center;font-size:34px;font-weight:900;background:linear-gradient(135deg,var(--orange),#FFB547);color:#1B1203;margin-bottom:20px;box-shadow:0 20px 50px -14px rgba(247,147,30,.7)}
+
+/* Briques d'animation : délai = début de scène (--a) + décalage (--d). */
+.up,.pop,.gy,.gx,.draw,.fade,.stamp,.type,.press,.toastv,.cnt,.donut-v,.slide,.zoom,.glow{animation-delay:calc(var(--a) + var(--d,0s));animation-fill-mode:both}
+.up{animation-name:up;animation-duration:.7s;animation-timing-function:cubic-bezier(.2,.7,.2,1)}
+.slide{animation-name:slide;animation-duration:.7s;animation-timing-function:cubic-bezier(.2,.7,.2,1)}
+.pop{animation-name:pop;animation-duration:.6s;animation-timing-function:cubic-bezier(.3,1.5,.5,1)}
+.zoom{animation-name:zoom;animation-duration:1.2s;animation-timing-function:cubic-bezier(.2,.7,.2,1)}
+.fade{animation-name:fade;animation-duration:.6s}
+.gy{animation-name:gy;animation-duration:.9s;animation-timing-function:cubic-bezier(.2,.7,.2,1);transform-origin:bottom}
+.gx{animation-name:gx;animation-duration:1.3s;animation-timing-function:cubic-bezier(.2,.7,.2,1);transform-origin:left}
+.draw{animation-name:draw;animation-duration:2s;animation-timing-function:ease}
+.stamp{animation-name:stamp;animation-duration:.6s;animation-timing-function:cubic-bezier(.3,1.6,.5,1)}
+.type{animation-name:type;animation-duration:var(--dt,1.2s);animation-timing-function:steps(var(--st,16),end)}
+.press{animation-name:press;animation-duration:.5s}
+.toastv{animation-name:toastIn;animation-duration:.5s;animation-timing-function:cubic-bezier(.2,.7,.2,1)}
+.cnt{animation-name:compte;animation-duration:var(--dc,1.6s);animation-timing-function:cubic-bezier(.2,.7,.2,1);counter-reset:n var(--n)}
+.cnt::after{content:counter(n)}
+.donut-v{animation-name:donut;animation-duration:1.6s;animation-timing-function:cubic-bezier(.2,.7,.2,1)}
+.glow{animation-name:glow;animation-duration:1.4s;animation-iteration-count:3}
+@keyframes up{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+@keyframes slide{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+@keyframes zoom{from{opacity:0;transform:scale(.6) rotate(-6deg)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes gy{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes gx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes draw{from{stroke-dashoffset:var(--len,600)}to{stroke-dashoffset:0}}
+@keyframes stamp{from{opacity:0;transform:rotate(-8deg) scale(2.4)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
+@keyframes type{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes press{0%,100%{transform:none}40%{transform:scale(.9);background:rgba(247,147,30,.35)}}
+@keyframes compte{from{--n:0}to{--n:var(--to)}}
+@keyframes donut{from{stroke-dasharray:0 314}to{stroke-dasharray:var(--v) 314}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(244,63,94,0)}50%{box-shadow:0 0 0 6px rgba(244,63,94,.35)}}
+/* Les règles du site (transitions) sont neutralisées : seules les animations comptent. */
+.stage .barres i,.stage .jauge i{transition:none}
+.stage .barres i{transform:none}
+.stage .sceau{transition:none;transform:rotate(-8deg)}
+.stage .ligne path.trace{transition:none;stroke-dashoffset:0}
+.stage .donut circle.arc{transition:none;stroke-dasharray:var(--v) 314}
+.stage .jauge i{transform:none}
+.stage .ligne path.aire{transition:none;opacity:1}
+.stage .ui{font-size:13.5px}
+.stage .toasts{width:270px}
+
+/* Curseur simulé */
+.souris{position:absolute;width:26px;height:26px;z-index:8;pointer-events:none;opacity:0}
+.souris svg{width:26px;height:26px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
+
+/* Intro / outro */
+.intro-logo{width:150px;height:150px;border-radius:40px;background:#fff;padding:8px;box-shadow:0 30px 90px -20px rgba(247,147,30,.6)}
+.titre-v{font-size:68px;font-weight:900;letter-spacing:-.03em;margin:26px 0 8px}
+.sous-v{font-size:22px;color:var(--mut);margin:0}
+.puces-v{display:flex;gap:14px;justify-content:center;margin-top:30px;flex-wrap:wrap}
+.puces-v span{padding:10px 18px;border-radius:99px;border:1px solid var(--line2);background:rgba(255,255,255,.05);font-weight:700;font-size:16px}
+.contacts-v{display:grid;grid-template-columns:repeat(3,auto);gap:18px;margin-top:34px;justify-content:center}
+.contacts-v div{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:18px;padding:16px 22px;font-size:19px;font-weight:700;text-align:left}
+.contacts-v small{display:block;font-size:12px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.contacts-v i{font-style:normal;font-size:28px}
+.site-v{margin-top:28px;font-size:26px;font-weight:900}
+
+/* Formulaires simulés (guide) */
+.formv{background:linear-gradient(180deg,#0F1A36,#0B1429);border:1px solid var(--line2);border-radius:18px;padding:26px;box-shadow:var(--ombre);display:flex;flex-direction:column;gap:14px}
+.formv h3{font-size:20px;margin:0 0 4px}
+.chv{display:flex;flex-direction:column;gap:6px}
+.chv label{font-size:12.5px;font-weight:700;color:var(--mut)}
+.chv .in{background:rgba(3,7,18,.6);border:1px solid var(--line2);border-radius:11px;padding:11px 14px;font-size:15px;min-height:44px;white-space:nowrap;overflow:hidden}
+.chv .in.focus{border-color:var(--orange)}
+.btnv{display:inline-flex;justify-content:center;align-items:center;padding:12px 20px;border-radius:12px;font-weight:800;background:linear-gradient(135deg,var(--orange),#FFB547);color:#1B1203;font-size:15px}
+.qr{width:190px;height:190px;background:#fff;border-radius:14px;padding:12px}
+.codes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font:700 15px Consolas,monospace}
+.codes span{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:9px;padding:8px 10px;text-align:center}
+.reglages{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ok-v{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);border-radius:12px;padding:10px 14px;color:#86EFAC}
+.navig{background:linear-gradient(180deg,#0F1A36,#0B1429);border:1px solid var(--line2);border-radius:16px;overflow:hidden;box-shadow:var(--ombre)}
+.navig .contenu{padding:40px;text-align:center}
+.cadenas{font-size:64px}

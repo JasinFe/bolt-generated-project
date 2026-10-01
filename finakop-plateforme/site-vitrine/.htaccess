@@ -7,6 +7,8 @@
 # en-têtes (CSP, no-store, noindex) et ses réécritures.
 Options -Indexes -MultiViews
 ServerSignature Off
+AddType video/mp4 .mp4
+AddType image/webp .webp
 SetEnvIfNoCase Host "^(www\.)?finakoperp\.com(:[0-9]+)?$" FK_VITRINE=1
 
 <IfModule mod_rewrite.c>
@@ -18,7 +20,11 @@ SetEnvIfNoCase Host "^(www\.)?finakoperp\.com(:[0-9]+)?$" FK_VITRINE=1
     RewriteCond %{HTTP_HOST} ^finakoperp\.com$ [NC]
     RewriteRule (^|/)\.(?!well-known/) - [F,L]
     RewriteCond %{HTTP_HOST} ^finakoperp\.com$ [NC]
-    RewriteRule \.(bak|old|orig|sql|sqlite|db|log|zip|tar|gz|env|ini|sh|md|php)$ - [F,L,NC]
+    RewriteRule \.(bak|old|orig|sql|sqlite|db|log|zip|tar|gz|env|ini|sh|md|json|jsonl)$ - [F,L,NC]
+    # Un seul script PHP autorisé sur la vitrine : le formulaire de contact
+    RewriteCond %{HTTP_HOST} ^finakoperp\.com$ [NC]
+    RewriteCond %{REQUEST_URI} !^/contact\.php$
+    RewriteRule \.(php[0-9]?|phtml|phar)$ - [F,L,NC]
 </IfModule>
 
 <IfModule mod_headers.c>
@@ -26,7 +32,10 @@ SetEnvIfNoCase Host "^(www\.)?finakoperp\.com(:[0-9]+)?$" FK_VITRINE=1
     Header always set X-Frame-Options "DENY" env=FK_VITRINE
     Header always set Referrer-Policy "strict-origin-when-cross-origin" env=FK_VITRINE
     Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()" env=FK_VITRINE
-    Header always set Content-Security-Policy "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" env=FK_VITRINE
+    Header always set Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'" env=FK_VITRINE
     Header always set Strict-Transport-Security "max-age=31536000" env=FK_VITRINE
     Header always unset X-Powered-By
+    <FilesMatch "\.(css|js|png|jpe?g|webp|svg|mp4|ico)$">
+        Header set Cache-Control "public, max-age=604800" env=FK_VITRINE
+    </FilesMatch>
 </IfModule>
