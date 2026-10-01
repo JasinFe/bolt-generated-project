@@ -1,4 +1,4 @@
-import { $, $$, api, esc, highlight, version, versions, store, uid, toast, showError, books } from '../core.js';
+import { $, $$, api, esc, highlight, version, versions, store, uid, toast, showError, books, versionOptions, icon } from '../core.js';
 import { go } from '../app.js';
 
 const MODES = [
@@ -16,13 +16,13 @@ export async function render(el, { params, isCurrent }) {
   await books();
 
   el.innerHTML = `<div class="page wide">
-    <h1>Rechercher</h1>
+    <div class="page-head"><div class="grow"><div class="eyebrow">Concordance</div><h1>Rechercher</h1><p>Dans ${list.length} versions, avec ou sans accents, par expression, préfixe ou numéro Strong.</p></div></div>
     <form class="toolbar" id="sForm">
       <input type="search" id="sQ" class="grow" value="${esc(q)}" placeholder="Mots, « expression », préfixe*, -exclure, ou numéro Strong (G26, H430)">
-      <select id="sV">${list.map(x => `<option value="${x.id}" ${x.id === v ? 'selected' : ''}>${esc(x.short)}</option>`).join('')}</select>
+      <select id="sV">${versionOptions(v, list)}</select>
       <select id="sMode">${MODES.map(([k, l]) => `<option value="${k}" ${k === mode ? 'selected' : ''}>${l}</option>`).join('')}</select>
       <select id="sScope">${SCOPES.map(([k, l]) => `<option value="${k}" ${k === scope ? 'selected' : ''}>${l}</option>`).join('')}</select>
-      <button class="btn primary">Chercher</button>
+      <button class="btn primary">${icon('search')} Chercher</button>
     </form>
     <div id="sOut">${q ? '<div class="loading">Recherche…</div>' : help()}</div>
   </div>`;
@@ -45,12 +45,12 @@ export async function render(el, { params, isCurrent }) {
   out.innerHTML = `<div class="two-col">
     <div>
       <div class="row"><p class="grow"><b>${data.total.toLocaleString('fr-FR')}</b> verset(s) pour « ${esc(q)} »${book ? ` dans ${esc(data.byBook[0] ? data.byBook[0].name : book)}` : ''}
-        ${data.strong ? ` · <a href="#/lexique/${data.strong}">fiche du mot ${data.strong}</a>` : ''}</p>
+        ${data.strong ? ` · <a href="#/lexique/${data.strong}">fiche du mot ${data.strong}</a>${data.version !== v ? ` · <span class="muted">numéros Strong lus dans la ${esc(data.version === 'JND' ? 'Darby' : 'KJV')}</span>` : ''}` : ''}</p>
         ${data.total ? '<button class="btn sm" id="sSave">+ Enregistrer comme étude</button>' : ''}</div>
       <div id="sResults"></div>
       <div class="row" style="margin-top:12px"><button class="btn hidden" id="sMore">Plus de résultats</button></div>
     </div>
-    <aside class="card"><h3>Répartition par livre</h3>
+    <aside class="card"><h4>Répartition par livre</h4>
       ${book ? `<p><a href="#/recherche?${new URLSearchParams({ q, v, mode, scope })}">← Tous les livres</a></p>` : ''}
       <div class="bars">${data.byBook.map(b => `
         <div class="bar ${b.book === book ? 'on' : ''}" data-book="${b.book}" title="${b.count} verset(s)">

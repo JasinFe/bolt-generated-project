@@ -1,5 +1,5 @@
 // Mister Preacher — routeur et initialisation.
-import { $, $$, api, store, versions, version, panel, books, openStrong, showError, loading } from './core.js';
+import { $, $$, api, store, versions, version, panel, books, openStrong, showError, loading, versionOptions, modal } from './core.js';
 
 const VIEWS = {
   '': () => import('./views/home.js'),
@@ -30,7 +30,9 @@ async function route() {
   const id = ++renderId;
   const el = $('#view');
   panel.close();
+  modal.close();
   $('#sidenav').classList.remove('open');
+  $('#scrim').classList.remove('open');
   $$('.sidenav a').forEach(a => a.classList.toggle('active', a.dataset.nav === (name || 'home') ||
     (name === 'passage' && a.dataset.nav === 'lire')));
   const loader = VIEWS[name] || VIEWS[''];
@@ -64,9 +66,9 @@ async function init() {
   if (size) document.documentElement.style.setProperty('--scripture-size', size + 'rem');
 
   // Versions
-  const list = await versions();
+  await versions();
   const sel = $('#versionSel');
-  sel.innerHTML = list.map(v => `<option value="${v.id}">${v.short} (${v.lang.toUpperCase()})</option>`).join('');
+  sel.innerHTML = versionOptions(version());
   sel.value = version();
   sel.onchange = () => { store.setting('version', sel.value); route(); };
   books(); // préchargement
@@ -79,7 +81,8 @@ async function init() {
     openLookup(q);
   };
 
-  $('#menuBtn').onclick = () => $('#sidenav').classList.toggle('open');
+  $('#menuBtn').onclick = () => { $('#sidenav').classList.toggle('open'); $('#scrim').classList.toggle('open'); };
+  $('#scrim').onclick = () => { $('#sidenav').classList.remove('open'); $('#scrim').classList.remove('open'); };
   $('#panelClose').onclick = () => panel.close();
   document.addEventListener('keydown', e => { if (e.key === 'Escape') panel.close(); });
 

@@ -52,7 +52,7 @@ export async function render(el, { args, params }) {
   if (args[0]) return renderEditor(el, args[0], params.get('apercu') === '1');
 
   el.innerHTML = `<div class="page">
-    <div class="row"><h1 class="grow">Sermons &amp; prédications</h1></div>
+    <div class="page-head"><div class="grow"><div class="eyebrow">Atelier</div><h1>Sermons &amp; prédications</h1><p>Choisissez un modèle : les versets s’insèrent automatiquement, vous gardez la main sur le message.</p></div></div>
     <div class="card"><h3>Nouveau sermon</h3><div class="grid">${Object.entries(TEMPLATES).map(([k, t]) => `
       <button class="card tile" data-new="${k}" style="text-align:left;cursor:pointer"><b>${esc(t.label)}</b><div class="muted small">${esc(t.help)}</div></button>`).join('')}</div></div>
     <div class="card"><h3>Mes sermons</h3>${s.sermons.length ? s.sermons.map(x => `

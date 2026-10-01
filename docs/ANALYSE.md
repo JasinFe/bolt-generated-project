@@ -8,7 +8,7 @@ très complets mais chers et pensés pour l'anglais (Logos), soit gratuits mais 
 
 | Besoin | Outils actuels | Ce que MP apporte |
 |---|---|---|
-| Lire, chercher, comparer | Bien couvert | Recherche avancée + 8 versions en parallèle, gratuit |
+| Lire, chercher, comparer | Bien couvert | Recherche avancée + 31 versions en 16 langues, gratuit |
 | Comprendre les mots originaux | Logos (payant), BibleHub (anglais) | Strong en français : on voit **comment chaque mot hébreu/grec est traduit dans la Darby** |
 | Relier les passages | Notes de bas de page | 340 000 références croisées classées par pertinence + passages parallèles |
 | **Préparer un sermon** | Word / papier | Éditeur de plan guidé avec les versets insérés automatiquement |
@@ -32,13 +32,13 @@ Le positionnement « **de l'étude à la chaire, au studio et à la rue** » est
 4. **La numérotation des versets** varie (Joël 3 FR = Joël 2:28 EN ; Psaumes en numérotation grecque dans la Septante/Vulgate).
    Une table de correspondance (« versification mapping ») est prévue en phase 2.
 
-## 2. Ce qui est livré (version 1.0)
+## 2. Ce qui est livré (version 1.1)
 
 Une application web complète, **sans aucune dépendance externe** (Node.js seul), qui fonctionne hors ligne une fois installée.
 
 ### Fonctions
 
-- **Lecture** : 88 livres possibles, 8 versions, jusqu'à 4 colonnes en parallèle, titres de section (Martin), notes de Darby,
+- **Lecture** : 88 livres possibles, 31 versions en 16 langues, jusqu'à 4 colonnes en parallèle, sélecteur de livres en grille, titres de section (Martin), notes de Darby,
   taille du texte, thème clair/sombre, navigation au clavier (← →).
 - **Recherche** : tous les mots / un des mots / expression exacte / mots partiels / expression régulière ; préfixe `berger*` ;
   exclusion `-mot` ; accents facultatifs ; filtre AT/NT/canon/deutérocanoniques ; répartition par livre cliquable ;
@@ -49,7 +49,7 @@ Une application web complète, **sans aucune dépendance externe** (Node.js seul
 - **Mots originaux** : fiche Strong (mot hébreu/grec, translittération, définition, étymologie, mots apparentés) +
   **toutes les façons dont le mot est traduit** dans la Darby et la KJV, avec leurs fréquences ; recherche inverse
   (« quels mots grecs sont traduits par *grâce* ? »).
-- **Comparer** : un passage dans les 8 versions (français, anglais, hébreu, grec, latin).
+- **Comparer** : un passage dans les 31 versions, filtrées par langue.
 - **Thèmes** : 32 thèmes (salut, foi, guérison, combat spirituel, prophétie, famille…) → étude, sermon ou chant en un clic.
 - **Mes études** : surlignage en 5 couleurs, notes par verset, collections de passages annotées, export Markdown, impression,
   sauvegarde/restauration de toutes les données.
@@ -60,18 +60,16 @@ Une application web complète, **sans aucune dépendance externe** (Node.js seul
 - **Évangélisation** : 4 parcours (Chemin des Romains, le Pont, Témoignage, 7 signes de Jean) et 8 objections fréquentes avec réponses bibliques.
 - **Verset du jour**, historique de lecture, application installable (manifest PWA), responsive mobile, impression propre.
 
-### Versions incluses (libres de droits)
+### Versions incluses (31, toutes libres de droits ou sous licence libre)
 
-| Code | Version | Langue | Particularités |
-|---|---|---|---|
-| JND | Darby 1885 | FR | **Numéros Strong**, notes du traducteur |
-| MAR | David Martin 1744 | FR | Titres de section |
-| CRA | Augustin Crampon 1923 | FR | **Deutérocanoniques** (Tobie, Judith, Sagesse, Siracide, Maccabées…) |
-| LXX | Septante, trad. Giguet 1872 | FR | **Apocryphes** : Hénoch, 3–4 Maccabées, Psaumes de Salomon, Psaume 151… |
-| KJVA | King James 1769 + Apocrypha | EN | Numéros Strong, apocryphes |
-| WLC | Codex de Leningrad | Hébreu | Texte massorétique |
-| SRGNT | NT grec (Statistical Restoration) | Grec | Numéros Strong, CC BY 4.0 |
-| VUL | Vulgate clémentine | Latin | Deutérocanoniques |
+| Langue | Versions |
+|---|---|
+| **Français (13)** | **Segond 1910** (par défaut), Darby 1885 (numéros Strong + notes), Ostervald, Martin 1744, Perret-Gentil 1847, Crampon 1923 (deutérocanoniques), Néo-Crampon Libre (français moderne, deutérocanoniques), Vigouroux 1902, Septante Giguet (apocryphes, Hénoch), Synodale 1921 (NT + Psaumes), Oltramare 1874 (NT), Stapfer 1889 (NT), Genève 1669 (NT) |
+| **Afrique & Caraïbes (6)** | Lingala, créole haïtien, éwé, twi, haoussa, igbo |
+| **Autres langues (8)** | KJV + Apocrypha (Strong), Berean Standard Bible (Strong), Douay-Rheims, Reina-Valera 1909, Luther 1912, Riveduta 1927, Synodale russe, arabe Van Dyck |
+| **Langues originales et anciennes (4)** | Hébreu (Codex de Leningrad), grec du NT (Strong), Textus Receptus, Vulgate |
+
+Toute version protégée peut s'y ajouter **légalement** via API.Bible (voir § 7).
 
 ## 3. Architecture technique
 
@@ -82,7 +80,8 @@ mister-preacher/
 │   └── lib/
 │       ├── refs.js       Livres, abréviations FR/EN, analyse des références
 │       ├── text.js       Normalisation (accents), moteur de requêtes, surlignage
-│       └── bible.js      Passages, recherche, index Strong, références croisées, rimes
+│       ├── bible.js      Passages, recherche, index Strong, références croisées, rimes, numérotations
+│       └── apibible.js   Connecteur facultatif API.Bible (versions sous licence)
 ├── public/               Interface (HTML/CSS/JS modules, sans compilation)
 │   ├── index.html
 │   ├── css/style.css     Thème clair/sombre, mobile, impression
@@ -91,7 +90,7 @@ mister-preacher/
 │       ├── core.js       API, stockage local, rendu des versets, panneau d'outils
 │       └── views/        home, read, search, lexicon, themes, study, sermon, song, evangel, about
 ├── data/
-│   ├── bibles/*.json     Une version par fichier (format compact)
+│   ├── bibles/<VERSION>/<Livre>.json.gz   Un fichier compressé par livre et par version
 │   ├── books.json        88 livres : codes OSIS, noms FR/EN, abréviations, catégorie
 │   ├── crossrefs.json    Références croisées
 │   ├── strongs-*.json    Lexiques hébreu et grec
@@ -120,14 +119,20 @@ ajoutés par le traducteur (italiques). Cela garde les fichiers légers tout en 
 | `/api/themes`, `/api/theme?id=`, `/api/parallels?ref=`, `/api/evangelisation`, `/api/votd` | Contenus |
 | `/api/rhymes?w=`, `POST /api/palette` | Aide à l'écriture |
 
-**Choix** : zéro dépendance (sécurité, maintenance, déploiement en une commande) ; données en JSON chargées à la demande
-(une version ≈ 30 Mo de mémoire) ; recherche en mémoire (≈ 10–20 ms sur 31 000 versets) ; données personnelles dans le
-navigateur (aucun compte nécessaire, rien n'est envoyé au serveur).
+**Choix** : zéro dépendance (sécurité, maintenance, déploiement en une commande) ; **un fichier compressé par livre** :
+lire un passage ne charge que ce livre (comparer 29 versions ≈ 50 ms), seule la recherche plein texte charge une version
+entière (cache limité à 8 versions, ≈ 260 Mo de mémoire au total) ; données personnelles dans le navigateur (aucun compte
+nécessaire, rien n'est envoyé au serveur).
+
+**Numérotation** : les références saisies, les thèmes et les références croisées suivent la numérotation usuelle (Segond, KJV).
+Pour les versions à numérotation hébraïque (Darby, Crampon, Néo-Crampon, Lingala, Luther, hébreu), MP convertit
+automatiquement Joël 2:28-32 → 3:1-5, Joël 3 → 4 et Malachie 4 → 3:19-24.
 
 ## 4. Feuille de route proposée
 
 **Phase 2 — Contenu (1 à 3 mois)**
-- Ajouter Louis Segond 1910 et Ostervald (libres) ; négocier ou brancher API.Bible pour Segond 21 / Semeur / NBS / Parole de Vie.
+- ✅ Fait en 1.1 : Segond 1910, Ostervald, 11 autres versions françaises et 6 langues africaines/caribéennes ; connecteur API.Bible.
+- Obtenir les accords (via API.Bible) pour Segond 21, Semeur, NBS, Parole de Vie ; ajouter swahili, kinyarwanda, kirundi, malgache, kikongo, tshiluba dès qu'une édition libre complète est disponible.
 - Traduire les définitions Strong en français (traduction assistée puis relue).
 - Dictionnaire biblique (personnages, lieux, objets), cartes, chronologie.
 - Table de correspondance des numérotations.
@@ -153,17 +158,51 @@ présentation, assistant) pour financer l'hébergement et les licences de traduc
 - **Azure App Service** : le dépôt contient déjà `.github/workflows/azure-webapps-node.yml` ; renseigner `AZURE_WEBAPP_NAME` et le
   secret `AZURE_WEBAPP_PUBLISH_PROFILE`, puis pousser sur `main`.
 - Tout hébergeur Node.js (Render, Railway, Fly.io, VPS) : commande de démarrage `npm start`, variable `PORT` respectée.
-- Mémoire conseillée : 1 Go (toutes les versions chargées).
+- Mémoire conseillée : 512 Mo (variables `MP_MAX_VERSIONS` et `MP_MAX_BOOKS` pour ajuster le cache).
 
 ## 6. Licences des données
 
 | Ressource | Licence |
 |---|---|
-| Darby, Martin, Crampon, Septante Giguet, WLC, Vulgate | Domaine public |
+| Segond 1910, Darby, Martin, Perret-Gentil, Crampon, Vigouroux, Septante Giguet, Synodale, Oltramare, Stapfer, Genève 1669, Douay-Rheims, Reina-Valera 1909, Luther 1912, Riveduta, Synodale russe, Van Dyck, WLC, Textus Receptus, Vulgate | Domaine public |
+| Ostervald (révision 1996) | Déclarée domaine public par open-bibles / bible-api.com |
+| Créole haïtien 1985 | Déclarée domaine public par eBible.org (Beblia indique « Société Biblique Haïtienne » : à confirmer avant usage commercial) |
+| Néo-Crampon Libre | CC BY-SA 4.0 — Fraternité de Tibériade |
+| Lingala, éwé, twi, haoussa, igbo | CC BY-SA 4.0 — Biblica, Inc. (textes identiques mot pour mot à ceux publiés par eBible.org sous cette licence) |
+| Berean Standard Bible | Domaine public (CC0) |
 | KJV + Apocrypha | Texte domaine public ; balisage Strong CrossWire (GPL) |
 | NT grec Statistical Restoration | CC BY 4.0 — Alan Bunning, Center for New Testament Restoration |
 | Références croisées | CC BY — OpenBible.info |
 | Dictionnaires Strong | CC BY-SA — Open Scriptures |
-| Conversion des textes | projet scrollmapper/bible_databases |
 
 Les mentions sont affichées dans la page **Versions & sources** de l'application.
+
+## 7. Analyse des sources proposées (version 1.1)
+
+| Source | Ce qu'elle contient | Verdict |
+|---|---|---|
+| **faith.tools — Free Use Bible API** (bible.helloao.org) | API gratuite qui republie ~1 000 traductions d'eBible.org. Son dépôt GitHub ne contient que 6 Bibles en anglais/arabe/hindi ; le français vient d'eBible. | ✅ Utilisé à la source : le **corpus eBible** (BibleNLP/ebible). Mais ce corpus **réaligne tout sur la numérotation hébraïque et perd des versets** : ~110 pour la Segond (dont **Joël 2:28-32** et **Malachie 4**), ~200 pour le swahili, l'éwé, le yoruba, l'Ostervald… MP ne prend dans eBible que les textes complets (Lingala, Néo-Crampon, Textus Receptus) et va chercher les autres là où ils sont complets. |
+| **bible-api.com** | API qui sert les fichiers du dépôt *open-bibles* (≈ 45 Bibles libres). | ✅ Utilisé : Ostervald, Luther 1912, Riveduta 1927. |
+| **api.bible** (API.Bible, American Bible Society) | Plus de 2 500 Bibles, dont les versions **protégées** (Segond 21, Semeur, NBS, Parole de Vie…) quand l'éditeur l'autorise. Clé requise, texte non stockable, copyright à afficher, suivi FUMS. | ✅ **Connecteur intégré** (désactivé par défaut) : c'est la seule voie légale pour les versions modernes. Voir ci-dessous. |
+| **thiagobodruk/bible** | 90 Bibles en JSON, récupérées par aspiration de sites. | ⚠️ **Mélange de versions libres et protégées** (NIV, ESV, NVI, Reina-Valera 1960, NLT, Schlachter 1951…), présentées comme utilisables. Une seule française : la Bible de l'Épée (licence non vérifiable). Les versions libres qu'il contient existent déjà ailleurs avec une source plus sûre → **non utilisé**. |
+| **churchstudio-org/openbible** | Traductions **automatiques** de la KJV par intelligence artificielle (MarianMT), sous licence MIT. | ❌ **Non utilisé** : pas de version française, et une traduction automatique non relue n'est pas fiable pour la prédication ou l'étude. |
+
+**Source complémentaire utilisée** : *Beblia/Holy-Bible-XML-Format*, qui contient la Segond 1910 **complète** avec sa numérotation
+française. Ce dépôt contient aussi des versions protégées (Segond 21, NEG, NBS, Semeur, Parole de Vie, Jérusalem…) qui **n'ont
+pas été reprises**. Pour les langues africaines, seules les éditions dont le texte est identique, mot pour mot, à l'édition
+publiée sous licence libre CC BY-SA par eBible.org ont été retenues (vérification automatique sur plusieurs versets).
+
+### Activer API.Bible (versions sous licence)
+
+1. Créez un compte sur <https://scripture.api.bible> et une clé d'application.
+2. Dans le tableau de bord, notez l'identifiant (`bibleId`) des versions françaises auxquelles vous avez accès.
+3. Définissez sur le serveur :
+
+```bash
+API_BIBLE_KEY=votre-cle
+API_BIBLE_VERSIONS="S21=<bibleId>|Segond 21|Bible Segond 21|fr; PDV=<bibleId>|Parole de Vie|Parole de Vie 2017|fr"
+```
+
+Les versions apparaissent avec le symbole ☁ : lecture, passages, comparaison et recherche (via API.Bible). Leur texte n'est
+jamais stocké (cache mémoire de 10 minutes), et le copyright est affiché sous chaque chapitre. Pour un site public, ajoutez le
+script de suivi FUMS demandé par API.Bible.

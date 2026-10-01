@@ -6,7 +6,7 @@ export async function render(el, { args, params }) {
   const num = (args[0] || '').toUpperCase();
   const word = params.get('w') || '';
   el.innerHTML = `<div class="page">
-    <h1>Mots originaux (hébreu &amp; grec)</h1>
+    <div class="page-head"><div class="grow"><div class="eyebrow">Hébreu · Araméen · Grec</div><h1>Mots originaux</h1><p>Le sens, l’origine et toutes les traductions de chaque mot de la Bible (numérotation Strong).</p></div></div>
     <form class="toolbar" id="lForm">
       <input type="search" id="lQ" class="grow" value="${esc(num || word)}" placeholder="Mot français (amour, grâce, foi), mot original (ἀγάπη), translittération (agapē) ou numéro (G26, H2617)">
       <button class="btn primary">Chercher</button>

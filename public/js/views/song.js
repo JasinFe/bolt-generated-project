@@ -1,4 +1,4 @@
-import { $, $$, api, esc, store, uid, refText, refPreviewHTML, version, download, toast } from '../core.js';
+import { $, $$, api, esc, store, uid, refText, refPreviewHTML, version, download, toast, icon } from '../core.js';
 import { go } from '../app.js';
 
 const SECTIONS = ['Couplet 1', 'Refrain', 'Couplet 2', 'Pont'];
@@ -15,8 +15,7 @@ export async function render(el, { args, params }) {
   }
   if (args[0]) return renderEditor(el, args[0]);
   const themes = await api('themes');
-  el.innerHTML = `<div class="page"><div class="row"><h1 class="grow">Chants &amp; textes inspirés</h1><button class="btn primary" id="newSong">+ Nouveau texte</button></div>
-    <p class="muted">Pour les auteurs, compositeurs, slameurs et poètes : partez de l’Écriture, récoltez ses images et ses mots, trouvez des rimes bibliques.</p>
+  el.innerHTML = `<div class="page"><div class="page-head"><div class="grow"><div class="eyebrow">Atelier</div><h1>Chants &amp; textes inspirés</h1><p>Pour les auteurs, compositeurs, slameurs et poètes : partez de l’Écriture, récoltez ses images et ses mots, trouvez des rimes bibliques.</p></div><button class="btn primary" id="newSong">${icon('plus')} Nouveau texte</button></div>
     <div class="card"><h3>Partir d’un thème</h3><div class="row">${themes.map(t => `<a class="chip" href="#/chant?theme=${t.id}">${t.icon} ${esc(t.title)}</a>`).join('')}</div></div>
     <div class="card"><h3>Mes textes</h3>${s.songs.length ? s.songs.map(x => `<div class="list-item"><div class="grow"><a href="#/chant/${x.id}"><b>${esc(x.title || 'Sans titre')}</b></a>
       <div class="muted small">${esc(x.refs || '')}</div></div><button class="btn sm ghost" data-del="${x.id}">🗑</button></div>`).join('') : '<div class="empty">Aucun texte pour l’instant.</div>'}</div></div>`;

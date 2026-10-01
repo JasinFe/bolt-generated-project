@@ -17,8 +17,10 @@ Tests : `npm test` · Mode développement (rechargement auto) : `npm run dev`
 
 ## Ce que contient MP
 
-- **8 versions** : Darby (avec numéros Strong), Martin, Crampon (deutérocanoniques), Septante en français (apocryphes, Hénoch),
-  King James + Apocrypha, hébreu (Codex de Leningrad), grec du NT, Vulgate latine — soit 88 livres possibles.
+- **31 versions en 16 langues** : 13 en français (Segond 1910, Darby avec numéros Strong, Ostervald, Martin, Crampon,
+  Néo-Crampon Libre, Vigouroux, Septante avec apocryphes et Hénoch…), lingala, créole haïtien, éwé, twi, haoussa, igbo,
+  anglais, espagnol, allemand, italien, russe, arabe, hébreu, grec et latin — soit 88 livres possibles.
+- **Versions modernes protégées** (Segond 21, Semeur, NBS…) affichables légalement via le connecteur API.Bible.
 - **Recherche** de mots, d'expressions exactes, de préfixes (`grâce*`), avec exclusions (`-mot`), par testament ou par livre.
 - **Références** saisies librement : `Jean 3:16`, `Jn 3.16-18`, `1 Co 13`, `Rom 8:28; 12:1-2`.
 - **341 385 références croisées** classées par pertinence et **30 groupes de passages parallèles**.
@@ -32,16 +34,16 @@ L'analyse complète du projet (avis, architecture, licences, feuille de route) s
 
 ## Ajouter une version de la Bible
 
-Les données sont déjà incluses dans `data/`. Pour les reconstruire ou ajouter une version (Reina-Valera, Luther, Synodale… parmi
-les 140 traductions du projet [scrollmapper/bible_databases](https://github.com/scrollmapper/bible_databases)), ajoutez une
-entrée dans `VERSIONS` de `scripts/build-data.js`, puis :
+Les données sont déjà incluses dans `data/`. Pour les reconstruire ou ajouter une version, ajoutez une entrée dans `VERSIONS`
+de `scripts/build-data.js` (formats acceptés : scrollmapper, Beblia XML, corpus eBible, OSIS), en vérifiant la licence, puis :
 
 ```bash
 npm run data            # toutes les versions + références croisées + Strong
-node scripts/build-data.js JND   # une seule version
+node scripts/build-data.js LSG   # une seule version
 ```
 
-Les versions modernes protégées (Segond 21, NEG, Semeur, NBS…) demandent l'accord de leur éditeur ou l'usage d'API.Bible.
+Les versions modernes protégées (Segond 21, NEG, Semeur, NBS…) passent par API.Bible : variables `API_BIBLE_KEY` et
+`API_BIBLE_VERSIONS` (voir [docs/ANALYSE.md](docs/ANALYSE.md#7-analyse-des-sources-proposées-version-11)).
 
 ## Déploiement
 

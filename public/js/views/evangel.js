@@ -7,8 +7,7 @@ export async function render(el, { args }) {
   const plan = data.plans.find(p => p.id === active);
   const text = p => p.verses.map(v => plain(v.text)).join(' ') || `<span class="muted">Absent de ${esc(versionInfo(version()).short)}</span>`;
   el.innerHTML = `<div class="page">
-    <div class="row"><h1 class="grow">Évangélisation</h1><button class="btn sm" onclick="print()">Imprimer la fiche</button></div>
-    <p class="muted">Des parcours prêts à l’emploi pour partager l’Évangile, avec le texte des versets dans la version choisie.</p>
+    <div class="page-head"><div class="grow"><div class="eyebrow">Atelier</div><h1>Évangélisation</h1><p>Des parcours prêts à l’emploi pour partager l’Évangile, avec le texte des versets dans la version choisie.</p></div><button class="btn" onclick="print()">Imprimer la fiche</button></div>
     <div class="row no-print" style="margin-bottom:14px">${data.plans.map(p => `<a class="chip ${p.id === active ? 'on' : ''}" href="#/evangelisation/${p.id}">${esc(p.title)}</a>`).join('')}</div>
     ${plan ? `<div class="card"><h2>${esc(plan.title)}</h2><p class="muted">${esc(plan.intro)}</p>
       <div class="steps">${plan.steps.map(s => `<div class="step"><h3>${esc(s.title)}</h3>

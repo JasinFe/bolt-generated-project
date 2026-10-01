@@ -1,4 +1,4 @@
-import { $, $$, api, esc, plain, renderText, version, versionInfo, store, uid, toast, showError } from '../core.js';
+import { $, $$, api, esc, plain, renderText, version, versionInfo, store, uid, toast, showError, icon } from '../core.js';
 import { go } from '../app.js';
 
 /** Thèmes : #/themes et #/themes/salut */
@@ -6,17 +6,17 @@ export async function render(el, { args }) {
   const v = version();
   if (!args[0]) {
     const list = await api('themes');
-    el.innerHTML = `<div class="page"><h1>Thèmes bibliques</h1>
-      <p class="muted">Les versets clés par sujet — pour un sermon, une étude, un chant ou une conversation.</p>
-      <div class="grid">${list.map(t => `<a class="card tile" href="#/themes/${t.id}"><div class="big">${t.icon}</div><h3>${esc(t.title)}</h3><div class="muted small">${t.count} passages</div></a>`).join('')}</div></div>`;
+    el.innerHTML = `<div class="page"><div class="page-head"><div class="grow"><div class="eyebrow">Bible</div><h1>Thèmes bibliques</h1><p>Les versets clés par sujet — pour un sermon, une étude, un chant ou une conversation.</p></div></div>
+      <div class="grid">${list.map(t => `<a class="card tile" href="#/themes/${t.id}"><span class="tile-ic">${t.icon}</span><h3>${esc(t.title)}</h3><p>${t.count} passages clés</p></a>`).join('')}</div></div>`;
     return;
   }
   const t = await api('theme', { id: args[0], v });
   el.innerHTML = `<div class="page">
-    <div class="toolbar"><a class="btn sm" href="#/themes">← Thèmes</a><b class="grow">${t.icon} ${esc(t.title)}</b>
-      <button class="btn sm" id="tStudy">+ Créer une étude</button>
-      <a class="btn sm" href="#/chant?theme=${t.id}">🎵 Écrire un chant</a>
-      <a class="btn sm" href="#/sermon?theme=${t.id}">🎤 Préparer un sermon</a></div>
+    <div class="page-head"><div class="grow"><div class="eyebrow"><a href="#/themes">Thèmes</a></div><h1>${t.icon} ${esc(t.title)}</h1></div></div>
+    <div class="toolbar"><span class="grow small muted">${t.passages.length} passages · ${esc(versionInfo(v).short)}</span>
+      <button class="btn sm" id="tStudy">${icon('pen')} Créer une étude</button>
+      <a class="btn sm" href="#/chant?theme=${t.id}">${icon('music')} Écrire un chant</a>
+      <a class="btn sm" href="#/sermon?theme=${t.id}">${icon('mic')} Préparer un sermon</a></div>
     ${t.passages.map(p => `<div class="card"><div class="row"><h3 class="grow"><a href="#/passage?ref=${encodeURIComponent(p.ref)}">${esc(p.ref)}</a></h3>
       <a class="small" href="#/comparer?ref=${encodeURIComponent(p.ref)}">Comparer</a></div>
       <div class="scripture">${p.verses.length ? p.verses.map(x => `${p.verses.length > 1 ? `<span class="vn">${x.v}</span>` : ''}${renderText(x.text)}`).join(' ') : `<span class="muted">Absent de ${esc(versionInfo(v).short)}</span>`}</div></div>`).join('')}
@@ -37,8 +37,8 @@ export async function renderParallels(el, { params }) {
   const open = params.get('open');
   const v = version();
   const list = await api('parallels', { v, ref });
-  el.innerHTML = `<div class="page wide"><h1>Passages parallèles</h1>
-    <p class="muted">Les mêmes événements racontés dans plusieurs livres : Évangiles synoptiques, Samuel/Rois/Chroniques, prophéties accomplies.
+  el.innerHTML = `<div class="page wide"><div class="page-head"><div class="grow"><div class="eyebrow">Bible</div><h1>Passages parallèles</h1><p>Les mêmes événements racontés dans plusieurs livres : Évangiles synoptiques, Samuel/Rois/Chroniques, prophéties accomplies.</p></div></div>
+    <p class="muted">
     ${ref ? `Filtré sur <b>${esc(ref)}</b> — <a href="#/paralleles">tout voir</a>` : ''}</p>
     <div id="pList">${list.length ? list.map((p, i) => `<div class="card">
       <div class="row"><h3 class="grow">${esc(p.title)}</h3><button class="btn sm" data-open="${i}">Afficher côte à côte</button></div>

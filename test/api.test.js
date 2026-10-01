@@ -16,7 +16,7 @@ const get = async path => { const r = await fetch(base + path); return { status:
 
 test('API : santé, versions, lookup', async () => {
   assert.strictEqual((await get('/api/health')).body.ok, true);
-  assert.strictEqual((await get('/api/versions')).body.length, 8);
+  assert.ok((await get('/api/versions')).body.length >= 30);
   const ref = await get('/api/lookup?q=' + encodeURIComponent('Ps 23'));
   assert.strictEqual(ref.body.type, 'passage');
   const words = await get('/api/lookup?q=berger');

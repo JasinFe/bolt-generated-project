@@ -1,6 +1,6 @@
 import {
   $, $$, api, esc, plain, renderText, version, versionInfo, versions, books, store, openVerseTools,
-  CAT_LABEL, remember, showError, toast, uid,
+  CAT_LABEL, remember, showError, toast, uid, icon, modal, versionsByLang, langName, versionsWithBook,
 } from '../core.js';
 import { go } from '../app.js';
 
@@ -31,6 +31,47 @@ function verseSpan(v, info, strong) {
   return `<span class="verse ${markClasses(v.key)}" data-key="${v.key}"><span class="vn">${v.v}</span>${renderText(v.text, { strong: strong && info.strong })}${notes}</span> `;
 }
 
+/** Fenêtre de choix du livre puis du chapitre. */
+export async function pickBook(current, onPick) {
+  const allBooks = await books();
+  const available = new Set(Object.keys(versionInfo(version()).books || {}));
+  const showBooks = () => {
+    const body = modal.open('Choisir un livre', ['AT', 'NT', 'DC', 'AP'].map(cat => {
+      const list = allBooks.filter(b => b.cat === cat);
+      if (!list.length) return '';
+      return `<div class="book-group"><h4>${CAT_LABEL[cat]}</h4><div class="book-grid">${list.map(b =>
+        `<button data-b="${b.id}" class="${b.id === current ? 'on' : ''} ${available.has(b.id) ? '' : 'na'}" title="${available.has(b.id) ? '' : 'Absent de la version choisie — sera lu dans une autre version'}">${esc(b.fr)}</button>`).join('')}</div></div>`;
+    }).join(''));
+    $$('[data-b]', body).forEach(btn => btn.onclick = () => showChapters(allBooks.find(b => b.id === btn.dataset.b)));
+  };
+  const showChapters = b => {
+    if (b.chapters === 1) { modal.close(); return onPick(b.id, 1); }
+    const body = modal.open(b.fr, `<p><button class="btn sm" data-back>${icon('left')} Tous les livres</button></p>
+      <div class="chap-grid">${Array.from({ length: b.chapters }, (_, i) => `<button data-c="${i + 1}">${i + 1}</button>`).join('')}</div>`);
+    $('[data-back]', body).onclick = showBooks;
+    $$('[data-c]', body).forEach(btn => btn.onclick = () => { modal.close(); onPick(b.id, +btn.dataset.c); });
+  };
+  showBooks();
+}
+
+/** Fenêtre de choix des versions affichées en parallèle (3 au maximum). */
+async function pickParallel(main, current, onDone) {
+  const list = (await versions()).filter(v => v.id !== main);
+  const chosen = new Set(current);
+  const body = modal.open('Versions en parallèle', `<p class="muted small">Choisissez jusqu’à 3 versions à lire à côté de <b>${esc(versionInfo(main).name)}</b>.</p>
+    ${versionsByLang(list).map(([lang, vs]) => `<div class="book-group"><h4>${esc(langName(lang))}</h4><div class="ver-list">${vs.map(v => `
+      <label class="ver-item ${chosen.has(v.id) ? 'on' : ''}"><input type="checkbox" value="${v.id}" ${chosen.has(v.id) ? 'checked' : ''}>
+        <span><b>${esc(v.short)}</b><span>${esc(v.name)}</span></span></label>`).join('')}</div></div>`).join('')}
+    <div class="row end" style="position:sticky;bottom:0;background:var(--surface);padding-top:12px"><button class="btn" data-clear>Aucune</button><button class="btn primary" data-ok>Afficher</button></div>`);
+  $$('input[type=checkbox]', body).forEach(cb => cb.onchange = () => {
+    if (cb.checked && chosen.size >= 3) { cb.checked = false; return toast('3 versions en parallèle au maximum'); }
+    cb.checked ? chosen.add(cb.value) : chosen.delete(cb.value);
+    cb.closest('.ver-item').classList.toggle('on', cb.checked);
+  });
+  $('[data-clear]', body).onclick = () => { modal.close(); onDone([]); };
+  $('[data-ok]', body).onclick = () => { modal.close(); onDone([...chosen]); };
+}
+
 /** Lecteur de chapitre : #/lire/John/3?v=16 */
 export async function render(el, { args, params }) {
   const allBooks = await books();
@@ -39,77 +80,70 @@ export async function render(el, { args, params }) {
   const book = args[0] || last[0];
   const chapter = +(args[1] || (args[0] ? 1 : last[1]));
   const main = version();
-  const parallel = (store.setting('parallel') || []).filter(p => p !== main);
+  const parallel = (store.setting('parallel') || []).filter(p => p !== main && versionInfo(p).books);
   const strong = store.setting('strong') !== false;
   const bookMeta = allBooks.find(b => b.id === book);
   if (!bookMeta) throw new Error(`Livre inconnu : ${book}`);
 
-  // Si la version principale n'a pas ce livre (deutérocanoniques, apocryphes), on bascule sur une version qui l'a.
+  // Si la version principale n'a pas ce livre (deutérocanoniques, apocryphes, NT seul…), on bascule sur une version qui l'a.
+  const hasBook = id => !!(versionInfo(id).books || {})[book];
   let fallback = null;
-  const has = async id => (await api('books', { v: id })).some(b => b.id === book);
-  if (!(await has(main))) {
-    for (const v of await versions()) if (await has(v.id)) { fallback = v.id; break; }
+  if (!hasBook(main)) {
+    const sameLang = versionsWithBook(book).find(id => versionInfo(id).lang === versionInfo(main).lang);
+    fallback = sameLang || versionsWithBook(book)[0] || null;
   }
-  const ids = [fallback || main, ...parallel.filter(p => p !== fallback)];
+  const ids = [fallback || main, ...parallel.filter(p => p !== fallback && hasBook(p))];
   const chapters = await Promise.all(ids.map(id => api('chapter', { v: id, b: book, c: chapter }).catch(() => null)));
   const primary = chapters.find(Boolean);
-  const maxCh = Math.max(bookMeta.chapters, ...chapters.filter(Boolean).map(c => c.chapters));
+  const maxCh = Math.max(...ids.map(id => (versionInfo(id).books || {})[book] || 0), 1);
   store.setting('lastRead', [book, chapter]);
   remember({ href: `#/lire/${book}/${chapter}`, label: `${bookMeta.fr} ${chapter}` });
 
-  const all = await versions();
-  const groups = ['AT', 'DC', 'AP', 'NT'].map(cat => `<optgroup label="${CAT_LABEL[cat]}">${
-    allBooks.filter(b => b.cat === cat).map(b => `<option value="${b.id}" ${b.id === book ? 'selected' : ''}>${esc(b.fr)}</option>`).join('')}</optgroup>`).join('');
-
-  el.innerHTML = `<div class="page ${parallel.length ? 'wide' : ''}">
+  el.innerHTML = `<div class="page ${ids.length > 1 ? 'wide' : 'reading'}">
     <div class="toolbar">
-      <select id="rBook" aria-label="Livre">${groups}</select>
-      <select id="rChap" aria-label="Chapitre">${Array.from({ length: maxCh }, (_, i) => `<option ${i + 1 === chapter ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>
-      <button class="btn sm" id="rPrev" title="Chapitre précédent">◀</button>
-      <button class="btn sm" id="rNext" title="Chapitre suivant">▶</button>
+      <button class="btn" id="rPick">${icon('book')} <b>${esc(bookMeta.fr)} ${chapter}</b></button>
+      <button class="btn icon" id="rPrev" title="Chapitre précédent" aria-label="Chapitre précédent">${icon('left')}</button>
+      <button class="btn icon" id="rNext" title="Chapitre suivant" aria-label="Chapitre suivant">${icon('right')}</button>
       <span class="grow"></span>
-      <span class="small muted">En parallèle :</span>
-      ${all.filter(v => v.id !== main).map(v => `<span class="chip ${parallel.includes(v.id) ? 'on' : ''}" data-par="${v.id}" title="${esc(v.name)}">${esc(v.short)}</span>`).join('')}
-      <span class="chip ${strong ? 'on' : ''}" id="rStrong" title="Cliquer sur les mots pour voir l’hébreu / le grec">Strong</span>
-      <button class="btn sm" id="rSmaller" title="Texte plus petit">A−</button><button class="btn sm" id="rBigger" title="Texte plus grand">A+</button>
+      <button class="btn sm" id="rPar">${icon('columns')} Parallèle${parallel.length ? ` (${parallel.length})` : ''}</button>
+      <span class="chip ${strong ? 'on' : ''}" id="rStrong" title="Cliquer sur les mots pour voir l’hébreu ou le grec (Darby, KJV, BSB, Grec)">${icon('alef')} Strong</span>
+      <span class="seg" aria-label="Taille du texte"><button id="rSmaller" title="Texte plus petit">A−</button><button id="rBigger" title="Texte plus grand">A+</button></span>
     </div>
-    <div class="card" id="rBody"></div>
+    <div class="card reading-body" id="rBody"></div>
     <div class="nav-chapter no-print">
-      <a class="btn" id="rPrev2" href="#">◀ Précédent</a>
-      <a class="btn" href="#/comparer?ref=${encodeURIComponent(bookMeta.fr + ' ' + chapter)}">⇄ Comparer ce chapitre</a>
-      <a class="btn" id="rNext2" href="#">Suivant ▶</a>
+      <a class="btn" id="rPrev2" href="#">${icon('left')} Précédent</a>
+      <a class="btn" href="#/comparer?ref=${encodeURIComponent(bookMeta.fr + ' ' + chapter)}">${icon('compare')} Comparer ce chapitre</a>
+      <a class="btn" id="rNext2" href="#">Suivant ${icon('right')}</a>
     </div>
   </div>`;
 
   const body = $('#rBody', el);
   const rawByKey = new Map();
+  const head = `<div class="chapter-head"><div class="book">${esc(bookMeta.fr)}</div><div class="num">${chapter}</div>
+    <div class="ver">${esc(ids.map(id => versionInfo(id).short).join(' · '))}</div></div>`;
+  const notice = fallback ? `<p class="muted small" style="text-align:center">${esc(bookMeta.fr)} ne fait pas partie de ${esc(versionInfo(main).name)} — texte affiché : <b>${esc(versionInfo(fallback).name)}</b>.</p>` : '';
   if (!primary) {
-    body.innerHTML = `<p class="muted">Ce chapitre n’existe pas dans les versions choisies. Essayez une autre version (Crampon, Septante, KJV ou Vulgate pour les deutérocanoniques et apocryphes).</p>`;
+    body.innerHTML = head + `<p class="muted" style="text-align:center">Ce chapitre est introuvable dans les versions choisies.</p>`;
+  } else if (ids.length === 1) {
+    const info = versionInfo(ids[0]);
+    const ch = chapters[0];
+    ch.verses.forEach(v => rawByKey.set(v.key, v.text));
+    const html = ch.verses.map((v, i) => (v.title ? `<div class="section-title">${esc(v.title)}</div>` : '') +
+      (i === 0 && info.dir !== 'rtl' ? dropcap(verseSpan(v, info, strong)) : verseSpan(v, info, strong))).join('');
+    body.innerHTML = head + notice + `<div class="scripture ${strong ? 'strong-on' : ''} ${info.dir === 'rtl' ? 'rtl' : ''}" lang="${info.lang}">${html}</div>
+      ${ch.copyright ? `<p class="copyright">${esc(ch.copyright)}</p>` : ''}`;
   } else {
-    const head = `<h1 class="chapter-title">${esc(bookMeta.fr)} ${chapter}</h1>`;
-    const notice = fallback ? `<p class="muted small" style="text-align:center">${esc(bookMeta.fr)} ne fait pas partie de ${esc(versionInfo(main).name)} — texte affiché : <b>${esc(versionInfo(fallback).name)}</b>.</p>` : '';
-    if (ids.length === 1) {
-      const info = versionInfo(ids[0]);
-      const ch = chapters[0];
-      if (!ch) {
-        body.innerHTML = head + `<p class="muted">${esc(bookMeta.fr)} ${chapter} n’existe pas dans ${esc(info.name)}.</p>`;
-      } else {
-        ch.verses.forEach(v => rawByKey.set(v.key, v.text));
-        body.innerHTML = head + notice + `<div class="scripture ${strong ? 'strong-on' : ''} ${info.dir === 'rtl' ? 'rtl' : ''} lang-${info.lang}" lang="${info.lang}">${
-          ch.verses.map(v => (v.title ? `<div class="section-title">${esc(v.title)}</div>` : '') + verseSpan(v, info, strong)).join('')}</div>`;
-      }
-    } else {
-      const maxV = Math.max(...chapters.filter(Boolean).map(c => Math.max(...c.verses.map(v => v.v))));
-      const maps = chapters.map(c => new Map((c ? c.verses : []).map(v => [v.v, v])));
-      chapters.forEach(c => c && c.verses.forEach(v => { if (!rawByKey.has(v.key)) rawByKey.set(v.key, v.text); }));
-      const infos = ids.map(versionInfo);
-      body.innerHTML = head + notice + `<table class="parallel scripture ${strong ? 'strong-on' : ''}"><thead><tr>${infos.map(i => `<th>${esc(i.short)}</th>`).join('')}</tr></thead><tbody>${
-        Array.from({ length: maxV }, (_, i) => i + 1).map(n => `<tr>${maps.map((m, j) => {
-          const v = m.get(n);
-          const info = infos[j];
-          return `<td class="${info.dir === 'rtl' ? 'rtl' : ''} lang-${info.lang}" lang="${info.lang}">${v ? (v.title ? `<div class="section-title">${esc(v.title)}</div>` : '') + verseSpan(v, info, strong) : ''}</td>`;
-        }).join('')}</tr>`).join('')}</tbody></table>`;
-    }
+    const maxV = Math.max(...chapters.filter(Boolean).map(c => Math.max(0, ...c.verses.map(v => v.v))));
+    const maps = chapters.map(c => new Map((c ? c.verses : []).map(v => [v.v, v])));
+    chapters.forEach(c => c && c.verses.forEach(v => { if (!rawByKey.has(v.key)) rawByKey.set(v.key, v.text); }));
+    const infos = ids.map(versionInfo);
+    body.innerHTML = head + notice + `<table class="parallel scripture ${strong ? 'strong-on' : ''}"><thead><tr>${infos.map(i => `<th>${esc(i.short)}</th>`).join('')}</tr></thead><tbody>${
+      Array.from({ length: maxV }, (_, i) => i + 1).map(n => `<tr>${maps.map((m, j) => {
+        const v = m.get(n);
+        const info = infos[j];
+        return `<td class="${info.dir === 'rtl' ? 'rtl' : ''}" lang="${info.lang}">${v ? (v.title ? `<div class="section-title">${esc(v.title)}</div>` : '') + verseSpan(v, info, strong) : ''}</td>`;
+      }).join('')}</tr>`).join('')}</tbody></table>
+      ${chapters.filter(c => c && c.copyright).map(c => `<p class="copyright">${esc(versionInfo(c.version).short)} : ${esc(c.copyright)}</p>`).join('')}`;
   }
   bindVerses(body, rawByKey);
 
@@ -129,18 +163,11 @@ export async function render(el, { args, params }) {
   $('#rNext', el).onclick = () => goTo(next);
   $('#rPrev2', el).onclick = e => { e.preventDefault(); goTo(prev); };
   $('#rNext2', el).onclick = e => { e.preventDefault(); goTo(next); };
-  $('#rBook', el).onchange = e => go(`#/lire/${e.target.value}/1`);
-  $('#rChap', el).onchange = e => go(`#/lire/${book}/${e.target.value}`);
-  $$('[data-par]', el).forEach(c => c.onclick = () => {
-    const set = new Set(parallel);
-    if (set.has(c.dataset.par)) set.delete(c.dataset.par);
-    else { if (set.size >= 3) return toast('3 versions en parallèle au maximum'); set.add(c.dataset.par); }
-    store.setting('parallel', [...set]);
-    go(location.hash);
-  });
+  $('#rPick', el).onclick = () => pickBook(book, (b, c) => go(`#/lire/${b}/${c}`));
+  $('#rPar', el).onclick = () => pickParallel(main, parallel, list => { store.setting('parallel', list); go(location.hash); });
   $('#rStrong', el).onclick = () => { store.setting('strong', !strong); go(location.hash); };
   const resize = d => {
-    const cur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scripture-size')) || 1.12;
+    const cur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scripture-size')) || 1.1;
     const size = Math.min(2, Math.max(.85, cur + d));
     document.documentElement.style.setProperty('--scripture-size', size + 'rem');
     store.setting('fontSize', size);
@@ -150,10 +177,15 @@ export async function render(el, { args, params }) {
 
   // Flèches clavier pour changer de chapitre
   document.onkeydown = e => {
-    if (!location.hash.startsWith('#/lire') || /input|select|textarea/i.test(document.activeElement.tagName)) return;
+    if (!location.hash.startsWith('#/lire') || /input|select|textarea/i.test(document.activeElement.tagName) || $('#modal').open) return;
     if (e.key === 'ArrowLeft') goTo(prev);
     if (e.key === 'ArrowRight') goTo(next);
   };
+}
+
+/** Lettrine : met en valeur la première lettre du chapitre. */
+function dropcap(html) {
+  return html.replace(/(<span class="vn">\d+<\/span>)((?:<span class="w"[^>]*>)?)([«"“(]?\p{L})/u, (_, vn, w, letter) => `${w}<span class="dropcap">${letter}</span>`);
 }
 
 /** Un ou plusieurs passages : #/passage?ref=Rom 8:28; 12:1-2 */
@@ -167,21 +199,22 @@ export async function renderPassage(el, { params }) {
   try { data = await api('passage', { v, ref }); } catch (e) { return showError(el, e); }
   const rawByKey = new Map();
   remember({ href: location.hash, label: data.passages.map(p => p.ref).join(' ; ') });
-  el.innerHTML = `<div class="page">
+  el.innerHTML = `<div class="page reading">
     <div class="toolbar">
-      <b class="grow">${esc(data.passages.map(p => p.ref).join(' ; '))}</b>
-      <a class="btn sm" href="#/comparer?ref=${encodeURIComponent(ref)}">⇄ Comparer</a>
-      <button class="btn sm" id="pStudy">+ Ajouter à une étude</button>
+      <b class="grow">${esc(data.passages.map(p => p.ref).join(' ; '))} <span class="muted small">· ${esc(info.short)}</span></b>
+      <a class="btn sm" href="#/comparer?ref=${encodeURIComponent(ref)}">${icon('compare')} Comparer</a>
+      <button class="btn sm" id="pStudy">${icon('plus')} Étude</button>
       <button class="btn sm" id="pCopy">Copier</button>
     </div>
     ${data.passages.map(p => {
       p.verses.forEach(x => rawByKey.set(x.key, x.text));
       return `<div class="card">
-        <div class="row"><h2 class="grow">${esc(p.ref)}</h2><a class="btn sm" href="#/lire/${p.book}/${p.chapter}?v=${p.verses[0] ? p.verses[0].v : ''}">Lire le contexte →</a></div>
+        <div class="row"><h2 class="grow">${esc(p.ref)}</h2><a class="btn sm" href="#/lire/${p.book}/${p.chapter}?v=${p.verses[0] ? p.verses[0].v : ''}">${icon('book')} Contexte</a></div>
         <div class="scripture ${strong ? 'strong-on' : ''} ${info.dir === 'rtl' ? 'rtl' : ''}">${p.verses.length
           ? p.verses.map(x => verseSpan({ ...x, notes: null }, info, strong)).join('')
           : `<span class="muted">Ce passage n’existe pas dans ${esc(info.name)}.</span>`}</div></div>`;
     }).join('')}
+    ${data.copyright ? `<p class="copyright">${esc(data.copyright)}</p>` : ''}
     <p class="muted small">Cliquez sur un verset pour le surligner, l’annoter, voir ses références croisées et ses mots originaux.</p>
   </div>`;
   $$('.card .scripture', el).forEach(s => bindVerses(s, rawByKey));
@@ -204,18 +237,43 @@ export async function renderPassage(el, { params }) {
 /** Comparaison d'un passage dans toutes les versions : #/comparer?ref=Jean 3:16 */
 export async function renderCompare(el, { params }) {
   const ref = params.get('ref') || '';
+  const list = await versions();
+  const groups = versionsByLang(list);
+  let langs = store.setting('compareLangs') || ['fr', 'he', 'grc'];
   el.innerHTML = `<div class="page wide">
-    <h1>Comparer les versions</h1>
-    <form class="toolbar" id="cForm"><input type="text" id="cRef" class="grow" value="${esc(ref)}" placeholder="Ex. : Jean 3:16 ou Psaumes 23"><button class="btn primary">Comparer</button></form>
-    <div id="cOut">${ref ? '<div class="loading">Chargement…</div>' : '<p class="muted">Saisissez une référence pour la lire dans les 8 versions (français, anglais, hébreu, grec, latin).</p>'}</div></div>`;
+    <div class="page-head"><div class="grow"><div class="eyebrow">${list.length} versions · ${groups.length} langues</div><h1>Comparer les versions</h1>
+      <p>Un même passage lu dans plusieurs traductions et dans les langues originales.</p></div></div>
+    <form class="toolbar" id="cForm"><input type="text" id="cRef" class="grow" value="${esc(ref)}" placeholder="Ex. : Jean 3:16 ou Psaumes 23:1-3"><button class="btn primary">${icon('compare')} Comparer</button></form>
+    <div class="row" style="margin-bottom:18px"><span class="small muted">Langues :</span>
+      ${groups.map(([l, vs]) => `<span class="chip ${langs.includes(l) ? 'on' : ''}" data-lang="${l}">${esc(langName(l))} <span class="small">${vs.length}</span></span>`).join('')}
+      <span class="chip" data-lang="*">Toutes</span></div>
+    <div id="cOut">${ref ? '<div class="loading">Chargement…</div>' : `<div class="empty">Saisissez une référence pour la lire dans les ${list.length} versions disponibles.</div>`}</div></div>`;
   $('#cForm', el).onsubmit = e => { e.preventDefault(); go(`#/comparer?ref=${encodeURIComponent($('#cRef', el).value)}`); };
+  $$('[data-lang]', el).forEach(c => c.onclick = () => {
+    const l = c.dataset.lang;
+    langs = l === '*' ? groups.map(g => g[0]) : langs.includes(l) ? langs.filter(x => x !== l) : [...langs, l];
+    store.setting('compareLangs', langs);
+    go(location.hash.includes('keepScroll') ? location.hash : location.hash + (location.hash.includes('?') ? '&' : '?') + 'keepScroll=1');
+  });
   if (!ref) return;
+  const ids = list.filter(v => langs.includes(v.lang)).map(v => v.id);
+  if (!ids.length) { $('#cOut', el).innerHTML = '<div class="empty">Choisissez au moins une langue.</div>'; return; }
   try {
-    const data = await api('compare', { ref });
+    const data = await api('compare', { ref, versions: ids.join(',') });
     const strong = store.setting('strong') !== false;
-    $('#cOut', el).innerHTML = `<h2>${esc(data.ref)}</h2>` + data.versions.map(v => `
-      <div class="card"><div class="row"><b class="grow">${esc(v.name)}</b><span class="tag">${esc(v.lang)}</span></div>
-      <div class="scripture ${strong ? 'strong-on' : ''} ${v.dir === 'rtl' ? 'rtl' : ''}" lang="${v.lang}">${
-        v.verses.map(x => `<span class="vn">${v.verses.length > 1 ? x.v : ''}</span>${renderText(x.text, { strong: strong && versionInfo(v.id).strong })} `).join('')}</div></div>`).join('');
+    const byLang = versionsByLang(data.versions.map(v => ({ ...v, lang: v.lang })));
+    $('#cOut', el).innerHTML = `<h2>${esc(data.ref)}</h2>` + (byLang.length ? byLang.map(([lang, vs]) => `
+      <div class="lang-group"><h4>${esc(langName(lang))}</h4>${vs.map(v => `
+        <div class="card"><div class="row" style="margin-bottom:6px"><b class="grow">${esc(v.short)} <span class="muted small" style="font-weight:400">— ${esc(v.name)}</span></b>
+          <a class="btn sm ghost" href="#" data-read="${v.id}">Lire dans cette version</a></div>
+        <div class="scripture ${strong ? 'strong-on' : ''} ${v.dir === 'rtl' ? 'rtl' : ''}" lang="${v.lang}">${
+          v.verses.map(x => `${v.verses.length > 1 ? `<span class="vn">${x.v}</span>` : ''}${renderText(x.text, { strong: strong && versionInfo(v.id).strong })} `).join('')}</div></div>`).join('')}</div>`).join('')
+      : '<div class="empty">Ce passage ne figure dans aucune version de ces langues.</div>');
+    $$('[data-read]', el).forEach(a => a.onclick = e => {
+      e.preventDefault();
+      store.setting('version', a.dataset.read);
+      $('#versionSel').value = a.dataset.read;
+      go(`#/passage?ref=${encodeURIComponent(ref)}`);
+    });
   } catch (e) { showError($('#cOut', el), e); }
 }

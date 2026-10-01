@@ -2,6 +2,7 @@
 /** Accès aux Bibles : passages, recherche, Strong, références croisées. */
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 const { normalize, normalizeWithMap, plain, strongTokens, compileQuery, matchQuery } = require('./text');
 const { BOOKS, BY_ID, parseRefs, formatRef, formatKey, findBook } = require('./refs');
 
@@ -9,35 +10,25 @@ const DATA = path.join(__dirname, '../../data');
 const readJson = f => JSON.parse(fs.readFileSync(path.join(DATA, f), 'utf8'));
 
 const VERSIONS = readJson('versions.json');
-const DEFAULT_VERSION = 'JND';
-const cache = new Map();
+const DEFAULT_VERSION = 'LSG';
+
+/**
+ * Stockage : data/bibles/<VERSION>/<Livre>.json.gz = { chapters, titles, notes }.
+ * Lire un passage ne charge que le livre concerné ; la recherche charge la version entière.
+ */
+function lru(max) {
+  const m = new Map();
+  return {
+    get(k) { if (!m.has(k)) return undefined; const v = m.get(k); m.delete(k); m.set(k, v); return v; },
+    set(k, v) { m.set(k, v); while (m.size > max) m.delete(m.keys().next().value); return v; },
+    clear() { m.clear(); },
+  };
+}
+const bookCache = lru(+process.env.MP_MAX_BOOKS || 600);
+const versionCache = lru(Math.max(2, +process.env.MP_MAX_VERSIONS || 8));
 
 function versionMeta(id) {
   return VERSIONS.find(v => v.id === id) || null;
-}
-
-/** Charge une version (à la demande) et prépare son index de recherche. */
-function load(id) {
-  if (cache.has(id)) return cache.get(id);
-  const meta = versionMeta(id);
-  if (!meta) throw httpError(404, `Version inconnue : ${id}`);
-  const data = readJson(path.join('bibles', id + '.json'));
-  const verses = []; // { key, book, c, v, raw }
-  for (const b of BOOKS) {
-    const chapters = data.books[b.id];
-    if (!chapters) continue;
-    chapters.forEach((ch, ci) => ch.forEach((raw, vi) => {
-      if (raw) verses.push({ key: `${b.id}.${ci + 1}.${vi + 1}`, book: b.id, c: ci + 1, v: vi + 1, raw });
-    }));
-  }
-  const v = { meta, data, verses, norm: null, strong: null };
-  cache.set(id, v);
-  return v;
-}
-
-function normIndex(v) {
-  if (!v.norm) v.norm = v.verses.map(x => normalize(plain(x.raw)));
-  return v.norm;
 }
 
 function httpError(status, message) {
@@ -46,47 +37,120 @@ function httpError(status, message) {
   return e;
 }
 
-function getVerse(id, key) {
-  const v = load(id);
-  const [b, c, n] = key.split('.');
-  const ch = v.data.books[b] && v.data.books[b][c - 1];
-  return ch ? ch[n - 1] || null : null;
+/** Données d'un livre dans une version, ou null si le livre n'y figure pas. */
+function bookData(id, book) {
+  const meta = versionMeta(id);
+  if (!meta) throw httpError(404, `Version inconnue : ${id}`);
+  if (!meta.books || !meta.books[book]) return null;
+  const k = `${id}/${book}`;
+  const hit = bookCache.get(k);
+  if (hit) return hit;
+  const file = path.join(DATA, 'bibles', id, book + '.json.gz');
+  return bookCache.set(k, JSON.parse(zlib.gunzipSync(fs.readFileSync(file)).toString('utf8')));
 }
 
-function chapterCount(id, book) {
-  const v = load(id);
-  return (v.data.books[book] || []).length;
+/** Charge une version entière (pour la recherche et les index). */
+function load(id) {
+  const hit = versionCache.get(id);
+  if (hit) return hit;
+  const meta = versionMeta(id);
+  if (!meta) throw httpError(404, `Version inconnue : ${id}`);
+  const verses = []; // { key, book, c, v, raw }
+  for (const b of BOOKS) {
+    const d = bookData(id, b.id);
+    if (!d) continue;
+    d.chapters.forEach((ch, ci) => ch.forEach((raw, vi) => {
+      if (raw) verses.push({ key: `${b.id}.${ci + 1}.${vi + 1}`, book: b.id, c: ci + 1, v: vi + 1, raw });
+    }));
+  }
+  return versionCache.set(id, { meta, verses, norm: null, strong: null });
+}
+
+function normIndex(v) {
+  if (!v.norm) v.norm = v.verses.map(x => normalize(plain(x.raw)));
+  return v.norm;
+}
+
+function getVerse(id, key) {
+  const [b, c, n] = key.split('.');
+  const d = bookData(id, b);
+  const ch = d && d.chapters[c - 1];
+  return ch ? ch[n - 1] || null : null;
 }
 
 /** Livres disponibles pour une version, avec le nombre de chapitres. */
 function books(id = DEFAULT_VERSION) {
-  const v = load(id);
-  return BOOKS.filter(b => v.data.books[b.id]).map(b => ({
-    id: b.id, fr: b.fr, en: b.en, cat: b.cat, chapters: v.data.books[b.id].length,
-  }));
+  const meta = versionMeta(id);
+  if (!meta) throw httpError(404, `Version inconnue : ${id}`);
+  const counts = meta.books || {};
+  return BOOKS.filter(b => counts[b.id]).map(b => ({ id: b.id, fr: b.fr, en: b.en, cat: b.cat, chapters: counts[b.id] }));
+}
+
+/** Les versions qui contiennent un livre donné. */
+function versionsWithBook(book) {
+  return VERSIONS.filter(v => v.books && v.books[book]).map(v => v.id);
 }
 
 /** Un chapitre complet avec titres de section et notes. */
 function chapter(id, book, c) {
-  const v = load(id);
-  const chs = v.data.books[book];
-  if (!chs) throw httpError(404, `Le livre ${book} n'existe pas dans ${id}`);
-  const ch = chs[c - 1];
+  const d = bookData(id, book);
+  if (!d) throw httpError(404, `Le livre ${book} n'existe pas dans ${id}`);
+  const ch = d.chapters[c - 1];
   if (!ch) throw httpError(404, `Chapitre ${c} introuvable`);
   return {
-    version: id, book, chapter: +c, name: BY_ID.get(book).fr, chapters: chs.length,
+    version: id, book, chapter: +c, name: BY_ID.get(book).fr, chapters: d.chapters.length,
     verses: ch.map((raw, i) => {
       const key = `${book}.${c}.${i + 1}`;
-      return { v: i + 1, key, text: raw, title: v.data.titles[key] || null, notes: v.data.notes[key] || null };
+      return { v: i + 1, key, text: raw, title: d.titles[key] || null, notes: d.notes[key] || null };
     }).filter(x => x.text),
   };
 }
 
+/**
+ * Correspondance des numérotations. Les références de Mister Preacher (thèmes, saisie, références croisées)
+ * suivent la numérotation usuelle (Segond, KJV). Certaines versions suivent la numérotation hébraïque :
+ *   Joël 2:28-32 -> Joël 3:1-5, Joël 3:n -> Joël 4:n ; Malachie 4:n -> Malachie 3:(18+n).
+ */
+function mapPoint(meta, book, c, v) {
+  const counts = meta.books || {};
+  if (book === 'Joel' && counts.Joel === 4) {
+    if (c === 2 && v != null && v >= 28) return [3, v - 27];
+    if (c === 3) return [4, v];
+  }
+  if (book === 'Mal' && counts.Mal === 3 && c === 4) return [3, v == null ? null : v + 18];
+  return [c, v];
+}
+
+function mapRef(id, r) {
+  const meta = versionMeta(id);
+  if (!meta || (r.book !== 'Joel' && r.book !== 'Mal')) return r;
+  let [chapter, verse] = mapPoint(meta, r.book, r.chapter, r.verse);
+  let [endChapter, endVerse] = mapPoint(meta, r.book, r.endChapter || r.chapter, r.endVerse);
+  // « Malachie 4 » entier -> Malachie 3:19-24
+  if (r.book === 'Mal' && r.chapter === 4 && r.verse == null && chapter === 3) { verse = 19; endVerse = null; }
+  if (r.book === 'Mal' && (r.endChapter || r.chapter) === 4 && r.endVerse == null && endChapter === 3) endVerse = null;
+  return { ...r, chapter, verse, endChapter, endVerse };
+}
+
+/** Inverse de mapPoint : clé d'une version à numérotation hébraïque -> numérotation usuelle. */
+function toStandardKey(id, key) {
+  const meta = versionMeta(id);
+  const [b, c, v] = key.split('.').map((x, i) => (i ? +x : x));
+  if (!meta || !meta.books) return key;
+  if (b === 'Joel' && meta.books.Joel === 4) {
+    if (c === 3) return `Joel.2.${v + 27}`;
+    if (c === 4) return `Joel.3.${v}`;
+  }
+  if (b === 'Mal' && meta.books.Mal === 3 && c === 3 && v >= 19) return `Mal.4.${v - 18}`;
+  return key;
+}
+
 /** Versets d'une plage de référence. */
 function rangeVerses(id, r, max = 400) {
-  const v = load(id);
-  const chs = v.data.books[r.book];
-  if (!chs) return [];
+  r = mapRef(id, r);
+  const d = bookData(id, r.book);
+  if (!d) return [];
+  const chs = d.chapters;
   const out = [];
   const endC = Math.min(r.endChapter || r.chapter, chs.length);
   for (let c = r.chapter; c <= endC; c++) {
@@ -181,8 +245,10 @@ function strongIndex(v) {
 }
 
 function strongSearch(id, num, opts = {}) {
+  // Version sans numéros Strong : on cherche dans la Darby (français) ou la KJV (autres langues).
+  const meta = versionMeta(id);
+  if (!meta || !meta.strong) id = meta && meta.lang !== 'fr' ? 'KJVA' : 'JND';
   const v = load(id);
-  if (!v.meta.strong) throw httpError(400, `La version ${id} n'a pas de numéros Strong (essayez JND ou KJVA).`);
   const e = strongIndex(v).get(num) || { keys: [], words: new Map() };
   const limit = Math.min(+opts.limit || 100, 500);
   const offset = +opts.offset || 0;
@@ -260,6 +326,7 @@ let XREFS = null;
 /** Références croisées d'un verset (OpenBible.info), triées par pertinence. */
 function crossRefs(key, id = DEFAULT_VERSION, limit = 40) {
   if (!XREFS) XREFS = readJson('crossrefs.json');
+  key = toStandardKey(id, key);
   const raw = XREFS[key];
   if (!raw) return { key, ref: formatKey(key), total: 0, refs: [] };
   const all = raw.split(';').map(s => { const i = s.lastIndexOf(':'); return [s.slice(0, i), +s.slice(i + 1)]; });
@@ -277,7 +344,8 @@ function crossRefs(key, id = DEFAULT_VERSION, limit = 40) {
 function compare(ref, ids) {
   const refs = parseRefs(ref);
   if (!refs.length) throw httpError(400, `Référence non reconnue : « ${ref} »`);
-  const list = ids && ids.length ? ids : VERSIONS.map(v => v.id);
+  const list = (ids && ids.length ? ids : VERSIONS.map(v => v.id))
+    .filter(id => { const m = versionMeta(id); return m && refs.some(r => m.books && m.books[r.book]); });
   return {
     ref: refs.map(r => formatRef(r)).join(' ; '),
     versions: list.map(id => {
@@ -343,6 +411,6 @@ function wordPalette(texts, limit = 40) {
 }
 
 module.exports = {
-  VERSIONS, DEFAULT_VERSION, versionMeta, books, chapter, passage, rangeVerses, search, strongSearch,
-  strongEntry, strongLookup, crossRefs, compare, rhymes, wordPalette, getVerse, chapterCount, httpError, load,
+  VERSIONS, DEFAULT_VERSION, versionMeta, books, versionsWithBook, chapter, passage, rangeVerses, search, strongSearch,
+  mapRef, strongEntry, strongLookup, crossRefs, compare, rhymes, wordPalette, getVerse, httpError, load, bookData,
 };

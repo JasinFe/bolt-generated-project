@@ -10,7 +10,7 @@ export async function render(el, { args }) {
   if (id) return renderStudy(el, id);
 
   el.innerHTML = `<div class="page">
-    <div class="row"><h1 class="grow">Mes études</h1>
+    <div class="page-head"><div class="grow"><div class="eyebrow">Atelier</div><h1>Mes études</h1><p>Rassemblez des passages, annotez-les, surlignez, puis exportez ou transformez l’étude en sermon.</p></div>
       <button class="btn primary" id="newStudy">+ Nouvelle étude</button></div>
     <div class="row" style="margin-bottom:14px">
       <a class="chip" href="#/etude/surlignages">🖍 Mes surlignages (${Object.keys(s.highlights).length})</a>

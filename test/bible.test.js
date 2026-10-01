@@ -67,3 +67,28 @@ test('rimes', () => {
   const words = B.rhymes('amour').map(r => r.word);
   assert.ok(words.includes('jour'));
 });
+
+test('nouvelles versions : Segond 1910, langues africaines, langues originales', () => {
+  assert.match(B.passage('LSG', 'Jean 3:16').passages[0].verses[0].text, /Car Dieu a tant aimé le monde/);
+  for (const id of ['OST', 'PGR', 'NCL', 'VIG', 'LIN', 'HAT', 'EWE', 'TWI', 'HAU', 'IBO', 'BSB', 'RVA', 'LUT', 'RIV', 'RUS', 'SVD', 'TR']) {
+    assert.strictEqual(B.passage(id, 'Jean 3:16').passages[0].verses.length, 1, id);
+  }
+  assert.ok(B.VERSIONS.length >= 31);
+});
+
+test('correspondance des numérotations (Joël, Malachie)', () => {
+  // Segond : Joël 2:28 ; Darby, Lingala, hébreu : Joël 3:1
+  for (const id of ['LSG', 'JND', 'LIN', 'WLC']) {
+    const v = B.passage(id, 'Joël 2:28').passages[0].verses[0];
+    assert.ok(v, id);
+    assert.strictEqual(`${v.c}:${v.v}`, ['LSG'].includes(id) ? '2:28' : '3:1', id);
+  }
+  assert.strictEqual(B.passage('JND', 'Malachie 4').passages[0].verses.length, 6);
+  assert.strictEqual(B.crossRefs('Joel.3.1', 'JND').refs[0].ref, B.crossRefs('Joel.2.28', 'LSG').refs[0].ref);
+});
+
+test('recherche Strong sur une version sans Strong : bascule sur la Darby', () => {
+  const r = B.search('LSG', 'G26');
+  assert.strictEqual(r.version, 'JND');
+  assert.ok(r.total > 100);
+});

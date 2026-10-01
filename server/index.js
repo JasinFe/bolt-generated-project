@@ -7,6 +7,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const B = require('./lib/bible');
+const AB = require('./lib/apibible');
 const { BOOKS, parseRefs, formatRef } = require('./lib/refs');
 
 const PUBLIC = path.join(__dirname, '..', 'public');
@@ -23,9 +24,19 @@ const MIME = {
 
 const versionParam = q => {
   const v = q.get('v') || B.DEFAULT_VERSION;
-  if (!B.versionMeta(v)) throw B.httpError(404, `Version inconnue : ${v}`);
+  if (!B.versionMeta(v) && !AB.isRemote(v)) throw B.httpError(404, `Version inconnue : ${v}`);
   return v;
 };
+
+/** Passage(s) pour une version locale ou distante (API.Bible). */
+async function passageAny(v, ref) {
+  if (!AB.isRemote(v)) return B.passage(v, ref);
+  const refs = parseRefs(ref);
+  if (!refs.length) throw B.httpError(400, `Référence non reconnue : « ${ref} »`);
+  const passages = [];
+  for (const r of refs) passages.push({ ref: formatRef(r), book: r.book, chapter: r.chapter, verses: await AB.rangeVerses(v, r) });
+  return { version: v, passages, copyright: AB.meta(v).license };
+}
 
 /** Résout une liste de références en textes, pour les thèmes, plans, etc. */
 function resolveRefs(refs, v, maxVerses = 12) {
@@ -43,18 +54,48 @@ function verseOfTheDay(v, date = new Date()) {
 }
 
 const routes = {
-  'GET /api/versions': () => B.VERSIONS,
-  'GET /api/books': q => B.books(versionParam(q)),
-  'GET /api/chapter': q => B.chapter(versionParam(q), q.get('b'), +q.get('c') || 1),
-  'GET /api/passage': q => B.passage(versionParam(q), q.get('ref')),
+  'GET /api/versions': () => [...B.VERSIONS, ...AB.list()],
+  'GET /api/canon': () => BOOKS.map(b => ({ id: b.id, fr: b.fr, en: b.en, cat: b.cat })),
+  'GET /api/books': q => {
+    const v = versionParam(q);
+    if (!AB.isRemote(v)) return B.books(v);
+    const counts = AB.meta(v).books;
+    return BOOKS.filter(b => counts[b.id]).map(b => ({ id: b.id, fr: b.fr, en: b.en, cat: b.cat, chapters: counts[b.id] }));
+  },
+  'GET /api/chapter': q => {
+    const v = versionParam(q);
+    return AB.isRemote(v) ? AB.chapter(v, q.get('b'), +q.get('c') || 1) : B.chapter(v, q.get('b'), +q.get('c') || 1);
+  },
+  'GET /api/passage': q => passageAny(versionParam(q), q.get('ref')),
   'GET /api/parse': q => parseRefs(q.get('ref')).map(r => ({ ...r, label: formatRef(r) })),
-  'GET /api/search': q => B.search(versionParam(q), q.get('q'), {
-    mode: q.get('mode') || 'all', scope: q.get('scope'), books: q.get('books'), limit: q.get('limit'), offset: q.get('offset'),
-  }),
+  'GET /api/search': q => {
+    const v = versionParam(q);
+    if (AB.isRemote(v)) return AB.search(v, q.get('q'), { limit: q.get('limit'), offset: q.get('offset') });
+    return B.search(v, q.get('q'), {
+      mode: q.get('mode') || 'all', scope: q.get('scope'), books: q.get('books'), limit: q.get('limit'), offset: q.get('offset'),
+    });
+  },
   'GET /api/strong': q => B.strongEntry(q.get('n')),
   'GET /api/strong/lookup': q => B.strongLookup(q.get('w') || '', q.get('v') || B.DEFAULT_VERSION),
   'GET /api/xref': q => B.crossRefs(q.get('key'), versionParam(q), Math.min(+q.get('limit') || 40, 200)),
-  'GET /api/compare': q => B.compare(q.get('ref'), q.get('versions') ? q.get('versions').split(',') : null),
+  'GET /api/compare': async q => {
+    const ids = q.get('versions') ? q.get('versions').split(',').filter(Boolean) : null;
+    const local = ids ? ids.filter(id => !AB.isRemote(id)) : null;
+    const refs0 = parseRefs(q.get('ref'));
+    if (!refs0.length) throw B.httpError(400, `Référence non reconnue : « ${q.get('ref')} »`);
+    const data = ids && !local.length ? { ref: refs0.map(r => formatRef(r)).join(' ; '), versions: [] } : B.compare(q.get('ref'), local);
+    const remoteIds = (ids || AB.list().map(v => v.id)).filter(id => AB.isRemote(id));
+    for (const id of remoteIds) {
+      try {
+        const verses = [];
+        for (const r of refs0) verses.push(...await AB.rangeVerses(id, r, 60));
+        const m = AB.meta(id);
+        if (verses.length) data.versions.push({ id, name: m.name, short: m.short, lang: m.lang, dir: m.dir, verses, remote: true });
+      } catch (e) { /* version distante indisponible : on l'ignore */ }
+    }
+    if (ids) data.versions.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+    return data;
+  },
   'GET /api/themes': () => THEMES.map(({ refs, ...t }) => ({ ...t, count: refs.length })),
   'GET /api/theme': q => {
     const t = THEMES.find(x => x.id === q.get('id'));
@@ -94,10 +135,11 @@ const routes = {
     const text = (q.get('q') || '').trim();
     const v = versionParam(q);
     const refs = /\d/.test(text) ? parseRefs(text) : [];
-    if (refs.length) return { type: 'passage', ...B.passage(v, text) };
+    if (refs.length) return passageAny(v, text).then(p => ({ type: 'passage', ...p }));
+    if (AB.isRemote(v)) return AB.search(v, text, { limit: q.get('limit') }).then(r => ({ type: 'search', ...r }));
     return { type: 'search', ...B.search(v, text, { mode: q.get('mode') || 'all', scope: q.get('scope'), limit: q.get('limit') }) };
   },
-  'GET /api/health': () => ({ ok: true, versions: B.VERSIONS.length, books: BOOKS.length }),
+  'GET /api/health': () => ({ ok: true, versions: B.VERSIONS.length + AB.list().length, remote: AB.list().length, books: BOOKS.length }),
 };
 
 function send(res, status, body, type = 'application/json; charset=utf-8', extra = {}) {
@@ -135,7 +177,7 @@ function createServer() {
     if (!handler) return send(res, 404, JSON.stringify({ error: 'Route inconnue' }));
     try {
       const body = req.method === 'POST' ? await readBody(req) : null;
-      const result = handler(url.searchParams, body);
+      const result = await handler(url.searchParams, body);
       send(res, 200, JSON.stringify(result), undefined, { 'Cache-Control': 'public, max-age=300' });
     } catch (e) {
       const status = e.status || 500;
@@ -147,10 +189,12 @@ function createServer() {
 
 if (require.main === module) {
   const port = process.env.PORT || 3000;
+  AB.init().catch(e => console.warn(e.message));
   createServer().listen(port, () => {
     console.log(`Mister Preacher prêt sur http://localhost:${port}`);
     // Préchargement de la version par défaut pour des premières réponses rapides
     setImmediate(() => { try { B.search(B.DEFAULT_VERSION, 'Dieu'); B.strongEntry('G26'); } catch (e) { console.error(e); } });
+    if (!process.env.API_BIBLE_KEY) console.log('API.Bible désactivée (définissez API_BIBLE_KEY pour les versions sous licence).');
   });
 }
 

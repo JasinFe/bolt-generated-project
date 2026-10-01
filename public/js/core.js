@@ -49,29 +49,76 @@ export function toast(msg) {
   toast.timer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-export function version() { return store.setting('version') || 'JND'; }
+export function version() {
+  const v = store.setting('version');
+  return v && (!VERSIONS.length || VERSIONS.some(x => x.id === v)) ? v : 'LSG';
+}
 
 let VERSIONS = [];
 export async function versions() {
   if (!VERSIONS.length) VERSIONS = await api('versions');
   return VERSIONS;
 }
-export const versionInfo = id => VERSIONS.find(v => v.id === id) || { id, short: id, lang: 'fr', dir: 'ltr' };
+export const versionInfo = id => VERSIONS.find(v => v.id === id) || { id, short: id, name: id, lang: 'fr', dir: 'ltr', books: {} };
+
+/** Langues, dans l'ordre d'affichage. */
+export const LANGS = {
+  fr: 'Français', ln: 'Lingala', ht: 'Créole haïtien', ee: 'Éwé', tw: 'Twi', ha: 'Haoussa', ig: 'Igbo',
+  en: 'Anglais', es: 'Espagnol', de: 'Allemand', it: 'Italien', ru: 'Russe', ar: 'Arabe',
+  he: 'Hébreu', grc: 'Grec', la: 'Latin',
+};
+export const langName = code => LANGS[code] || code;
+
+/** Versions regroupées par langue : [[code, [versions]], …] */
+export function versionsByLang(list = VERSIONS) {
+  const order = Object.keys(LANGS);
+  const groups = new Map();
+  for (const v of list) {
+    if (!groups.has(v.lang)) groups.set(v.lang, []);
+    groups.get(v.lang).push(v);
+  }
+  return [...groups.entries()].sort((a, b) => (order.indexOf(a[0]) + 1 || 99) - (order.indexOf(b[0]) + 1 || 99));
+}
+
+/** <option> groupées par langue, pour un <select>. */
+export function versionOptions(selected, list = VERSIONS) {
+  return versionsByLang(list).map(([lang, vs]) => `<optgroup label="${esc(langName(lang))}">${
+    vs.map(v => `<option value="${v.id}" ${v.id === selected ? 'selected' : ''}>${esc(v.short)}${v.remote ? ' ☁' : ''}</option>`).join('')}</optgroup>`).join('');
+}
+
+/** Versions qui contiennent un livre. */
+export const versionsWithBook = book => VERSIONS.filter(v => v.books && v.books[book]).map(v => v.id);
 
 let BOOKS = null;
+/** Tous les livres présents dans au moins une version, avec le nombre maximal de chapitres. */
 export async function books() {
-  if (!BOOKS) BOOKS = await api('books', { v: 'KJVA' }).then(async kjv => {
-    // Union de toutes les versions : le canon + deutérocanoniques + apocryphes
-    const all = new Map(kjv.map(b => [b.id, b]));
-    for (const v of ['CRA', 'LXX', 'VUL']) for (const b of await api('books', { v })) if (!all.has(b.id)) all.set(b.id, b);
+  if (!BOOKS) {
+    const [canon, list] = await Promise.all([api('canon'), versions()]);
     const order = ['AT', 'DC', 'AP', 'NT'];
-    const raw = await api('books', { v: 'JND' });
-    const canonOrder = new Map(raw.map((b, i) => [b.id, i]));
-    return [...all.values()].sort((a, b) => order.indexOf(a.cat) - order.indexOf(b.cat) || (canonOrder.get(a.id) ?? 999) - (canonOrder.get(b.id) ?? 999));
-  });
+    BOOKS = canon.map(b => ({ ...b, chapters: Math.max(0, ...list.map(v => (v.books && v.books[b.id]) || 0)) }))
+      .filter(b => b.chapters > 0)
+      .map((b, i) => ({ ...b, i }))
+      .sort((a, b) => order.indexOf(a.cat) - order.indexOf(b.cat) || a.i - b.i);
+  }
   return BOOKS;
 }
 export const CAT_LABEL = { AT: 'Ancien Testament', NT: 'Nouveau Testament', DC: 'Deutérocanoniques', AP: 'Apocryphes' };
+
+/** Icône du sprite SVG. */
+export const icon = (name, cls = '') => `<svg class="ic ${cls}"><use href="#i-${name}"/></svg>`;
+
+/** Fenêtre modale (élément <dialog>). */
+export const modal = {
+  open(title, html) {
+    const d = $('#modal');
+    d.innerHTML = `<div class="m-head"><h3>${esc(title)}</h3><button class="icon-btn" data-close aria-label="Fermer">${icon('close')}</button></div><div class="m-body">${html}</div>`;
+    d.querySelector('[data-close]').onclick = () => d.close();
+    d.onclick = e => { if (e.target === d) d.close(); };
+    if (!d.open) d.showModal();
+    return d.querySelector('.m-body');
+  },
+  close() { const d = $('#modal'); if (d.open) d.close(); },
+};
 
 export function keyLabel(key) {
   const [b, c, v] = key.split('.');
@@ -144,7 +191,7 @@ export async function openVerseTools(key, raw, onChange) {
   const label = keyLabel(key);
   const studies = s.studies;
   const body = panel.open(label, `
-    <section><div class="scripture">${renderText(raw || '')}</div></section>
+    <section><div class="quote">${renderText(raw || '')}</div><div class="small muted" style="margin-top:6px">${esc(versionInfo(version()).name)}</div></section>
     <section><h4>Surligner</h4><div class="colors">
       ${COLORS.map(c => `<button class="color ${c}" data-color="${c}" title="${c}"></button>`).join('')}
       <button class="color none" data-color="" title="Retirer"></button></div></section>
@@ -154,9 +201,9 @@ export async function openVerseTools(key, raw, onChange) {
         ${studies.map(st => `<option value="${st.id}">${esc(st.title)}</option>`).join('')}</select>
       <button class="btn sm" id="vAdd">Ajouter</button></div></section>
     <section class="row">
-      <a class="btn sm" href="#/comparer?ref=${encodeURIComponent(label)}">⇄ Comparer les versions</a>
+      <a class="btn sm" href="#/comparer?ref=${encodeURIComponent(label)}">${icon('compare')} Comparer</a>
       <button class="btn sm" id="vCopy">Copier</button>
-      <a class="btn sm" href="#/paralleles?ref=${encodeURIComponent(label)}">∥ Parallèles</a>
+      <a class="btn sm" href="#/paralleles?ref=${encodeURIComponent(label)}">${icon('columns')} Parallèles</a>
     </section>
     <section id="vWords"></section>
     <section><h4>Références croisées</h4><div id="vXref" class="loading">Chargement…</div></section>`);
