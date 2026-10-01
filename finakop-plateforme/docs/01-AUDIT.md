@@ -166,6 +166,7 @@ Ces deux cas :
 | R16 | Site WordPress dont la clé est la constante `FKC_ENCRYPTION_KEY` : clé perdue au déménagement, secrets illisibles | L'export l'emporte (`.fkc-encryption-key`, 0600) ; import refusé sans elle (corrigé, test 15) |
 | R17 | **Faille trouvée au second audit** : injection de formule dans les exports CSV (`=HYPERLINK(…)` saisi par un utilisateur, exécuté par le tableur du comptable) | `fkc_csv_cellule()` (corrigé, test `export_csv_injection_1876.php`) |
 | R18 | Flux SSE (afficheur client, scanner) : un processus PHP occupé en continu par écran ouvert, sur un quota d'environ 30 partagé par tous les clients | SSE désactivable, désactivé par défaut sur la plateforme, repli sur l'interrogation existante (test 19) |
+| R20 | **Faille trouvée en production** : tout utilisateur connecté pouvait installer ou remplacer la licence de la société (et la bloquer avec un mauvais jeton) | Réservé à l'administrateur (corrigé, test `licence_obligatoire_1876.php`) |
 | R19 | Fichiers téléversés (GED, pièces, logos) forcés en 0644, donc lisibles par tout compte d'un serveur mutualisé (atténué par les dossiers en 0750) | 0640 partout (corrigé, test `televersements_droits_1876.php`) |
 
 ## 10. Ce qui manquait pour décider

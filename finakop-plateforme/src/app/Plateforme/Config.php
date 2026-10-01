@@ -57,6 +57,7 @@ class FKC_Config {
 				'serveur'        => 'https://license.kophisgroup.com/api',
 				'depot'          => '',
 				'domaine_strict' => true,               // indispensable en multi-clients (voir audit R10)
+				'obligatoire'    => true,               // aucun module avant l'installation de la licence de l'espace
 			),
 			'api'           => array( 'autorite' => 'service', 'cors' => '' ),
 			'smtp'          => array(

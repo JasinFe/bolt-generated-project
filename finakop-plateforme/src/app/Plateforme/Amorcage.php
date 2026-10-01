@@ -143,6 +143,7 @@ class FKC_Plateforme_Amorcage {
 		define( 'FKC_LICENSE_SERVER', rtrim( (string) FKC_Config::get( 'licence.serveur' ), '/' ) );
 		if ( '' !== (string) FKC_Config::get( 'licence.depot', '' ) ) { define( 'FKC_LICENSE_DEPOT', rtrim( (string) FKC_Config::get( 'licence.depot' ), '/' ) ); }
 		define( 'FKC_LICENSE_STRICT_DOMAIN', (bool) FKC_Config::get( 'licence.domaine_strict', true ) );
+		define( 'FKC_LICENSE_OBLIGATOIRE', (bool) FKC_Config::get( 'licence.obligatoire', true ) );
 		define( 'FKC_API_AUTHORITY', 'local' === FKC_Config::get( 'api.autorite' ) ? 'local' : 'service' );
 		if ( '' !== (string) FKC_Config::get( 'api.cors', '' ) ) { define( 'FKC_API_CORS', (string) FKC_Config::get( 'api.cors' ) ); }
 		if ( '' !== (string) FKC_Config::get( 'connect.push_hotes', '' ) ) { define( 'FKC_PUSH_HOTES', (string) FKC_Config::get( 'connect.push_hotes' ) ); }

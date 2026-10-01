@@ -187,6 +187,8 @@ php ~/finakop/current/bin/finakop --tenant=newloock licence        # contrôle
 
 L'administrateur du client peut aussi le coller dans l'écran *Licence* de son espace.
 
+**Tant que la licence n'est pas installée, l'espace n'ouvre que l'écran Licence** : aucun module, API en 402. Seul l'administrateur de l'espace peut y coller la clé.
+
 Le contrôle **strict** du domaine est forcé : un jeton émis pour `newloock` est refusé sur `xnewloock` comme sur tout autre client.
 
 ## 10. Reprendre un client depuis l'ancien site WordPress

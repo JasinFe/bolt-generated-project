@@ -36,6 +36,7 @@ finakop-plateforme/
 | [docs/03-MODIFICATIONS.md](docs/03-MODIFICATIONS.md) | Fichiers modifiés, créés, retirés |
 | [docs/07-TESTS.md](docs/07-TESTS.md) | Résultats des tests (plateforme et non-régression) |
 | [docs/08-RAPPORT-FINAL.md](docs/08-RAPPORT-FINAL.md) | Rapport de migration et problèmes restants |
+| [docs/09-MIGRATION-KOPHISGROUP.md](docs/09-MIGRATION-KOPHISGROUP.md) | Reprise de l'ancien site WordPress de KOPHI'S GROUP dans l'espace existant |
 
 ## Installation en bref
 

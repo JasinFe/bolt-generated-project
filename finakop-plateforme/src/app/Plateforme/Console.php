@@ -291,6 +291,41 @@ class FKC_Plateforme_Console {
 				. "  Sans clé, les secrets chiffrés (clés d'API, Mobile Money…) seraient illisibles ; FinaKop refuse alors de démarrer.\n";
 			if ( ! isset( self::$opts['forcer'] ) ) { self::fin( 1, 'Import interrompu (--forcer pour passer outre).' ); }
 		}
+		$existant = FKC_Plateforme_Registre::parSlug( $slug );
+		$miseDeCote = null;
+		if ( $existant && ! isset( self::$opts['remplacer'] ) ) {
+			self::fin( 1, "L'espace « {$slug} » existe déjà. Pour remplacer son contenu par cet export (le contenu actuel est conservé à part, pas effacé) : ajoutez --remplacer." );
+		}
+		if ( $existant ) {
+			// Remplacement d'un espace existant (ex. créé vide avant la reprise).
+			$t = $existant;
+			$statutAvant = $t['statut'];
+			FKC_Plateforme_Registre::changerStatut( $slug, 'maintenance' );
+			$dest = FKC_Plateforme_Registre::dossierDonnees( $t );
+			$miseDeCote = rtrim( $dest, '/' ) . '.avant-import-' . gmdate( 'Ymd-His' );
+			if ( is_dir( $dest ) && ! @rename( rtrim( $dest, '/' ), $miseDeCote ) ) {
+				FKC_Plateforme_Registre::changerStatut( $slug, $statutAvant );
+				self::fin( 1, "Impossible de mettre de côté {$dest}." );
+			}
+			try {
+				FKC_Plateforme_Instantane::copier( $donnees, $dest );
+				@unlink( $dest . 'MANIFESTE.json' );
+				@unlink( $dest . 'A-REPORTER-DANS-config.php.txt' );
+				$ctl2 = FKC_Plateforme_Instantane::controler( $dest, $m );
+				if ( ! $ctl2['ok'] ) { throw new \RuntimeException( "Contrôle à l'arrivée non conforme :\n  " . implode( "\n  ", $ctl2['anomalies'] ) ); }
+			} catch ( \Throwable $e ) {
+				// Retour exact à l'état d'avant : rien n'est perdu.
+				FKC_Plateforme_Instantane::effacer( $dest );
+				if ( is_dir( $miseDeCote ) ) { @rename( $miseDeCote, rtrim( $dest, '/' ) ); }
+				FKC_Plateforme_Registre::changerStatut( $slug, $statutAvant );
+				throw $e;
+			}
+			// Les sessions ouvertes sur l'ancien contenu n'ont plus de sens.
+			foreach ( glob( FKC_Plateforme_Registre::dossierSessions( $t ) . 'sess_*' ) ?: array() as $f ) { @unlink( $f ); }
+			if ( isset( self::$opts['nom'] ) && '' !== trim( (string) self::$opts['nom'] ) ) {
+				FKC_Plateforme_Registre::q( 'UPDATE tenants SET nom=? WHERE id=?', array( trim( (string) self::$opts['nom'] ), (int) $t['id'] ) );
+			}
+		} else {
 		$t = FKC_Plateforme_Registre::ajouter( $slug, isset( self::$opts['nom'] ) ? (string) self::$opts['nom'] : $slug );
 		FKC_Plateforme_Registre::changerStatut( $slug, 'maintenance' );
 		$dest = FKC_Plateforme_Registre::dossierDonnees( $t );
@@ -305,11 +340,13 @@ class FKC_Plateforme_Console {
 			FKC_Plateforme_Registre::q( 'DELETE FROM tenants WHERE id=?', array( $t['id'] ) );
 			throw $e;
 		}
+		}
 		FKC_Plateforme_Registre::changerStatut( $slug, 'actif' );
 		FKC_Plateforme_Registre::journaliser( 'import', basename( $dossier ) . " {$ctl2['lignes']} lignes", (int) $t['id'] );
 		$decal = (int) ( $m['decalage_sqlite_s'] ?? 0 );
 		$a = FKC_Plateforme_Amorcage::adresseClient( $t );
 		echo "Importé et contrôlé à l'arrivée : {$a['url']}\n";
+		if ( $miseDeCote ) { echo "Ancien contenu de l'espace conservé : {$miseDeCote}\n"; }
 		if ( 0 !== $decal ) { printf( "⚠ L'ancien serveur avait un décalage horaire SQLite de %+d h : réglez « fuseau » en conséquence si les horodatages doivent rester alignés.\n", $decal / 3600 ); }
 		echo "Licence : l'ancien jeton est lié à l'ancien domaine. Émettez-en un pour {$a['hote']} puis : finakop --tenant={$slug} licence:installer <jeton>\n";
 		return 0;
@@ -407,7 +444,8 @@ FinaKop Plateforme — commandes
     tenant:lister [--statut=actif] [--slugs]          Liste les clients
     tenant:suspendre|activer|maintenance|archiver <id>
     tenant:domaine <id> <domaine> [--retirer]        Domaine personnalisé
-    tenant:importer <id> <dossier d'export> [--nom="Nom"]   Reprise depuis l'extension WordPress
+    tenant:importer <id> <dossier d'export> [--nom="Nom"] [--remplacer]
+                                                     Reprise depuis l'extension WordPress
 
   Sauvegardes
     tenant:sauvegarder <id> | --tous                 Sauvegarde chiffrée, relue et contrôlée

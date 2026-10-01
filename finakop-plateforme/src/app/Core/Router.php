@@ -105,6 +105,15 @@ class FKC_Router {
 			if ( ! empty( $r['opt']['auth'] ) && empty( $r['opt']['sans_mdp'] ) && FKC_Auth::doitChangerMotDePasse() ) {
 				redirect( 'mot-de-passe' );
 			}
+			/*
+			 * Middleware : licence obligatoire (plateforme, 1.876.0). Tant que
+			 * l'espace n'a pas de licence active, seules restent ouvertes
+			 * l'écran Licence, le changement de mot de passe et la
+			 * déconnexion (routes marquées « sans_licence »).
+			 */
+			if ( ! empty( $r['opt']['auth'] ) && empty( $r['opt']['sans_licence'] ) && FKC_License::verrouille() ) {
+				redirect( 'licence' );
+			}
 			// Middleware : une société doit être active (routes métier).
 			if ( ! empty( $r['opt']['societe'] ) && ! FKC_Tenant::ensureActive() ) {
 				redirect( 'societes' );

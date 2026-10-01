@@ -54,6 +54,7 @@ return array(
 		'serveur'        => 'https://license.kophisgroup.com/api',
 		'depot'          => '',                   // dépôt de révocation signé (ex. https://license.finakoperp.com/depot)
 		'domaine_strict' => true,                 // NE PAS désactiver : isole les licences entre clients
+		'obligatoire'    => true,                 // aucun module tant que l'espace n'a pas SA licence (écran Licence imposé)
 	),
 
 	/* ── API ──────────────────────────────────────────────────────────────── */

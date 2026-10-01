@@ -766,13 +766,13 @@ $router = new FKC_Router();
 // Authentification.
 $router->get( 'login',  'FKC_DashboardController@showLogin' );
 $router->post( 'login', 'FKC_DashboardController@login' );
-$router->post( 'logout','FKC_DashboardController@logout', array( 'auth' => true, 'sans_mdp' => true ) );
+$router->post( 'logout','FKC_DashboardController@logout', array( 'auth' => true, 'sans_mdp' => true, 'sans_licence' => true ) );
 
 // Mot de passe du compte. « sans_mdp » : ces deux routes restent servies quand
 // le changement de mot de passe est imposé — ce sont les seules, sinon le
 // verrou serait inéchappable.
-$router->get(  'mot-de-passe', 'FKC_DashboardController@showMotDePasse', array( 'auth' => true, 'sans_mdp' => true ) );
-$router->post( 'mot-de-passe', 'FKC_DashboardController@changerMotDePasse', array( 'auth' => true, 'sans_mdp' => true ) );
+$router->get(  'mot-de-passe', 'FKC_DashboardController@showMotDePasse', array( 'auth' => true, 'sans_mdp' => true, 'sans_licence' => true ) );
+$router->post( 'mot-de-passe', 'FKC_DashboardController@changerMotDePasse', array( 'auth' => true, 'sans_mdp' => true, 'sans_licence' => true ) );
 
 // Accueil + licence.
 $router->get( '',        'FKC_DashboardController@home', array( 'auth' => true, 'societe' => true ) );
@@ -816,8 +816,8 @@ $router->get(  'demarrage',          'FKC_DemarrageController@index',       arra
 $router->post( 'demarrage',          'FKC_DemarrageController@enregistrer', array( 'auth' => true, 'societe' => true ) );
 $router->get(  'demarrage/pret',     'FKC_DemarrageController@pret',        array( 'auth' => true, 'societe' => true ) );
 $router->post( 'demarrage/ecarter',  'FKC_DemarrageController@ecarter',     array( 'auth' => true, 'societe' => true ) );
-$router->get( 'licence', 'FKC_DashboardController@license', array( 'auth' => true ) );
-$router->post( 'licence','FKC_DashboardController@activateLicense', array( 'auth' => true ) );
+$router->get( 'licence', 'FKC_DashboardController@license', array( 'auth' => true, 'sans_licence' => true ) );
+$router->post( 'licence','FKC_DashboardController@activateLicense', array( 'auth' => true, 'sans_licence' => true ) );
 
 // Lanceurs de module (accueil en accordéons de boutons CTA). Enregistrés tôt : littéraux « module/menu ».
 $router->get( 'comptabilite/menu', 'FKC_LauncherController@comptabilite', array( 'auth' => true, 'societe' => true ) );
