@@ -38,6 +38,7 @@ finakop-plateforme/
 | [docs/08-RAPPORT-FINAL.md](docs/08-RAPPORT-FINAL.md) | Rapport de migration et problèmes restants |
 | [docs/09-MIGRATION-KOPHISGROUP.md](docs/09-MIGRATION-KOPHISGROUP.md) | Reprise de l'ancien site WordPress de KOPHI'S GROUP dans l'espace existant |
 | [docs/10-SECURITE-ET-VITRINE.md](docs/10-SECURITE-ET-VITRINE.md) | **1.876.2** : double authentification, plateforme invisible aux moteurs et aux IA, site vitrine, mise à jour |
+| [docs/11-GUIDE-PRATIQUE.md](docs/11-GUIDE-PRATIQUE.md) | **Guide pratique** : mise à jour, site vitrine, 2FA, commandes, astuces, dépannage |
 
 ## Installation en bref
 
