@@ -96,21 +96,22 @@ domains/finakoperp.com/
 
 Le formulaire envoie chaque demande à **supports@finakoperp.com**, et l'expéditeur des messages est cette même adresse (exigence d'Hostinger : l'expéditeur doit être une boîte du domaine). Créez-la dans hPanel → **Emails** → *Créer un compte de messagerie*, si ce n'est pas déjà fait.
 
-### Méthode A — SSH (le plus sûr)
+### Méthode A — SSH avec le script d'installation (recommandé)
 
-Déposez `finakop-site-vitrine-2.6.zip` avec le gestionnaire de fichiers dans `domains/finakoperp.com/` (à côté de `public_html`, pas dedans), puis :
+Déposez avec le gestionnaire de fichiers, dans `domains/finakoperp.com/` (à côté de `public_html`, pas dedans) :
+
+- le ZIP de la vitrine, par exemple `finakop-site-vitrine-2.6.zip` ;
+- le script `installer-vitrine.sh` (une seule fois ; il sert pour toutes les versions).
+
+Puis une seule commande :
 
 ```bash
-cd ~/domains/finakoperp.com/public_html \
-  && rm -rf assets index.html default.php merci.html contact.php robots.txt sitemap.xml \
-  && { [ -f .htaccess ] && cp .htaccess ~/htaccess-public_html.ancien || true; } \
-  && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-2.6.zip \
-  && find assets -type d -exec chmod 755 {} + && find assets -type f -exec chmod 644 {} + \
-  && chmod 644 index.html merci.html contact.php robots.txt sitemap.xml .htaccess \
-  && ls -la
+bash ~/domains/finakoperp.com/installer-vitrine.sh
 ```
 
-La première ligne retire l'ancienne vitrine (pas `finakop-app`).
+Le script prend le ZIP de vitrine le plus récent. Il répare les droits avant d'extraire, remplace l'ancienne vitrine sans toucher à `finakop-app`, garde une copie de l'ancien `.htaccess`, met les dossiers en 755 et les fichiers en 644, puis vérifie le résultat. Il se termine par « Site vitrine X.Y installé » ; sinon, envoyez sa sortie au support.
+
+**N'utilisez plus de commande `chmod 644 … assets/*`** : elle passe les dossiers de `assets/` en 644. Le serveur ne peut alors plus les ouvrir, et le site s'affiche sans mise en forme, sans logo ni animations.
 
 ### Méthode B — Gestionnaire de fichiers hPanel (sans SSH)
 
@@ -314,7 +315,8 @@ tail -5 ~/finakop-data/plateforme/logs/cron.log  # le cron tourne-t-il ?
 | La vitrine s'affiche mais pas la plateforme (ou l'inverse) | Fichiers mal placés | La vitrine va dans `public_html/`, la plateforme reste dans `public_html/finakop-app/` ; ne mélangez pas les `.htaccess` |
 | Courriels en indésirables ou refusés (alerte « enregistrements manquants » dans hPanel) | DKIM absent dans Cloudflare | Section 9 : recopier le DKIM de hPanel dans Cloudflare, en DNS only |
 | Le formulaire répond « n'a pas pu être transmise » | Boîte supports@ absente, ou dossier `vitrine-donnees` non inscriptible | Créez la boîte dans hPanel ; vérifiez `ls -ld ~/domains/finakoperp.com/vitrine-donnees` |
-| `unzip` : « cannot create assets/… Permission denied » | Dossiers de `assets/` passés en 644 (par exemple avec `chmod 644 assets/*`) : un dossier sans le droit `x` ne peut plus recevoir de fichiers, et la vitrine garde ses anciens CSS, JS, images et vidéos | `chmod 755 assets assets/*/` puis relancez l'installation du §3. Réglez toujours les droits avec `find … -type d` (755) et `find … -type f` (644), jamais avec `chmod 644 assets/*` |
+| Site affiché en texte brut : pas de mise en forme, logo cassé, compteurs à 0 | Dossiers de `assets/` en 644 : le serveur refuse le CSS, le JS et les images (erreur 403) | `bash ~/domains/finakoperp.com/installer-vitrine.sh` |
+| `unzip` : « cannot create assets/… Permission denied » | Dossiers de `assets/` passés en 644 (par exemple avec `chmod 644 assets/*`) : un dossier sans le droit `x` ne peut plus recevoir de fichiers, et la vitrine garde ses anciens CSS, JS, images et vidéos | `bash ~/domains/finakoperp.com/installer-vitrine.sh` (il répare les droits puis réinstalle). Réglez toujours les droits avec `find … -type d` (755) et `find … -type f` (644), jamais avec `chmod 644 assets/*` |
 | Sur la vitrine, des sections sans mise en forme (boutons gris, listes brutes) | HTML à jour mais CSS/JS anciens servis par un cache (vitrines 2.1 à 2.3) | Installez la vitrine 2.4 : chaque fichier est appelé avec son empreinte (`?v=…`), un ancien fichier ne peut plus être resservi. Purgez une fois Cloudflare (Caching → Purge Everything) |
 | La vitrine affiche encore l'ancienne page | Cache Cloudflare ou navigateur | Cloudflare → Caching → Purge Everything, puis Ctrl+F5 |
 | `plateforme:verifier` affichait « 2 base(s) » pour un espace | Normal : chaque espace a son **registre** (`finakopcore-master.db` : comptes, sociétés, licence, 2FA) et **une base par société** (`finakopcore.db` pour la première) | Ne supprimez aucune des deux. Depuis la 1.876.6, la ligne indique « registre + 1 société(s) » |
