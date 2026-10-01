@@ -161,6 +161,12 @@ Ces deux cas :
 | R11 | Capacité du mutualisé (30 processus) | Surveiller ; migration VPS prévue sans réécriture |
 | R12 | `script-src 'unsafe-inline'` | Chantier produit ultérieur (nonces) : hors périmètre de cette migration |
 | R13 | Horodatages SQLite en « heure locale » du serveur | Fuseau forcé et identique pour PHP et SQLite (`TZ`), relevé du fuseau de l'ancien serveur à l'export |
+| R14 | **Défaut trouvé pendant les tests** : erreur fatale « Cannot declare class FKC_IndMrp » sur toutes les pages quand le pack principal est industrie ou distribution (7 fichiers de pack inclus deux fois) | `require_once` (corrigé, test `plateforme_chargement_packs_1876.php`) |
+| R15 | **Défaut trouvé pendant les tests** : jeton CSRF expiré → code 419, transformé en erreur 500 par Apache/LiteSpeed | Réponse 403 (corrigé) |
+| R16 | Site WordPress dont la clé est la constante `FKC_ENCRYPTION_KEY` : clé perdue au déménagement, secrets illisibles | L'export l'emporte (`.fkc-encryption-key`, 0600) ; import refusé sans elle (corrigé, test 15) |
+| R17 | **Faille trouvée au second audit** : injection de formule dans les exports CSV (`=HYPERLINK(…)` saisi par un utilisateur, exécuté par le tableur du comptable) | `fkc_csv_cellule()` (corrigé, test `export_csv_injection_1876.php`) |
+| R18 | Flux SSE (afficheur client, scanner) : un processus PHP occupé en continu par écran ouvert, sur un quota d'environ 30 partagé par tous les clients | SSE désactivable, désactivé par défaut sur la plateforme, repli sur l'interrogation existante (test 19) |
+| R19 | Fichiers téléversés (GED, pièces, logos) forcés en 0644, donc lisibles par tout compte d'un serveur mutualisé (atténué par les dossiers en 0750) | 0640 partout (corrigé, test `televersements_droits_1876.php`) |
 
 ## 10. Ce qui manquait pour décider
 

@@ -11,6 +11,17 @@ Base : 1.875.6.
 - `FKC_BPEWorker`, `FKC_Balayeur` : `FKC_CRON_EXTERNE` / `FKC_CRON_INTERVALLE`.
 - `FKC_Connect_Push` : `pointAutorise()` (liste des services de poussée, adresses publiques, `follow_location=0`), `FKC_ADMIN_EMAIL`.
 - `FKC_PlanAudit::cibleDans()` ; `FKC_PlanPurge::analyser()` calcule le classement une fois.
+- Défaut corrigé (préexistant) : `app/index.php` incluait sept fichiers des packs distribution et industrie par `require` alors qu'un autre chemin les avait déjà chargés → « Cannot declare class FKC_IndMrp », erreur fatale sur **toutes** les pages quand le pack principal est industrie ou distribution. Passés en `require_once`.
+- `FKC_Router` : échec CSRF → 403 au lieu de 419 (code non standard, transformé en 500 par Apache/LiteSpeed).
+- Reprise d'un site WordPress dont la clé est la constante `FKC_ENCRYPTION_KEY` : `migration-donnees.php` l'emporte dans `.fkc-encryption-key` (0600, dans le manifeste) ; la plateforme la redéfinit pour ce client (même dérivation, même repli). Import refusé si la clé manque.
+
+- Défaut corrigé (sécurité) : injection de formule dans les exports CSV (`fkc_csv()`, journal Connect). Nouvelle `fkc_csv_cellule()` : cellule commençant par = + - @ tabulation ou retour chariot préfixée d'une apostrophe ; les nombres (« -1 500,00 ») ne sont pas touchés.
+- Plateforme : sauvegarde quotidienne du registre des clients et de la configuration (`plateforme:sauvegarder`, `plateforme:restaurer`) ; nettoyage des restes d'une sauvegarde interrompue ; `environnement` (production | staging | development) — `debug` sans effet en production, erreurs fatales au journal `php-erreurs.log` ; identifiant de client de 3 à 40 caractères à la création. Adresse canonique d'un client calculée en un seul endroit (`FKC_Plateforme_Amorcage::adresseClient()`, sous-domaine ou chemin) ; en mode chemin, un espace inconnu répond 404 et le portail ne répond qu'à « / ».
+
+- Fichiers téléversés (GED, pièces comptables, logos, pièces du cabinet) en 0640 au lieu de 0644 : illisibles des autres comptes d'un serveur mutualisé (Connect et terminal l'étaient déjà).
+- Flux temps réel (afficheur client, scanner) : `FKC_SSE` / `fkc_sse_actif()`. Désactivé par défaut sur la plateforme (`temps_reel.sse = false`) : un flux SSE occupe un processus PHP par écran ouvert, rationnés sur un mutualisé ; les écrans passent par leur interrogation courte existante, le flux répond 204. Sans la constante (extension WordPress) : inchangé.
+
+Tests : `tests/plateforme_chargement_packs_1876.php` — 7 vérifications (5 échouent sur 1.875.5) ; `tests/export_csv_injection_1876.php` — 21 vérifications ; `tests/plateforme_temps_reel_1876.php` — 7 vérifications ; `tests/televersements_droits_1876.php` — 2 vérifications (échouent sur 1.875.5).
 
 ---
 

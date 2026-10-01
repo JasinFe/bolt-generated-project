@@ -3154,9 +3154,9 @@ if ( isset( $fkc_sante_ecrans[ $fkc_sante_actif ] ) ) {
 
 /* ── Pack Distribution : logistique (dépôts, tournées, palettes, livraisons) ── */
 if ( in_array( 'distribution', FKC_Packs::activeCodes(), true ) ) {
-	require FKC_ROOT . 'Packs/distribution/Models/Depot.php';
-	require FKC_ROOT . 'Packs/distribution/Models/Tournee.php';
-	require FKC_ROOT . 'Packs/distribution/Controllers/DistributionController.php';
+	require_once FKC_ROOT . 'Packs/distribution/Models/Depot.php';
+	require_once FKC_ROOT . 'Packs/distribution/Models/Tournee.php';
+	require_once FKC_ROOT . 'Packs/distribution/Controllers/DistributionController.php';
 	$dto = array( 'auth' => true, 'societe' => true, 'module' => 'distribution' );
 	$router->get(  'distribution/depots',          'FKC_DistributionController@depots', $dto );
 	$router->post( 'distribution/depots',          'FKC_DistributionController@depotsAction', $dto );
@@ -3170,11 +3170,14 @@ if ( in_array( 'distribution', FKC_Packs::activeCodes(), true ) ) {
 }
 
 /* ── Pack Industrie : production, MRP, OEE, maintenance ──────────────────── */
+// require_once (1.876.0) : FKC_Packs::boot() a DÉJÀ chargé les modèles du pack principal ;
+// un second « require » déclarait deux fois FKC_IndMrp et chaque page tombait en erreur fatale
+// dès que le pack principal était Industrie (ou Distribution, plus haut).
 if ( in_array( 'industrie', FKC_Packs::activeCodes(), true ) ) {
-	require FKC_ROOT . 'Packs/industrie/Models/Production.php';
-	require FKC_ROOT . 'Packs/industrie/Models/Mrp.php';
-	require FKC_ROOT . 'Packs/industrie/Models/IndKpi.php';
-	require FKC_ROOT . 'Packs/industrie/Models/Qualite.php';
+	require_once FKC_ROOT . 'Packs/industrie/Models/Production.php';
+	require_once FKC_ROOT . 'Packs/industrie/Models/Mrp.php';
+	require_once FKC_ROOT . 'Packs/industrie/Models/IndKpi.php';
+	require_once FKC_ROOT . 'Packs/industrie/Models/Qualite.php';
 	require_once FKC_ROOT . 'Packs/industrie/Controllers/IndustrieController.php';
 	$ito = array( 'auth' => true, 'societe' => true, 'module' => 'industrie' );
 	$router->get(  'industrie/production',      'FKC_IndustrieController@production', $ito );

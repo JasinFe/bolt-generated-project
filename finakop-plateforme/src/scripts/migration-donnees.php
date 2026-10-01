@@ -19,7 +19,7 @@
  *     chiffrement) et les options fkc_* de WordPress sont relevées dans
  *     A-REPORTER-DANS-config.php.txt — fichier SENSIBLE, à ne jamais laisser traîner.
  *
- * ── SUR LE VPS, après copie ──
+ * ── SUR LE NOUVEL HÉBERGEMENT (Hostinger ou VPS), après copie ──
  *
  *   php migration-donnees.php controler <dossier_sortie_ou_donnees> <MANIFESTE.json>
  *
@@ -104,7 +104,7 @@ function exporter( $src, $dst, $wpConfig ) {
 		// Décalage horaire de SQLite sur CE serveur : « datetime('now','localtime') » en dépend.
 		'decalage_sqlite_s' => (int) pdo( ':memory:' )->query( "SELECT strftime('%s','now','localtime') - strftime('%s','now')" )->fetchColumn(),
 		'fuseau_php' => date_default_timezone_get(),
-		'bases' => array(), 'fichiers' => array(), 'cle_fichier' => is_file( $src . '.fkc-secret.key' ) );
+		'bases' => array(), 'fichiers' => array(), 'cle_fichier' => is_file( $src . '.fkc-secret.key' ), 'cle_constante' => false );
 
 	foreach ( lister( $src ) as $rel => $abs ) {
 		$cible = $donnees . $rel;
@@ -125,9 +125,21 @@ function exporter( $src, $dst, $wpConfig ) {
 	}
 	echo '  ' . count( $m['fichiers'] ) . " autre(s) fichier(s) copiés\n";
 
-	if ( ! $m['cle_fichier'] ) {
-		echo "\n  ⚠ Pas de .fkc-secret.key : la clé vient donc de FKC_ENCRYPTION_KEY dans wp-config.php.\n"
-			. "    Elle DOIT être reportée dans /etc/finakop/config.php (encryption_key).\n";
+	// Clé définie par la constante FKC_ENCRYPTION_KEY : elle PRIME sur .fkc-secret.key
+	// dans FinaKop. On l'emporte dans l'export (.fkc-encryption-key, 0600) ; la
+	// plateforme la redéfinit pour ce client, à l'identique.
+	$cst = '' !== $wpConfig ? constante_cle( $wpConfig ) : null;
+	if ( is_string( $cst ) && '' !== $cst ) {
+		file_put_contents( $donnees . '.fkc-encryption-key', $cst );
+		chmod( $donnees . '.fkc-encryption-key', 0600 );
+		$m['fichiers']['.fkc-encryption-key'] = hash_file( 'sha256', $donnees . '.fkc-encryption-key' );
+		$m['cle_constante'] = true;
+		echo "  clé     FKC_ENCRYPTION_KEY relevée dans wp-config.php → .fkc-encryption-key (0600)\n";
+	} elseif ( false === $cst ) {
+		echo "\n  ⚠ FKC_ENCRYPTION_KEY est définie dans wp-config.php mais pas par une simple chaîne (getenv, variable…).\n"
+			. "    Écrivez sa valeur, seule, dans {$donnees}.fkc-encryption-key (chmod 600), puis relancez « controler ».\n";
+	} elseif ( ! $m['cle_fichier'] ) {
+		echo "\n  ⚠ Ni .fkc-secret.key ni FKC_ENCRYPTION_KEY trouvée" . ( '' === $wpConfig ? " (donnez le chemin de wp-config.php en 3e argument)" : '' ) . ".\n";
 	}
 	if ( '' !== $wpConfig ) { relever_wordpress( $wpConfig, $dst ); }
 
@@ -136,10 +148,26 @@ function exporter( $src, $dst, $wpConfig ) {
 	return 0;
 }
 
+/**
+ * Valeur de FKC_ENCRYPTION_KEY dans wp-config.php : la chaîne, null si la
+ * constante est absente, false si elle est définie autrement que par une chaîne.
+ */
+function constante_cle( $wpConfig ) {
+	$src = @file_get_contents( $wpConfig );
+	if ( false === $src ) { return null; }
+	$src = preg_replace( '#^\s*(//|\#).*$#m', '', $src ); // lignes commentées ignorées
+	if ( ! preg_match( '/define\s*\(\s*[\'"]FKC_ENCRYPTION_KEY[\'"]\s*,\s*(.+?)\s*\)\s*;/s', $src, $d ) ) { return null; }
+	$v = trim( $d[1] );
+	if ( preg_match( "/^'((?:[^'\\\\]|\\\\.)*)'$/s", $v, $x ) ) { return str_replace( array( "\\'", '\\\\' ), array( "'", '\\' ), $x[1] ); }
+	if ( preg_match( '/^"([^"\\\\$]*)"$/s', $v, $x ) ) { return $x[1]; }
+	return false;
+}
+
 /** Relève dans wp-config.php et la table des options tout ce que config.php doit reprendre. */
 function relever_wordpress( $wpConfig, $dst ) {
 	$src = @file_get_contents( $wpConfig );
 	if ( false === $src ) { fwrite( STDERR, "wp-config.php illisible : {$wpConfig}\n" ); return; }
+	$src = preg_replace( '#^\s*(//|\#).*$#m', '', $src ); // lignes commentées ignorées
 	$lignes = array( '# FinaKop — valeurs relevées dans WordPress le ' . gmdate( 'c' ),
 		'# ⚠ SENSIBLE : contient la clé de chiffrement éventuelle. Supprimez ce fichier après report.', '' );
 
@@ -199,6 +227,7 @@ function controler( $dir, $manifeste ) {
 	}
 	echo '  ' . count( $m['fichiers'] ) . " fichier(s) vérifiés par SHA-256\n";
 	if ( ! empty( $m['cle_fichier'] ) && ! is_file( $dir . '.fkc-secret.key' ) ) { $ko( '.fkc-secret.key ABSENTE : secrets chiffrés illisibles' ); }
+	if ( ! empty( $m['cle_constante'] ) && ! is_file( $dir . '.fkc-encryption-key' ) ) { $ko( '.fkc-encryption-key ABSENTE : secrets chiffrés illisibles' ); }
 
 	echo $err ? "\n  ÉCHEC : {$err} anomalie(s). NE PAS basculer le DNS.\n" : "\n  Données identiques à la source. Bascule possible.\n";
 	return $err ? 1 : 0;

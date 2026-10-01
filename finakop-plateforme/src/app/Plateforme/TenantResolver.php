@@ -59,9 +59,11 @@ class FKC_TenantResolver {
 			if ( in_array( $mode, array( 'chemin', 'les_deux' ), true ) ) {
 				$chemin = (string) parse_url( '/' . ltrim( (string) $uri, '/' ), PHP_URL_PATH );
 				$seg = explode( '/', trim( $chemin, '/' ) )[0] ?? '';
-				if ( '' !== $seg && FKC_Plateforme_Registre::slugValide( $seg ) ) {
-					$r = self::parClient( FKC_Plateforme_Registre::parSlug( $seg ), $h, '/' . $seg );
-					if ( self::INCONNU !== $r['type'] ) { return $r; }
+				// Le portail ne répond qu'à « / » ; tout autre chemin désigne un espace,
+				// existant ou non (404 neutre, comme en mode sous-domaine).
+				if ( '' !== $seg ) {
+					if ( ! FKC_Plateforme_Registre::slugValide( $seg ) ) { return array( 'type' => self::INCONNU, 'hote' => $h ); }
+					return self::parClient( FKC_Plateforme_Registre::parSlug( $seg ), $h, '/' . $seg );
 				}
 			}
 			return array( 'type' => self::PORTAIL, 'hote' => $h );

@@ -60,6 +60,22 @@ class FKC_Plateforme_Cron {
 			self::log( sprintf( '%s %s en %.2f s — %s', $t['slug'], $ok ? 'ok' : 'ÉCHEC (code ' . $code . ')', $duree, $resume ) );
 			$ok ? $faits++ : $echecs++;
 		}
+		// Sauvegarde quotidienne de la plateforme (registre + configuration), dans le processus principal.
+		$dern = FKC_Plateforme_Registre::tacheDerniere( 0, 'sauvegarde' );
+		$heure = (int) FKC_Config::get( 'sauvegarde.heure', 2 );
+		if ( ! empty( $opts['forcer-sauvegarde'] ) || ( (int) gmdate( 'G' ) >= $heure && time() - $dern > 72000 ) || time() - $dern > 36 * 3600 ) {
+			FKC_Plateforme_Registre::tacheDebut( 0, 'sauvegarde' );
+			$t0 = microtime( true );
+			try {
+				$r = FKC_Plateforme_Sauvegarde::plateforme();
+				FKC_Plateforme_Registre::tacheFin( 0, 'sauvegarde', true, microtime( true ) - $t0, basename( $r['fichier'] ) );
+				self::log( 'plateforme : sauvegarde ' . basename( $r['fichier'] ) );
+			} catch ( \Throwable $e ) {
+				FKC_Plateforme_Registre::tacheFin( 0, 'sauvegarde', false, microtime( true ) - $t0, $e->getMessage() );
+				self::log( 'plateforme : ÉCHEC sauvegarde — ' . $e->getMessage() );
+				$echecs++;
+			}
+		}
 		self::log( sprintf( 'passage terminé : %d client(s) traité(s), %d en échec, %d reporté(s), %.1f s', $faits, $echecs, $restants, microtime( true ) - $debut ) );
 		if ( empty( $opts['quiet'] ) ) { printf( "%d client(s) traité(s), %d en échec, %d reporté(s).\n", $faits, $echecs, $restants ); }
 		flock( $verrou, LOCK_UN );

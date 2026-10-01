@@ -39,11 +39,12 @@ class FKC_Config {
 			'reserves'      => array( 'www', 'app', 'api', 'admin', 'mail', 'webmail', 'smtp', 'imap', 'pop', 'pop3',
 				'ftp', 'sftp', 'cpanel', 'hpanel', 'whm', 'ns', 'ns1', 'ns2', 'dns', 'mx', 'license', 'licence', 'licences',
 				'relais', 'static', 'cdn', 'assets', 'status', 'statut', 'support', 'aide', 'docs', 'doc', 'blog', 'portail',
-				'autoconfig', 'autodiscover', 'plateforme', 'platform', 'root', 'localhost', 'staging', 'preprod' ),
+				'autoconfig', 'autodiscover', 'plateforme', 'platform', 'root', 'localhost', 'staging', 'preprod', 'dev', 'test', 'demo', 'beta', 'billing', 'facturation' ),
 			'donnees'       => '',                       // OBLIGATOIRE : dossier hors web
 			'https'         => true,                     // redirige http → https
 			'fuseau'        => 'UTC',                    // PHP ET SQLite (TZ) : même heure partout
-			'debug'         => false,
+			'environnement' => 'production',             // production | staging | development
+			'debug'         => false,                    // sans effet en production
 			'admin_email'   => '',
 			'cloudflare'    => array(
 				'actif'           => false,              // rétablit l'IP réelle depuis les plages Cloudflare
@@ -67,6 +68,9 @@ class FKC_Config {
 			'sauvegarde'    => array( 'heure' => 2, 'retention_jours' => 14, 'cle' => '', 'dossier' => '' ),
 			'journaux'      => array( 'taille_max_mo' => 5, 'generations' => 5 ),
 			'connect'       => array( 'push_hotes' => '' ),
+			// Flux SSE (afficheur client, scanner) : false sur mutualisé (un processus
+			// occupé par écran ouvert) ; true sur VPS. Les écrans interrogent alors le serveur.
+			'temps_reel'    => array( 'sse' => false ),
 		);
 	}
 
@@ -74,6 +78,7 @@ class FKC_Config {
 	protected static function environnement() {
 		return array(
 			'FINAKOP_DONNEES'            => 'donnees',
+			'FINAKOP_ENV'                => 'environnement',
 			'FINAKOP_DOMAINE_BASE'       => 'domaine_base',
 			'FINAKOP_SMTP_MOT_DE_PASSE'  => 'smtp.mot_de_passe',
 			'FINAKOP_CLOUDFLARE_SECRET'  => 'cloudflare.secret_origine',
@@ -89,6 +94,11 @@ class FKC_Config {
 		self::$fichier = (string) $fichier;
 		$lu = array();
 		if ( '' !== self::$fichier && is_file( self::$fichier ) ) {
+			// Le fichier est du PHP, donc mis en cache par OPcache : sans ceci, une
+			// modification ne serait vue qu'après expiration du cache — jamais si
+			// l'hébergeur coupe la revalidation (validate_timestamps=0). N'invalide
+			// que si le fichier est plus récent que sa version en cache.
+			if ( function_exists( 'opcache_invalidate' ) ) { @opcache_invalidate( self::$fichier, false ); }
 			$lu = require self::$fichier;
 			if ( ! is_array( $lu ) ) { throw new \RuntimeException( 'Configuration illisible : le fichier doit retourner un tableau.' ); }
 		} else {
@@ -101,6 +111,11 @@ class FKC_Config {
 		}
 		$v['donnees'] = rtrim( (string) $v['donnees'], '/' );
 		if ( '' === $v['donnees'] ) { throw new \RuntimeException( 'Paramètre « donnees » absent de la configuration.' ); }
+		if ( ! in_array( $v['environnement'], array( 'production', 'staging', 'development' ), true ) ) {
+			throw new \RuntimeException( 'environnement invalide : production, staging ou development.' );
+		}
+		// En production, l'affichage des erreurs est impossible, quel que soit « debug ».
+		if ( 'production' === $v['environnement'] ) { $v['debug'] = false; }
 		$v['domaine_base'] = strtolower( trim( (string) $v['domaine_base'], '. ' ) );
 		$v['hote_portail'] = strtolower( trim( (string) $v['hote_portail'], '. ' ) );
 		self::$valeurs = $v;

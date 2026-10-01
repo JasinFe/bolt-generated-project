@@ -66,7 +66,18 @@ class FKC_Plateforme_Amorcage {
 		$client = null;
 		try {
 			self::socle();
-			@ini_set( 'display_errors', FKC_Config::get( 'debug' ) ? '1' : '0' );
+			$debug = (bool) FKC_Config::get( 'debug' );   // toujours false en production (FKC_Config)
+			@ini_set( 'display_errors', $debug ? '1' : '0' );
+			@ini_set( 'display_startup_errors', $debug ? '1' : '0' );
+			// Erreurs fatales (que le gestionnaire de FinaKop ne voit pas) : au journal, jamais à l'écran.
+			@ini_set( 'log_errors', '1' );
+			$jd = FKC_Config::dossier( 'plateforme/logs' );
+			if ( is_dir( $jd ) || @mkdir( $jd, 0750, true ) ) { @ini_set( 'error_log', $jd . '/php-erreurs.log' ); }
+			if ( $debug && ! defined( 'FKC_DEBUG' ) ) { define( 'FKC_DEBUG', true ); }
+			if ( 'production' !== FKC_Config::get( 'environnement' ) && ! headers_sent() ) {
+				header( 'X-FinaKop-Environnement: ' . FKC_Config::get( 'environnement' ) );
+				header( 'X-Robots-Tag: noindex, nofollow, noarchive' );
+			}
 			FKC_Plateforme_Proxy::appliquer( $_SERVER );
 			if ( ! FKC_Plateforme_Proxy::origineAutorisee( $_SERVER ) ) {
 				self::journalWeb( 'origine_refusee', (string) ( $_SERVER['HTTP_HOST'] ?? '' ) );
@@ -109,6 +120,15 @@ class FKC_Plateforme_Amorcage {
 		if ( ! is_dir( $donnees ) ) { throw new \RuntimeException( 'Dossier de données absent pour ' . $t['slug'] ); }
 		if ( ! $creation && ! is_file( $donnees . 'finakopcore-master.db' ) ) { throw new \RuntimeException( 'Registre absent pour ' . $t['slug'] ); }
 
+		// Clé reprise d'un site WordPress où elle était la constante FKC_ENCRYPTION_KEY
+		// (wp-config.php) : même phrase, donc même dérivation et même repli vers
+		// l'ancienne clé — exactement le comportement de l'extension.
+		$phrase = $donnees . '.fkc-encryption-key';
+		if ( is_file( $phrase ) && ! defined( 'FKC_ENCRYPTION_KEY' ) ) {
+			$p = rtrim( (string) file_get_contents( $phrase ), "\r\n" );
+			if ( '' !== $p ) { define( 'FKC_ENCRYPTION_KEY', $p ); }
+		}
+
 		$app = self::racine() . '/app/';
 		define( 'FKC_ROOT', $app );
 		define( 'FKC_APP_DIR', $app );
@@ -127,6 +147,7 @@ class FKC_Plateforme_Amorcage {
 		if ( '' !== (string) FKC_Config::get( 'api.cors', '' ) ) { define( 'FKC_API_CORS', (string) FKC_Config::get( 'api.cors' ) ); }
 		if ( '' !== (string) FKC_Config::get( 'connect.push_hotes', '' ) ) { define( 'FKC_PUSH_HOTES', (string) FKC_Config::get( 'connect.push_hotes' ) ); }
 		define( 'FKC_ADMIN_EMAIL', (string) FKC_Config::get( 'admin_email', '' ) );
+		define( 'FKC_SSE', (bool) FKC_Config::get( 'temps_reel.sse', false ) );
 		define( 'FKC_CRON_EXTERNE', true );
 		define( 'FKC_CRON_INTERVALLE', (int) FKC_Config::get( 'cron.intervalle', 300 ) );
 
@@ -149,6 +170,20 @@ class FKC_Plateforme_Amorcage {
 		@ini_set( 'session.gc_maxlifetime', '28800' );
 		@ini_set( 'session.use_strict_mode', '1' );
 		@ini_set( 'session.use_only_cookies', '1' );
+	}
+
+	/**
+	 * Adresse canonique d'un client : <slug>.<domaine> (sous-domaine, défaut),
+	 * ou <portail>/<slug>/ en mode chemin (recette). Un seul endroit la calcule.
+	 * @return array{hote:string, base_path:string, url:string}
+	 */
+	public static function adresseClient( array $t ) {
+		if ( 'chemin' === FKC_Config::get( 'mode_tenant', 'sous-domaine' ) ) {
+			$hote = (string) FKC_Config::get( 'hote_portail' ); $base = '/' . $t['slug'];
+		} else {
+			$hote = $t['slug'] . '.' . FKC_Config::get( 'domaine_base' ); $base = '';
+		}
+		return array( 'hote' => $hote, 'base_path' => $base, 'url' => 'https://' . $hote . $base . '/' );
 	}
 
 	/** Schéma des adresses produites : https en production ; http seulement si la configuration l'autorise (recette locale). */

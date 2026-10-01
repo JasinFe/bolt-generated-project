@@ -37,6 +37,10 @@ replis UTF-8, mais l'extension est plus rapide.
 * Sessions isolées par client : nom de cookie et dossier de sessions propres ; cookie limité au chemin de base en mode « chemin »
 * Notifications push : seuls les services de poussée des navigateurs sont acceptés, adresses internes refusées, redirections non suivies (SSRF)
 * Purge du plan comptable : 28 s → 0,07 s (classement calculé une fois par analyse, résultat identique)
+* DÉFAUT — erreur fatale « Cannot declare class FKC_IndMrp » sur toutes les pages quand le pack principal est industrie ou distribution (fichiers de pack inclus deux fois) : corrigé
+* DÉFAUT — un jeton CSRF expiré produisait une erreur 500 (code 419 non standard) : réponse 403 et message clair
+* SÉCURITÉ — exports CSV : une cellule saisie commençant par = + - @ ne peut plus devenir une formule à l'ouverture dans Excel (injection CSV) ; les montants négatifs restent des nombres
+* Migration : la clé de chiffrement définie dans wp-config.php (FKC_ENCRYPTION_KEY) est reprise automatiquement par l'export, secrets chiffrés relisibles après import
 * Traitements planifiés : prochain passage annoncé d'après le cron système en mode autonome
 * Contrôle générique « dossier de données sous la racine web » hors WordPress
 * Nouveaux harnais tests/plateforme_*.php

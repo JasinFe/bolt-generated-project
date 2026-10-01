@@ -24,6 +24,15 @@ class FKC_Plateforme_Instantane {
 			|| in_array( $b, array( '.htaccess', 'web.config', '.fkc-canary.txt', '.fkc-mot-de-passe-initial.txt' ), true );
 	}
 
+	/**
+	 * Fichiers de clé d'un client : .fkc-secret.key (clé générée), ou
+	 * .fkc-encryption-key (phrase FKC_ENCRYPTION_KEY reprise de wp-config.php).
+	 * Toujours en 0600.
+	 */
+	public static function estCle( $rel ) {
+		return in_array( basename( $rel ), array( '.fkc-secret.key', '.fkc-encryption-key' ), true );
+	}
+
 	public static function estBase( $chemin ) {
 		if ( ! preg_match( '/\.(db|sqlite)$/', $chemin ) ) { return false; }
 		$f = @fopen( $chemin, 'rb' );
@@ -72,7 +81,8 @@ class FKC_Plateforme_Instantane {
 		$m = array_merge( array( 'format' => 1, 'cree_le' => gmdate( 'c' ), 'php' => PHP_VERSION,
 			'sqlite' => (string) self::pdo( ':memory:' )->query( 'SELECT sqlite_version()' )->fetchColumn(),
 			'decalage_sqlite_s' => (int) self::pdo( ':memory:' )->query( "SELECT strftime('%s','now','localtime') - strftime('%s','now')" )->fetchColumn(),
-			'bases' => array(), 'fichiers' => array(), 'cle_fichier' => is_file( $src . '.fkc-secret.key' ) ), $meta );
+			'bases' => array(), 'fichiers' => array(), 'cle_fichier' => is_file( $src . '.fkc-secret.key' ),
+			'cle_constante' => is_file( $src . '.fkc-encryption-key' ) ), $meta );
 
 		foreach ( self::lister( $src ) as $rel => $abs ) {
 			$cible = $dst . $rel;
@@ -120,6 +130,7 @@ class FKC_Plateforme_Instantane {
 			elseif ( ! hash_equals( (string) $sha, hash_file( 'sha256', $dir . $rel ) ) ) { $an[] = "fichier altéré : {$rel}"; }
 		}
 		if ( ! empty( $m['cle_fichier'] ) && ! is_file( $dir . '.fkc-secret.key' ) ) { $an[] = 'clé de chiffrement (.fkc-secret.key) absente'; }
+		if ( ! empty( $m['cle_constante'] ) && ! is_file( $dir . '.fkc-encryption-key' ) ) { $an[] = 'clé de chiffrement (.fkc-encryption-key) absente'; }
 		return array( 'ok' => ! $an, 'anomalies' => $an, 'bases' => count( (array) ( $m['bases'] ?? array() ) ),
 			'lignes' => $lignes, 'fichiers' => count( (array) ( $m['fichiers'] ?? array() ) ) );
 	}
@@ -142,7 +153,7 @@ class FKC_Plateforme_Instantane {
 			if ( $f->isLink() ) { continue; }
 			if ( $f->isDir() ) { if ( ! is_dir( $dst . $rel ) ) { mkdir( $dst . $rel, 0750, true ); } continue; }
 			if ( ! @copy( $f->getPathname(), $dst . $rel ) ) { throw new \RuntimeException( 'Copie impossible : ' . $rel ); }
-			@chmod( $dst . $rel, '.fkc-secret.key' === basename( $rel ) ? 0600 : 0640 );
+			@chmod( $dst . $rel, self::estCle( $rel ) ? 0600 : 0640 );
 		}
 	}
 }

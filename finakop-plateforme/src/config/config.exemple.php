@@ -22,7 +22,8 @@ return array(
 
 	'https'  => true,     // toute requête http est redirigée vers https
 	'fuseau' => 'UTC',    // heure de PHP ET de SQLite ; gardez celle de l'ancien serveur (l'import vous la signale)
-	'debug'  => false,    // jamais true en production
+	'environnement' => 'production',   // production | staging | development (ou variable FINAKOP_ENV)
+	'debug'  => false,    // ignoré en production : les erreurs vont au journal, jamais à l'écran
 	'admin_email' => 'admin@finakoperp.com',
 
 	/* ── Courriels (boîte créée dans hPanel → E-mails) ────────────────────── */
@@ -60,6 +61,11 @@ return array(
 		'autorite' => 'service',                  // service (KOPHI'S GROUP) | local
 		'cors'     => '',                         // origines autorisées, séparées par des virgules
 	),
+
+	/* ── Temps réel ───────────────────────────────────────────────────────── */
+	// Afficheur client et scanner : interrogation courte (false) sur hébergement
+	// mutualisé ; flux SSE (true) sur VPS, où les processus ne sont pas rationnés.
+	'temps_reel' => array( 'sse' => false ),
 
 	/* ── Tâches planifiées ────────────────────────────────────────────────── */
 	'cron' => array(

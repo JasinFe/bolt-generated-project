@@ -59,7 +59,7 @@ class FKC_Plateforme_Console {
 				$l = FKC_Plateforme_Registre::tous( isset( self::$opts['statut'] ) ? (string) self::$opts['statut'] : null );
 				if ( isset( self::$opts['slugs'] ) ) { foreach ( $l as $t ) { echo $t['slug'], "\n"; } return 0; }
 				printf( "%-24s %-12s %-34s %s\n", 'IDENTIFIANT', 'STATUT', 'NOM', 'ADRESSE' );
-				foreach ( $l as $t ) { printf( "%-24s %-12s %-34s https://%s.%s/\n", $t['slug'], $t['statut'], mb_substr( $t['nom'], 0, 34 ), $t['slug'], FKC_Config::get( 'domaine_base' ) ); }
+				foreach ( $l as $t ) { printf( "%-24s %-12s %-34s %s\n", $t['slug'], $t['statut'], mb_substr( $t['nom'], 0, 34 ), FKC_Plateforme_Amorcage::adresseClient( $t )['url'] ); }
 				echo count( $l ), " client(s)\n";
 				return 0;
 
@@ -112,7 +112,21 @@ class FKC_Plateforme_Console {
 				$r = FKC_Plateforme_Sauvegarde::restaurer( $archive, $vers ?: $slug, (bool) $vers );
 				printf( "Restauré dans %s : %d base(s), %d lignes, %d fichier(s) — contrôle conforme.\n", $r['client']['slug'], $r['controle']['bases'], $r['controle']['lignes'], $r['controle']['fichiers'] );
 				if ( $r['mis_de_cote'] ) { echo "Ancien état conservé : {$r['mis_de_cote']}\n"; }
-				if ( $vers ) { echo "Client de vérification : https://{$vers}." . FKC_Config::get( 'domaine_base' ) . "/ (créez le sous-domaine chez l'hébergeur pour l'ouvrir ; archivez-le ensuite).\n"; }
+				if ( $vers ) { echo "Client de vérification : " . FKC_Plateforme_Amorcage::adresseClient( $r['client'] )['url'] . " (créez le sous-domaine chez l'hébergeur pour l'ouvrir ; archivez-le ensuite).\n"; }
+				return 0;
+
+			case 'plateforme:sauvegarder':
+				$r = FKC_Plateforme_Sauvegarde::plateforme();
+				printf( "Plateforme OK  %s (%s, registre + configuration) — relue et contrôlée.\n", $r['fichier'], self::taille( $r['octets'] ) );
+				return 0;
+
+			case 'plateforme:restaurer':
+				list( $archive, $dossier ) = self::args( 2, 'plateforme:restaurer <archive> <dossier vide>' );
+				$r = FKC_Plateforme_Sauvegarde::restaurerPlateforme( $archive, $dossier );
+				printf( "Archive conforme, extraite dans %s : plateforme.db (intégrité ok) et config.php.\n", $dossier );
+				echo "Remise en place (voir docs/06-EXPLOITATION.md §5) :\n"
+					. "  cp {$dossier}/plateforme.db " . FKC_Config::dossier( 'plateforme/plateforme.db' ) . "\n"
+					. "  cp {$dossier}/config.php " . FKC_Config::fichier() . "   (si la configuration est perdue)\n";
 				return 0;
 
 			case 'sauvegarde:cle':
@@ -216,12 +230,12 @@ class FKC_Plateforme_Console {
 
 	/** Charge FinaKop pour UN client dans ce processus. */
 	public static function chargerClient( array $t, $creation = false ) {
-		$hote = $t['slug'] . '.' . FKC_Config::get( 'domaine_base' );
-		$_SERVER['HTTP_HOST'] = $hote;       // le contrôle de domaine de la licence lit l'hôte
+		$a = FKC_Plateforme_Amorcage::adresseClient( $t );
+		$_SERVER['HTTP_HOST'] = $a['hote'];  // le contrôle de domaine de la licence lit l'hôte
 		$_SERVER['HTTPS'] = 'on';
-		$_SERVER['REQUEST_URI'] = '/';
+		$_SERVER['REQUEST_URI'] = $a['base_path'] . '/';
 		$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-		FKC_Plateforme_Amorcage::contexte( $t, $hote, '', 'https', $creation );
+		FKC_Plateforme_Amorcage::contexte( $t, $a['hote'], $a['base_path'], 'https', $creation );
 		if ( $creation ) { define( 'FKC_NOYAU_CREER', true ); }
 		if ( true !== ( require FKC_ROOT . 'noyau.php' ) ) { throw new \RuntimeException( 'Chargement de FinaKop impossible pour ' . $t['slug'] ); }
 	}
@@ -248,15 +262,17 @@ class FKC_Plateforme_Console {
 			throw $e;
 		}
 		FKC_Plateforme_Registre::journaliser( 'creation', $nom, (int) $t['id'] );
-		$d = FKC_Config::get( 'domaine_base' );
+		$a = FKC_Plateforme_Amorcage::adresseClient( $t );
 		echo "Client créé : {$nom}\n";
-		echo "  Adresse          : https://{$slug}.{$d}/\n";
+		echo "  Adresse          : {$a['url']}\n";
 		echo "  Identifiant      : admin\n";
 		echo "  Mot de passe     : {$mdp}   (à usage unique, changement imposé à la première connexion)\n";
 		echo "  Données          : {$dir}\n\n";
 		echo "Reste à faire :\n";
-		echo "  1. hPanel → Sous-domaines : créer « {$slug} » vers le dossier web FinaKop (voir docs/04-INSTALLATION-HOSTINGER.md).\n";
-		echo "  2. Émettre sa licence (domaine : {$slug}.{$d}) puis : finakop --tenant={$slug} licence:installer <jeton>\n";
+		echo '' === $a['base_path']
+			? "  1. hPanel → Sous-domaines : créer « {$slug} » vers le dossier web FinaKop (voir docs/04-INSTALLATION-HOSTINGER.md).\n"
+			: "  1. Mode chemin : rien à créer chez l'hébergeur.\n";
+		echo "  2. Émettre sa licence (domaine : {$a['hote']}) puis : finakop --tenant={$slug} licence:installer <jeton>\n";
 		return 0;
 	}
 
@@ -269,9 +285,10 @@ class FKC_Plateforme_Console {
 		$ctl = FKC_Plateforme_Instantane::controler( $donnees, $m );
 		if ( ! $ctl['ok'] ) { self::fin( 1, "Export non conforme — rien n'est importé :\n  " . implode( "\n  ", $ctl['anomalies'] ) ); }
 		echo "Export conforme : {$ctl['bases']} base(s), {$ctl['lignes']} lignes, {$ctl['fichiers']} fichier(s).\n";
-		if ( empty( $m['cle_fichier'] ) ) {
-			echo "⚠ L'export ne contient pas .fkc-secret.key : la clé venait de FKC_ENCRYPTION_KEY (wp-config.php).\n"
-				. "  FinaKop refusera de démarrer sans elle. Ajoutez le fichier .fkc-secret.key équivalent AVANT import, ou importez puis contactez le support.\n";
+		if ( empty( $m['cle_fichier'] ) && empty( $m['cle_constante'] ) ) {
+			echo "⚠ L'export ne contient pas la clé de chiffrement (.fkc-secret.key, ni FKC_ENCRYPTION_KEY relevée dans wp-config.php).\n"
+				. "  Refaites l'export en donnant le chemin de wp-config.php : migration-donnees.php exporter <données> <sortie> <wp-config.php>.\n"
+				. "  Sans clé, les secrets chiffrés (clés d'API, Mobile Money…) seraient illisibles ; FinaKop refuse alors de démarrer.\n";
 			if ( ! isset( self::$opts['forcer'] ) ) { self::fin( 1, 'Import interrompu (--forcer pour passer outre).' ); }
 		}
 		$t = FKC_Plateforme_Registre::ajouter( $slug, isset( self::$opts['nom'] ) ? (string) self::$opts['nom'] : $slug );
@@ -291,9 +308,10 @@ class FKC_Plateforme_Console {
 		FKC_Plateforme_Registre::changerStatut( $slug, 'actif' );
 		FKC_Plateforme_Registre::journaliser( 'import', basename( $dossier ) . " {$ctl2['lignes']} lignes", (int) $t['id'] );
 		$decal = (int) ( $m['decalage_sqlite_s'] ?? 0 );
-		echo "Importé et contrôlé à l'arrivée : https://{$slug}." . FKC_Config::get( 'domaine_base' ) . "/\n";
+		$a = FKC_Plateforme_Amorcage::adresseClient( $t );
+		echo "Importé et contrôlé à l'arrivée : {$a['url']}\n";
 		if ( 0 !== $decal ) { printf( "⚠ L'ancien serveur avait un décalage horaire SQLite de %+d h : réglez « fuseau » en conséquence si les horodatages doivent rester alignés.\n", $decal / 3600 ); }
-		echo "Licence : l'ancien jeton est lié à l'ancien domaine. Émettez-en un pour {$slug}." . FKC_Config::get( 'domaine_base' ) . " puis : finakop --tenant={$slug} licence:installer <jeton>\n";
+		echo "Licence : l'ancien jeton est lié à l'ancien domaine. Émettez-en un pour {$a['hote']} puis : finakop --tenant={$slug} licence:installer <jeton>\n";
 		return 0;
 	}
 
@@ -396,6 +414,8 @@ FinaKop Plateforme — commandes
     sauvegardes:lister <id>
     tenant:restaurer <id> <archive> --vers=<id-verif>   Restauration de vérification (sans risque)
     tenant:restaurer <id> <archive> --confirmer         Restauration en place (ancien état conservé)
+    plateforme:sauvegarder                           Registre des clients + configuration (chiffrés)
+    plateforme:restaurer <archive> <dossier vide>    Extrait et contrôle, sans rien remplacer
     sauvegarde:cle                                   Génère une clé de chiffrement des sauvegardes
 
   Exploitation

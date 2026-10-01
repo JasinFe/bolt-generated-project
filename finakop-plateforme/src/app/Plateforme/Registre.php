@@ -101,7 +101,9 @@ class FKC_Plateforme_Registre {
 	}
 
 	public static function ajouter( $slug, $nom, $contact = null ) {
-		if ( ! self::slugValide( $slug ) ) { throw new \InvalidArgumentException( "Identifiant invalide : « {$slug} » (a-z, 0-9, tiret ; 1 à 40 caractères)." ); }
+		// Création : 3 à 40 caractères ASCII (a-z, 0-9, tiret intérieur, jamais « -- » :
+		// ni accent, ni homographe Unicode, ni nom punycode « xn--… »).
+		if ( ! self::slugValide( $slug ) || strlen( $slug ) < 3 ) { throw new \InvalidArgumentException( "Identifiant invalide : « {$slug} » (a-z, 0-9, tiret ; 3 à 40 caractères)." ); }
 		if ( in_array( $slug, (array) FKC_Config::get( 'reserves', array() ), true ) ) { throw new \InvalidArgumentException( "« {$slug} » est un sous-domaine réservé." ); }
 		if ( self::parSlug( $slug ) ) { throw new \InvalidArgumentException( "Le client « {$slug} » existe déjà." ); }
 		self::q( 'INSERT INTO tenants(slug,nom,dossier,contact) VALUES(?,?,?,?)', array( $slug, trim( (string) $nom ), $slug, $contact ) );

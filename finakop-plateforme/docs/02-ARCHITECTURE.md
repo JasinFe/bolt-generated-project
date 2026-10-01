@@ -20,7 +20,7 @@ app/Plateforme/Amorcage
    │     ├─ réservé, inconnu    → page neutre (404)
    │     └─ suspendu, maintenance → 403 / 503
    ├─ Contexte tenant   FKC_DATA_DIR = ~/finakop-data/tenants/newloock/
-   │                    sessions : ~/finakop-data/sessions/newloock/, cookie FKC_SESSION_newloock
+   │                    sessions : ~/finakop-data/sessions/newloock/, cookie FKC_<empreinte du slug>
    └─ app/index.php     FinaKop inchangé : auth → RBAC → société → modules → packs
                           │
          ~/finakop-data/tenants/newloock/
@@ -119,3 +119,83 @@ Si la création manuelle des sous-domaines devenait un frein, la plateforme acce
 | `bin/finakop` | Console : clients, licence, sauvegardes, diagnostic, courriel de test |
 | `cron/worker.php` | Tâche cron unique |
 | `public/index.php`, `public/.htaccess` | Contrôleur frontal et règles LiteSpeed/Apache |
+
+## 7. Décisions comparées
+
+Format demandé : décision, pourquoi, avantages, inconvénients, alternative, recommandation.
+
+### 7.1 Architecture des données des clients (options A, B, C)
+
+| Critère | A — une base globale (tous clients) | B — base centrale + une base par client | **C — base centrale + instance par client (retenue)** |
+| --- | --- | --- | --- |
+| Isolation | Logique seulement : un `WHERE tenant_id` oublié = fuite | Bonne pour les données ; utilisateurs centralisés | **Physique** : un processus n'ouvre que les fichiers du client servi |
+| Code existant | Réécriture de ~150 tables et 1 637 routes (ajout de `tenant_id` partout) | Réécriture de l'authentification et du RBAC (utilisateurs centraux) | **Inchangé** : chaque client est un FinaKop complet |
+| Sauvegarde / restauration | Tout ou rien ; restaurer un client = chirurgie SQL | Par client pour les données, pas pour les comptes | **Par client, complète** (comptes, licence, clé, documents) |
+| Création / suppression | Lignes | Base + lignes centrales | Dossier + ligne de registre (`tenant:creer`, `tenant:archiver`) |
+| Performances SQLite | Un seul fichier = un seul écrivain pour **tous** les clients : goulot | Écritures réparties | Écritures réparties **par société** |
+| Hostinger Business | Possible, mais goulot d'écriture | Possible | **Adapté** (fichiers, aucun service) |
+| Migration VPS / MariaDB | Simple techniquement, risquée fonctionnellement | Moyenne | Copie de dossiers ; MariaDB possible plus tard client par client |
+| Coût | Mois de réécriture | Semaines | **Fait et testé** |
+
+**Recommandation : C.** L'option C est la seule qui ne demande aucune réécriture du métier tout en garantissant une isolation physique. Inconvénient : il n'existe pas d'utilisateur « transversal » à plusieurs clients ; une même personne a un compte par espace. Pour un ERP où chaque client est une entreprise distincte, c'est le comportement souhaité.
+
+### 7.2 SQLite ou MariaDB
+
+| | SQLite (retenu pour la V1) | MariaDB |
+| --- | --- | --- |
+| Concurrence | Lectures parallèles ; écritures sérialisées **par fichier**, donc par société (WAL, `busy_timeout`, reprises dans `FKC_Database`) | Écritures concurrentes ligne à ligne |
+| Volume | Plusieurs Go par société sans difficulté | Illimité en pratique |
+| Hostinger Business | Natif, aucun quota de connexions | Disponible, mais quota de connexions simultanées par base et réécriture SQL nécessaire |
+| Sauvegarde | `VACUUM INTO` : copie cohérente à chaud, testée | `mysqldump`, cohérent avec `--single-transaction` |
+| Corruption | Rare en WAL sur disque local ; `integrity_check` à chaque export et sauvegarde | Rare |
+| Coût de migration | 0 | Des mois (dialecte SQL, migrations, ~150 tables) |
+
+**Recommandation : garder SQLite.** On reconsidérera MariaDB si **une** société dépasse durablement ~50 utilisateurs qui écrivent en même temps, ou si un besoin d'analyse transverse apparaît. Même alors, on commencerait par une base d'agrégats. La couche `FKC_Database` est le seul point d'accès, ce qui borne le travail.
+
+### 7.3 Structure du domaine
+
+| Hôte | Rôle retenu | Commentaire |
+| --- | --- | --- |
+| `finakoperp.com`, `www` | Site institutionnel (hors application) | Redirigé vers `site_public` s'il pointe vers le dossier FinaKop |
+| `app.finakoperp.com` | Portail : saisie de l'identifiant d'espace → redirection | Ne charge aucune donnée client |
+| `<client>.finakoperp.com` | Espace du client | Application, API (`/api/v1/…`), webhooks, reçus publics |
+| `api.finakoperp.com` | **Réservé, non servi** | L'API vit sur l'hôte du client : clés, quotas et journaux restent isolés. Un `api.` commun obligerait à déduire le client d'un en-tête, ce qui est moins sûr |
+| `admin.finakoperp.com` | **Réservé, non servi** | Administration globale par SSH (`bin/finakop`) : aucune surface d'attaque web. Voir 7.4 |
+| `license.finakoperp.com` | Réservé ; à utiliser pour le dépôt de révocation des licences s'il est déplacé | Hors application |
+| `staging.finakoperp.com` | Réservé ; recette (voir 7.5) | Installation séparée |
+
+Les noms réservés sont centralisés dans `FKC_Config` (`reserves`) : www, app, api, admin, license, licence, licences, mail, webmail, smtp, imap, pop, ftp, sftp, cpanel, hpanel, ns, dns, mx, static, cdn, assets, status, support, aide, docs, blog, portail, autoconfig, autodiscover, plateforme, staging, preprod, dev, test, demo, beta, billing, facturation…
+
+### 7.4 Super administrateur et administrateur de client
+
+| | Super admin FinaKop (vous) | Administrateur d'un client |
+| --- | --- | --- |
+| Accès | SSH + `bin/finakop` | Interface web de **son** espace |
+| Peut | Créer, suspendre, mettre en maintenance, archiver un client ; installer une licence ; sauvegarder, restaurer ; diagnostiquer ; lire les journaux de la plateforme | Gérer ses utilisateurs, rôles, sociétés, paramètres, dans les limites de sa licence |
+| Ne peut pas | Lire les données métier d'un client **depuis la plateforme** : la console n'expose aucune commande de consultation des données | Voir un autre client |
+| Traçabilité | Chaque action est inscrite dans `plateforme.db` (`journal` : date, action, client, compte système) | Journal de sécurité et piste d'audit de FinaKop |
+
+L'hébergeur (et donc quiconque détient l'accès SSH) peut techniquement lire les fichiers. Pour aller plus loin, il faudrait chiffrer les bases avec une clé détenue par le client, ce qui exclut la sauvegarde et le support. Ce n'est pas proposé en V1.
+
+### 7.5 Recette (staging)
+
+Universal SSL de Cloudflare Free ne couvre qu'**un niveau** de sous-domaine (`*.finakoperp.com`, pas `*.staging.finakoperp.com`). La recette utilise donc le **mode chemin** :
+- une seconde installation (`FINAKOP_RACINE=~/finakop-staging FINAKOP_DONNEES=~/finakop-staging-data bash installer.sh …`) ;
+- le sous-domaine `staging.finakoperp.com` est rattaché à **son propre** dossier web ;
+- la configuration contient `environnement = staging`, `mode_tenant = chemin` et `hote_portail = staging.finakoperp.com` ;
+- les clients de recette sont servis sur `staging.finakoperp.com/<client>/`.
+
+Protection : en-têtes `noindex` et `X-FinaKop-Environnement: staging`, authentification FinaKop, et de préférence **Cloudflare Access**, inclus dans l'offre gratuite Zero Trust jusqu'à 50 utilisateurs (connexion par code reçu par courriel). Ne jamais y restaurer de données réelles sans Access.
+
+### 7.6 Cloudflare Free : ce qui est utilisé, ce qui ne l'est pas
+
+| Fonction | Offre Free | Usage |
+| --- | --- | --- |
+| DNS proxifié, Universal SSL (`*.finakoperp.com`), DDoS | Oui | Base |
+| Free Managed Ruleset | Oui, actif d'office | Conservé |
+| Règles personnalisées (WAF) | **5 règles**, pas d'expressions régulières | 2 utilisées (voir doc 05) |
+| Limitation de débit | **1 règle**, période fixe de 10 s, action Bloquer | Sur `POST /login` ; la vraie protection anti-force brute est dans FinaKop (par IP réelle) |
+| Règles de transformation (en-tête de requête) | Oui | En-tête secret vers l'origine |
+| Règles de cache | Oui | Seul `/_fkc/*` (statique) est mis en cache |
+| Authenticated Origin Pulls (mTLS) | Oui, mais Hostinger mutualisé ne permet pas d'exiger un certificat client | **Non utilisable ici** (VPS : oui) |
+| Bot Management avancé, WAF Pro, Cloudflare for SaaS (domaines personnalisés), Workers payants | **Non** | Aucun n'est requis ; évolutions possibles |

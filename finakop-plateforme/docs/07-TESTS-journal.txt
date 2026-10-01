@@ -1,0 +1,269 @@
+Journal des tests de la plateforme FinaKop 1.876.0 (environnement décrit dans 07-TESTS.md). Chaque ligne [RÉUSSI]/[ÉCHEC] est une vérification réellement exécutée.
+
+TEST 1 — Installation propre (scripts/installer.sh, compte sans root)
+  [RÉUSSI] configuration en 0600
+  [RÉUSSI] dossier de données en 0750, hors public_html
+  [RÉUSSI] dossier web : uniquement index.php, .htaccess, robots.txt, _fkc/
+  [RÉUSSI] aucun fichier PHP dans _fkc/
+  [RÉUSSI] index.php pointe vers le chemin réel de la version
+  [RÉUSSI] aucune clé privée déployée
+
+TEST 2 — Démarrage par index.php (sans WordPress)
+  [RÉUSSI] aucun fichier WordPress sur le compte
+  [RÉUSSI] aucune fonction WordPress définie au démarrage
+  [RÉUSSI] portail app.finakoperp.com → 200
+  [RÉUSSI] http → https (301)
+  [RÉUSSI] sous-domaine inconnu → 404 neutre
+  [RÉUSSI] hôte étranger (Host: evil.com) → 400
+
+TEST 3 — Connexion, session, déconnexion
+  [RÉUSSI] connexion admin New Loock avec le mot de passe initial
+  [RÉUSSI] cookie de session propre au client (nom FKC_…, pas FKC_SESSION)
+  [RÉUSSI] changement du mot de passe initial imposé
+  [RÉUSSI] nouveau mot de passe accepté
+  [RÉUSSI] tableau de bord accessible après changement
+  [RÉUSSI] déconnexion
+  [RÉUSSI] après déconnexion : retour à la connexion
+  [RÉUSSI] mauvais mot de passe refusé
+  [RÉUSSI] reconnexion avec le nouveau mot de passe
+  [RÉUSSI] ABC Industrie : connexion et changement de mot de passe
+
+TEST 4 — newloock.finakoperp.com charge New Loock
+  [RÉUSSI] la société affichée sur newloock est « New Loock »
+  [RÉUSSI] la société affichée sur abc est « ABC Industrie »
+  [RÉUSSI] dossier de sessions distinct par client
+
+TEST 5 — Isolation : New Loock ne voit rien de la société B
+  [RÉUSSI] New Loock crée un client (formulaire web, CSRF)
+  [RÉUSSI] New Loock voit son client
+  [RÉUSSI] New Loock ne voit AUCUN client de ABC
+  [RÉUSSI] ABC voit son client, pas celui de New Loock
+  [RÉUSSI] les données de New Loock sont physiquement absentes des fichiers d'ABC
+  [RÉUSSI] session de New Loock rejouée sur ABC → renvoyée à la connexion
+  [RÉUSSI] identifiant de session de New Loock injecté sous le nom de cookie d'ABC → refusé
+  [RÉUSSI] identifiants de New Loock refusés sur ABC (registres distincts)
+  [RÉUSSI] clés de chiffrement différentes entre clients
+
+TEST 6 — Deux entreprises simultanément (deux sessions, requêtes parallèles)
+  [RÉUSSI] 20 requêtes New Loock en parallèle : 20 réponses correctes
+  [RÉUSSI] 20 requêtes ABC en parallèle : 20 réponses correctes
+  [RÉUSSI] aucune réponse ne contient les données de l'autre entreprise
+  [RÉUSSI] les deux sessions restent valides après la rafale
+
+TEST 11 — Licence : activation, validation, expiration, domaine, packs
+  [RÉUSSI] activation du jeton de New Loock
+  [RÉUSSI] validation : palier Pro, packs vendus lus depuis le jeton
+  [RÉUSSI] jeton de New Loock installé chez ABC → refusé (domaine)
+  [RÉUSSI] ABC : son propre jeton Business accepté
+  [RÉUSSI] « xnewloock » ne peut pas utiliser le jeton de « newloock » (contrôle strict)
+  [RÉUSSI] jeton expiré → statut « expired »
+  [RÉUSSI] New Loock reste actif (aucune interférence)
+  [RÉUSSI] écran Licence de New Loock : Pro, actif
+  [RÉUSSI] clients de test archivés : leurs adresses répondent 404
+
+
+TEST 7 — API REST par client
+  [RÉUSSI] GET /api/v1/ping → 200 (sans session, version 1.876.0)
+  [RÉUSSI] GET /api/v1/clients sans clé → 401
+  [RÉUSSI] GET /api/v1/societes → la seule société de New Loock
+  [RÉUSSI] GET /api/v1/clients?societe=1 → ses clients, aucun d'ABC
+  [RÉUSSI] la même clé présentée à ABC (même numéro de société) → 401
+  [RÉUSSI] portée non accordée (read:factures) → 403
+  [RÉUSSI] clé altérée → 401
+  [RÉUSSI] réponses API non mises en cache (Cache-Control: no-store)
+
+
+TEST 8 — Envoi et lecture de documents (GED)
+  [RÉUSSI] PDF envoyé par New Loock et listé dans sa GED
+  [RÉUSSI] téléchargement par New Loock : contenu identique
+  [RÉUSSI] même identifiant demandé par ABC → pas le document de New Loock
+  [RÉUSSI] sans session → renvoi à la connexion
+  [RÉUSSI] fichier rangé dans le dossier de New Loock, hors web
+  [RÉUSSI] aucune URL directe vers le stockage (fichier absent du dossier web)
+  [RÉUSSI] script PHP déguisé en .pdf refusé (contenu contrôlé)
+  [RÉUSSI] fichier .php refusé
+  [RÉUSSI] envoi sans jeton CSRF → refusé (403)
+
+TEST 9 — Courriels SMTP sans WordPress (FKC_Mailer)
+  [RÉUSSI] envoi STARTTLS (587-like) avec authentification
+  [RÉUSSI] message reçu par le serveur, chiffré (STARTTLS)
+  [RÉUSSI] authentification avec l'utilisateur configuré
+  [RÉUSSI] expéditeur « New Loock via FinaKop » <no-reply@finakoperp.com>
+  [RÉUSSI] journal des courriels de la société : envoyé
+  [RÉUSSI] envoi en SSL implicite (465-like)
+  [RÉUSSI] certificat non valide refusé quand la vérification est active (défaut)
+  [RÉUSSI] mot de passe SMTP absent des messages d'erreur et du journal
+  [RÉUSSI] texte + HTML + pièce jointe, plusieurs destinataires et copie cachée
+  [RÉUSSI] ligne commençant par « . » transmise intacte (dot-stuffing)
+  [RÉUSSI] injection d'en-tête dans l'adresse refusée
+  [RÉUSSI] destinataire correct, sujet encodé RFC 2047 et restitué à l'identique
+
+TEST 10 — Cron autonome (cron/worker.php, un processus par client)
+  [RÉUSSI] une tâche placée dans la file différée de New Loock
+  [RÉUSSI] passage du cron : code de sortie 0
+  [RÉUSSI] la tâche de New Loock a été traitée par le cron
+  [RÉUSSI] les clients archivés ne sont pas traités
+  [RÉUSSI] sauvegarde quotidienne faite au premier passage (aucune sauvegarde existante)
+  [RÉUSSI] état des tâches enregistré dans le registre
+  [RÉUSSI] passage suivant : pas de seconde sauvegarde le même jour
+  [RÉUSSI] durée d'un passage complet (2 clients + 2 sauvegardes)
+   durée premier passage : 3 s
+  [RÉUSSI] purge des sessions expirées (fichiers de plus de 8 h supprimés)
+  [RÉUSSI] journal : newloock et abc traités, chacun dans son processus
+  [RÉUSSI] second passage simultané ignoré (verrou), sans erreur
+
+TEST 12 — HTTPS et relais Cloudflare
+  [RÉUSSI] relais de confiance : l'IP réelle (CF-Connecting-IP) est enregistrée
+  [RÉUSSI] en-tête invalide ignoré
+  [RÉUSSI] requête ne venant PAS de Cloudflare : l'en-tête est ignoré (pas d'usurpation d'IP)
+  [RÉUSSI] X-Forwarded-Proto d'un inconnu ignoré : http redirigé vers https
+  [RÉUSSI] X-Forwarded-Proto: https d'un relais de confiance : servi sans boucle de redirection
+  [RÉUSSI] reconnaissance des plages Cloudflare IPv4/IPv6 (bornes comprises)
+  [RÉUSSI] garde de l'origine : requête sans l'en-tête secret → 403
+  [RÉUSSI] garde de l'origine : mauvais secret → 403
+  [RÉUSSI] garde de l'origine : bon secret (ajouté par Cloudflare) → 200
+  [RÉUSSI] tentative d'accès direct journalisée
+  [RÉUSSI] HSTS, CSP, X-Frame-Options, nosniff envoyés en HTTPS
+  [RÉUSSI] cookie de session Secure, HttpOnly, SameSite=Lax
+
+TEST 13 — Sécurité : accès interdits
+  [RÉUSSI] 588 pages demandées sans session : aucune donnée servie (connexion exigée, ou page publique d'appairage/refus)
+  [RÉUSSI] aucune erreur 500 sur les 588 pages
+  [RÉUSSI] « /.htaccess » : ni source ni configuration divulguées (403)
+  [RÉUSSI] « /_fkc/../index.php » : ni source ni configuration divulguées (404)
+  [RÉUSSI] « /_fkc/%2e%2e/%2e%2e/finakop/config.php » : ni source ni configuration divulguées (400)
+  [RÉUSSI] « /index.php/../../finakop/config.php » : ni source ni configuration divulguées (403)
+  [RÉUSSI] « /_fkc/x.php » : ni source ni configuration divulguées (403)
+  [RÉUSSI] « /.env » : ni source ni configuration divulguées (403)
+  [RÉUSSI] « /.git/config » : ni source ni configuration divulguées (403)
+  [RÉUSSI] hôte forgé « newloock..finakoperp.com » → refusé (400)
+  [RÉUSSI] hôte forgé « newloock.finakoperp.com.evil.com » → refusé (400)
+  [RÉUSSI] hôte forgé « -x.finakoperp.com » → refusé (400)
+  [RÉUSSI] hôte forgé « a_b.finakoperp.com » → refusé (400)
+  [RÉUSSI] hôte forgé « aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa » → refusé (404)
+  [RÉUSSI] hôte forgé « newloock.finakoperp.com:99999 » → refusé (400)
+  [RÉUSSI] hôte forgé « [::1] » → refusé (400)
+  [RÉUSSI] portail : saisie <script> échappée (pas de XSS réfléchi)
+  [RÉUSSI] fixation de session : un identifiant imposé n'est pas adopté
+  [RÉUSSI] injection SQL sur la connexion refusée
+  [RÉUSSI] client suspendu → 403, aucune page de l'application
+  [RÉUSSI] client en maintenance → 503
+  [RÉUSSI] client réactivé : sa session reprend
+  [RÉUSSI] réserves : admin.finakoperp.com et api.finakoperp.com ne servent aucun client
+  [RÉUSSI] impossible de créer un client sur un nom réservé
+  [RÉUSSI] identifiant malformé (« ../x ») refusé
+
+  [RÉUSSI] force brute : l'IP attaquante (réelle, derrière Cloudflare) est bloquée même avec le bon mot de passe
+  [RÉUSSI] … tandis qu'un utilisateur légitime (autre IP réelle, même relais) se connecte
+  [RÉUSSI] le blocage vise l'IP réelle de l'attaquant, pas celle du relais
+
+TEST 14 — Sauvegarde puis restauration réelles
+   newloock             OK  newloock-20260930-224130.fkcsave (93 Ko, 2 base(s), 1876 lignes, 5 fichier(s))
+  [RÉUSSI] sauvegarde créée, relue et contrôlée (lignes et empreintes)
+  [RÉUSSI] archive chiffrée (en-tête FKCSAVE1, aucune donnée lisible)
+  [RÉUSSI] archive lisible par vous seul (0600)
+   Restauré dans newloock-verif : 2 base(s), 1876 lignes, 5 fichier(s) — contrôle conforme.
+Client de vérification : https://newloock-verif.finakoperp.com/ (créez le sous-domaine chez l'hébergeur pour l'ouvrir ; archivez-le ensuite).
+  [RÉUSSI] restauration de VÉRIFICATION vers un nouveau client, sans toucher New Loock
+  [RÉUSSI] données restaurées identiques (client témoin présent)
+  [RÉUSSI] clé de chiffrement restaurée : secrets relisibles (empreinte concordante)
+  [RÉUSSI] modification faite après la sauvegarde
+  [RÉUSSI] restauration en place refusée sans --confirmer
+   Restauré dans newloock : 2 base(s), 1876 lignes, 5 fichier(s) — contrôle conforme.
+Ancien état conservé : /home/fkhost/finakop-data/tenants/newloock.avant-restauration-20260930-224131
+  [RÉUSSI] restauration EN PLACE conforme
+  [RÉUSSI] l'état restauré est celui de la sauvegarde (modification ultérieure absente, client témoin présent)
+  [RÉUSSI] l'état d'avant restauration est conservé (pas effacé)
+  [RÉUSSI] New Loock de nouveau actif
+  [RÉUSSI] sessions antérieures à la restauration invalidées (reconnexion demandée)
+  [RÉUSSI] archive altérée d'un octet → refusée, rien de modifié
+  [RÉUSSI] mauvaise clé de sauvegarde → refus explicite
+   Recontrôle après correctif (droits restaurés) — restauration --vers=verif2 :
+  [RÉUSSI] documents (GED) restaurés avec la même empreinte SHA-256 (2/2 fichiers)
+  [RÉUSSI] connexion sur la copie restaurée avec les identifiants d'origine → tableau de bord
+  [RÉUSSI] clé de chiffrement restaurée en 0600, dossiers 0750, fichiers 0640
+  [RÉUSSI] client de vérification archivé ensuite → 404, plus rien servi
+
+TEST 15 — Reprise d'un site WordPress (export → import), clé = constante FKC_ENCRYPTION_KEY de wp-config.php
+  [RÉUSSI] export : bases copiées par VACUUM INTO, manifeste (lignes par table, SHA-256), ligne commentée de wp-config.php ignorée
+  [RÉUSSI] export : la constante FKC_ENCRYPTION_KEY est emportée (.fkc-encryption-key, 0600)
+  [RÉUSSI] import : contrôle au départ et à l'arrivée conformes (2 bases, 1079 lignes, 2 fichiers)
+  [RÉUSSI] secret chiffré par l'ancien site relu à l'identique sur la plateforme (source : constante)
+  [RÉUSSI] clé du client en 0600 après import
+  [RÉUSSI] document GED identique octet pour octet
+  [RÉUSSI] connexion web avec les identifiants de l'ancien site
+  [RÉUSSI] export sans sa clé → import refusé, aucun client créé
+  [RÉUSSI] sauvegarde → restauration : secret relisible sur la copie, clé 0600
+  [RÉUSSI] variante clé-fichier (.fkc-secret.key) : import conforme, secret relu (source : fichier)
+
+TEST 16 — Sauvegarde et restauration de la PLATEFORME (registre des clients + configuration)
+  [RÉUSSI] sauvegarde plateforme créée, chiffrée (FKCSAVE1), relue, 0600
+  [RÉUSSI] restauration : config.php identique à l'original (SHA-256)
+  [RÉUSSI] restauration : registre restauré complet (9 clients sur 9), intégrité ok
+  [RÉUSSI] restauration : config.php restaurée en 0600
+  [RÉUSSI] archive d'un client refusée comme archive plateforme
+
+TEST 17 — Règles d'identifiant et environnement
+  [RÉUSSI] identifiant « ab » refusé à la création
+  [RÉUSSI] identifiant « xn--bcher-kva » refusé à la création
+  [RÉUSSI] identifiant « café » refusé à la création
+  [RÉUSSI] identifiant « www » refusé à la création
+  [RÉUSSI] identifiant « staging » refusé à la création
+  [RÉUSSI] identifiant « dev » refusé à la création
+  [RÉUSSI] identifiant « a--b » refusé à la création
+  [RÉUSSI] identifiant « -abc » refusé à la création
+  [RÉUSSI] identifiant « Abc » normalisé en minuscules (« abc », déjà pris → refusé ; pas de doublon par la casse)
+  [RÉUSSI] restauration plateforme refusée dans un dossier non vide (rien n'est écrasé)
+  [RÉUSSI] environnement staging : identifié (X-FinaKop-Environnement) et non indexé
+  [RÉUSSI] production : aucun en-tête d'environnement ; « debug » ignoré (FKC_Config le force à false)
+
+TEST 10b — Cron : délai maximal par client (injection de panne)
+  [RÉUSSI] sous-processus d'un client gelé (SIGSTOP) → arrêté par le worker à 30 s (code 124), consigné dans cron.log
+  [RÉUSSI] les autres clients et la sauvegarde plateforme passent dans le même passage (2 traités, 1 en échec)
+  [RÉUSSI] passage suivant : le client fautif repasse en premier et réussit ; aucun reste
+  [RÉUSSI] reste d'une sauvegarde interrompue (> 2 h) nettoyé par la rotation
+
+TEST 18 — Recette (staging) : seconde installation isolée, mode chemin
+  [RÉUSSI] seconde installation (~/finakop-staging, ~/finakop-staging-data) par installer.sh, sans toucher la production
+  [RÉUSSI] https://staging.finakoperp.com/newloock/ : page de connexion, cookie limité au chemin /newloock/
+  [RÉUSSI] en-têtes de recette : X-FinaKop-Environnement: staging et noindex
+  [RÉUSSI] connexion admin sur la recette → 302 vers /newloock/
+  [RÉUSSI] production non affectée : newloock.finakoperp.com sert toujours New Loock (licence Pro valide)
+  [RÉUSSI] données séparées : registres de recette et de production distincts
+  [RÉUSSI] adresse affichée par la console en mode chemin : staging.finakoperp.com/newloock/
+  [RÉUSSI] recette : espace inexistant → 404 neutre (le portail ne répond qu'à « / »)
+  [RÉUSSI] production : portail app.finakoperp.com inchangé (200)
+
+TEST 14b — Reconstruction : dossier d'un client perdu, restauration en place
+  [RÉUSSI] dossier de données d'ABC supprimé → tenant:restaurer abc <archive> --confirmer le recrée, contrôle conforme (2 bases, 1194 lignes, 3 fichiers)
+  [RÉUSSI] ABC actif et connexion avec ses identifiants après reconstruction
+
+TEST 19 — Temps réel sur hébergement mutualisé (SSE désactivé par défaut)
+  [RÉUSSI] flux SSE de l'afficheur : 204 immédiat (aucun processus retenu)
+  [RÉUSSI] page afficheur : EventSource désactivé, interrogation courte
+  [RÉUSSI] interrogation afficheur/etat : 200 en quelques ms
+  [RÉUSSI] temps_reel.sse = true (VPS) : flux SSE servi (text/event-stream, données puis keep-alive)
+
+TEST 20 — IDOR et autorisations À L'INTÉRIEUR d'un client (utilisateur limité à la société A)
+  [RÉUSSI] connexion de l'agent (droits : facturation, société A seulement)
+  [RÉUSSI] liste des clients : aucun client de la société B
+  [RÉUSSI] falsification « facturation/clients?societe=2 » : rien de la société B
+  [RÉUSSI] falsification « facturation/clients?societe_id=2 » : rien de la société B
+  [RÉUSSI] falsification « facturation/clients/1/modifier » : rien de la société B
+  [RÉUSSI] falsification « facturation/clients/1/modifier?societe=2 » : rien de la société B
+  [RÉUSSI] bascule forcée vers la société B (POST societes/2/activer) refusée : toujours rien de B
+  [RÉUSSI] même bascule sans jeton CSRF → 403
+  [RÉUSSI] page d'administration (utilisateurs) refusée à un non-administrateur
+  [RÉUSSI] module non attribué (comptabilité) refusé côté serveur, pas seulement masqué
+  [RÉUSSI] accès à la société A retiré en cours de session : effet immédiat (plus de données)
+  [RÉUSSI] contrôle de pertinence : l'agent voit bien le client de la société A (secret@newloock.ci) ; utilisateurs → 403 ; comptabilité → 403 ; après retrait d'accès → 302 vers le sélecteur de sociétés
+  [RÉUSSI] IDOR entre clients impossible par construction : un identifiant n'est résolu que dans la base de la société active, elle-même revérifiée à chaque requête
+
+TEST 8b — Téléversements dangereux
+  [RÉUSSI] « x.php.pdf » refusé (aucun fichier enregistré)
+  [RÉUSSI] « x.phtml » refusé (aucun fichier enregistré)
+  [RÉUSSI] « x.phar » refusé (aucun fichier enregistré)
+  [RÉUSSI] « x.svg » refusé (aucun fichier enregistré)
+  [RÉUSSI] « x.html » refusé (aucun fichier enregistré)
+  [RÉUSSI] PDF valide contenant du code PHP : accepté comme PDF, rangé .pdf hors web, droits 0640
+  [RÉUSSI] … servi comme application/pdf avec nosniff, jamais exécuté (octets identiques)
