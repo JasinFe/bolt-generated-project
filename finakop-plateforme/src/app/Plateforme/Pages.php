@@ -53,7 +53,7 @@ class FKC_Plateforme_Pages {
 			. '.cadre.seul{width:min(520px,100%);grid-template-columns:1fr}.cadre>*{min-width:0}'
 			. '@keyframes entre{from{opacity:0;transform:translateY(24px) scale(.98)}}'
 			. '.marque{position:relative;padding:44px 40px;background:linear-gradient(160deg,rgba(76,125,255,.22),rgba(247,147,30,.10) 70%,transparent);border-right:1px solid var(--ligne);display:flex;flex-direction:column;gap:22px;overflow:hidden}'
-			. '.logo{display:flex;align-items:center;gap:14px}.logo img{width:62px;height:62px;border-radius:18px;background:#fff;padding:4px;box-shadow:0 14px 40px -12px rgba(247,147,30,.7)}'
+			. '.logo{display:flex;align-items:center;gap:14px}.logo img{width:66px;height:66px;border-radius:50%;box-shadow:0 14px 40px -12px rgba(247,147,30,.7)}'
 			. '.logo b{display:block;font-size:24px;letter-spacing:-.02em}.logo small{display:block;color:var(--mut);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}'
 			. '.marque h2{margin:6px 0 0;font-size:30px;line-height:1.15;letter-spacing:-.02em}'
 			. '.grad{background:linear-gradient(90deg,var(--or),#FBBF24 45%,#22D3EE);-webkit-background-clip:text;background-clip:text;color:transparent}'

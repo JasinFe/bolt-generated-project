@@ -72,7 +72,7 @@ body{width:1280px;height:720px;overflow:hidden}
 .souris svg{width:26px;height:26px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
 
 /* Intro / outro */
-.intro-logo{width:150px;height:150px;border-radius:40px;background:#fff;padding:8px;box-shadow:0 30px 90px -20px rgba(247,147,30,.6)}
+.intro-logo{width:170px;height:170px;border-radius:50%;box-shadow:0 30px 90px -20px rgba(247,147,30,.6)}
 .titre-v{font-size:68px;font-weight:900;letter-spacing:-.03em;margin:26px 0 8px}
 .sous-v{font-size:22px;color:var(--mut);margin:0}
 .puces-v{display:flex;gap:14px;justify-content:center;margin-top:30px;flex-wrap:wrap}

@@ -1,6 +1,6 @@
 # FinaKop — Guide pratique : installation, astuces et commandes
 
-Version 1.876.5 · 1er octobre 2026
+Version 1.876.6 · 1er octobre 2026
 
 ## 1. Repères
 
@@ -98,13 +98,13 @@ Le formulaire envoie chaque demande à **supports@finakoperp.com**, et l'expédi
 
 ### Méthode A — SSH (le plus sûr)
 
-Déposez `finakop-site-vitrine-2.1.zip` avec le gestionnaire de fichiers dans `domains/finakoperp.com/` (à côté de `public_html`, pas dedans), puis :
+Déposez `finakop-site-vitrine-2.2.zip` avec le gestionnaire de fichiers dans `domains/finakoperp.com/` (à côté de `public_html`, pas dedans), puis :
 
 ```bash
 cd ~/domains/finakoperp.com/public_html \
   && rm -rf assets index.html default.php merci.html contact.php robots.txt sitemap.xml \
   && { [ -f .htaccess ] && cp .htaccess ~/htaccess-public_html.ancien || true; } \
-  && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-2.1.zip \
+  && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-2.2.zip \
   && find assets -type d -exec chmod 755 {} + && find assets -type f -exec chmod 644 {} + \
   && chmod 644 index.html merci.html contact.php robots.txt sitemap.xml .htaccess \
   && ls -la
@@ -117,7 +117,7 @@ La première ligne retire l'ancienne vitrine (pas `finakop-app`).
 1. hPanel → **Sites web** → finakoperp.com → **Gestionnaire de fichiers** → `public_html`.
 2. Supprimez l'ancienne vitrine : le dossier `assets` et les fichiers `index.html`, `robots.txt`, `sitemap.xml` (et `default.php` s'il existe). **Ne touchez pas** à `finakop-app`.
 3. Affichez les fichiers cachés (réglages du gestionnaire) et renommez l'ancien `.htaccess` en `.htaccess.ancien`.
-4. **Téléverser** → `finakop-site-vitrine-2.1.zip` dans `public_html`, puis clic droit → **Extraire** dans `public_html` même.
+4. **Téléverser** → `finakop-site-vitrine-2.2.zip` dans `public_html`, puis clic droit → **Extraire** dans `public_html` même.
 5. Vérifiez que `index.html`, `contact.php` et `assets/` sont directement dans `public_html`, puis supprimez le ZIP.
 
 ### Lire les demandes reçues
@@ -315,6 +315,8 @@ tail -5 ~/finakop-data/plateforme/logs/cron.log  # le cron tourne-t-il ?
 | Courriels en indésirables ou refusés (alerte « enregistrements manquants » dans hPanel) | DKIM absent dans Cloudflare | Section 9 : recopier le DKIM de hPanel dans Cloudflare, en DNS only |
 | Le formulaire répond « n'a pas pu être transmise » | Boîte supports@ absente, ou dossier `vitrine-donnees` non inscriptible | Créez la boîte dans hPanel ; vérifiez `ls -ld ~/domains/finakoperp.com/vitrine-donnees` |
 | La vitrine affiche encore l'ancienne page | Cache Cloudflare ou navigateur | Cloudflare → Caching → Purge Everything, puis Ctrl+F5 |
+| `plateforme:verifier` affichait « 2 base(s) » pour un espace | Normal : chaque espace a son **registre** (`finakopcore-master.db` : comptes, sociétés, licence, 2FA) et **une base par société** (`finakopcore.db` pour la première) | Ne supprimez aucune des deux. Depuis la 1.876.6, la ligne indique « registre + 1 société(s) » |
+| L'ancien logo s'affiche encore | Cache du navigateur ou de Cloudflare | Cloudflare → Caching → Purge Everything, puis Ctrl+F5 ; sur téléphone, réinstallez l'application installée |
 | Le cron ne tourne pas | Tâche absente ou mauvais PHP | hPanel → Tâches Cron : `~/finakop-cron.sh` toutes les 5 minutes ; vérifiez `cron.log` |
 
 En cas de doute après une mise à jour, revenez en arrière (section 2, `--retour`), puis envoyez la sortie de `fk plateforme:verifier`, **après `clear`** et sans aucun secret visible.

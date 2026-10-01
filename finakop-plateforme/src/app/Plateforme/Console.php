@@ -92,7 +92,7 @@ class FKC_Plateforme_Console {
 				foreach ( $cibles as $t ) {
 					try {
 						$r = FKC_Plateforme_Sauvegarde::creer( $t );
-						printf( "%-20s OK  %s (%s, %d base(s), %d lignes, %d fichier(s))\n", $t['slug'], basename( $r['fichier'] ), self::taille( $r['octets'] ), $r['controle']['bases'], $r['controle']['lignes'], $r['controle']['fichiers'] );
+						printf( "%-20s OK  %s (%s, registre + %d société(s), %d lignes, %d fichier(s))\n", $t['slug'], basename( $r['fichier'] ), self::taille( $r['octets'] ), max( 0, $r['controle']['bases'] - 1 ), $r['controle']['lignes'], $r['controle']['fichiers'] );
 					} catch ( \Throwable $e ) { $code = 2; printf( "%-20s ÉCHEC %s\n", $t['slug'], $e->getMessage() ); }
 				}
 				return $code;
@@ -110,7 +110,7 @@ class FKC_Plateforme_Console {
 				}
 				if ( $vers ) { self::client( $slug ); }
 				$r = FKC_Plateforme_Sauvegarde::restaurer( $archive, $vers ?: $slug, (bool) $vers );
-				printf( "Restauré dans %s : %d base(s), %d lignes, %d fichier(s) — contrôle conforme.\n", $r['client']['slug'], $r['controle']['bases'], $r['controle']['lignes'], $r['controle']['fichiers'] );
+				printf( "Restauré dans %s : registre + %d société(s), %d lignes, %d fichier(s) — contrôle conforme.\n", $r['client']['slug'], max( 0, $r['controle']['bases'] - 1 ), $r['controle']['lignes'], $r['controle']['fichiers'] );
 				if ( $r['mis_de_cote'] ) { echo "Ancien état conservé : {$r['mis_de_cote']}\n"; }
 				if ( $vers ) { echo "Client de vérification : " . FKC_Plateforme_Amorcage::adresseClient( $r['client'] )['url'] . " (créez le sous-domaine chez l'hébergeur pour l'ouvrir ; archivez-le ensuite).\n"; }
 				return 0;
@@ -400,7 +400,10 @@ class FKC_Plateforme_Console {
 				try { $r = ( new \PDO( 'sqlite:' . $f ) )->query( 'PRAGMA quick_check' )->fetchColumn(); if ( 'ok' !== $r ) { $ic = basename( $f ) . ' : ' . $r; } } catch ( \Throwable $e ) { $ic = $e->getMessage(); }
 			}
 			$sv = FKC_Plateforme_Sauvegarde::lister( $t );
-			$l( 'ok' === $ic && is_file( $dir . 'finakopcore-master.db' ), sprintf( '%-20s %-11s %d base(s), intégrité %s, dernière sauvegarde : %s', $t['slug'], $t['statut'], count( $b ), $ic, $sv ? gmdate( 'Y-m-d H:i', filemtime( $sv[0] ) ) : 'AUCUNE' ) );
+			// 1.876.6 : « registre + N société(s) » plutôt que « N base(s) » : le registre
+			// (comptes, sociétés, licence, 2FA) n'est pas une base vide à supprimer.
+			$nbSoc = count( array_filter( $b, function ( $f ) { return 'finakopcore-master.db' !== basename( $f ); } ) );
+			$l( 'ok' === $ic && is_file( $dir . 'finakopcore-master.db' ), sprintf( '%-20s %-11s registre + %d société(s), intégrité %s, dernière sauvegarde : %s', $t['slug'], $t['statut'], $nbSoc, $ic, $sv ? gmdate( 'Y-m-d H:i', filemtime( $sv[0] ) ) : 'AUCUNE' ) );
 		}
 		echo "\n", $ok ? "Tout est en ordre.\n" : "Des points demandent une action.\n";
 		return $ok ? 0 : 4;

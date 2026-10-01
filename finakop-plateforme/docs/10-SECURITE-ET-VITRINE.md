@@ -64,14 +64,14 @@ Security → WAF → *Custom rules* → **Create rule** :
 
 ## 5. Installer le site vitrine
 
-Vitrine 2.1 (`finakop-site-vitrine-2.1.zip`) : `index.html`, `merci.html`, `contact.php`, `assets/` (CSS, JS, images, vidéos MP4), `robots.txt`, `sitemap.xml`, `.htaccess`. Aucun service extérieur (ni police, ni statistiques, ni CDN) ; CSP stricte (`script-src 'self'`). Elle ne contient **aucun lien** vers la plateforme. Le seul script PHP autorisé est `contact.php` (formulaire de devis) : origine vérifiée, champ piège, délai minimal, limites de débit, aucun e-mail automatique au visiteur, copie de chaque demande hors web (`~/domains/finakoperp.com/vitrine-donnees`, 0600). Installation pas à pas : **11-GUIDE-PRATIQUE.md §3**.
+Vitrine 2.2 (`finakop-site-vitrine-2.2.zip`) : `index.html`, `merci.html`, `contact.php`, `assets/` (CSS, JS, images, vidéos MP4), `robots.txt`, `sitemap.xml`, `.htaccess`. Aucun service extérieur (ni police, ni statistiques, ni CDN) ; CSP stricte (`script-src 'self'`). Elle ne contient **aucun lien** vers la plateforme. Le seul script PHP autorisé est `contact.php` (formulaire de devis) : origine vérifiée, champ piège, délai minimal, limites de débit, aucun e-mail automatique au visiteur, copie de chaque demande hors web (`~/domains/finakoperp.com/vitrine-donnees`, 0600). Installation pas à pas : **11-GUIDE-PRATIQUE.md §3**.
 
 1. hPanel → Gestionnaire de fichiers → `domains/finakoperp.com/public_html/`.
 2. Supprimez la page d'attente `index.html` (ou `default.php`) d'Hostinger. **Ne touchez pas** au dossier `finakop-app`.
 3. Envoyez le ZIP dans `public_html`, puis *Extraire* (fichier `.htaccess` compris : activez l'affichage des fichiers cachés pour le vérifier).
    En SSH, au lieu des étapes 1 à 3 :
    ```bash
-   cd ~/domains/finakoperp.com/public_html && rm -f index.html default.php && rm -rf assets index.html merci.html contact.php && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-2.1.zip
+   cd ~/domains/finakoperp.com/public_html && rm -f index.html default.php && rm -rf assets index.html merci.html contact.php && unzip -o ~/domains/finakoperp.com/finakop-site-vitrine-2.2.zip
    ```
 4. Adresse de contact : le formulaire écrit à `supports@finakoperp.com`. Créez cette boîte dans hPanel (Emails).
 5. Contrôle :

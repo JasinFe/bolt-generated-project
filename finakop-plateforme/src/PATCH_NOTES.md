@@ -1,3 +1,14 @@
+# Patch 1.876.6 — Nouveau logo, libellé des bases
+
+Base : 1.876.5.
+
+- Logo : `app/assets/img/logo.png` (512 px) et `logo-256.png` (icône d'onglet, PWA, terminal) remplacés par le nouveau logo rond, détouré sur fond transparent ; pastille blanche retirée (`.hero-logos`, `.lg-logo`, pages de la plateforme) ; vidéos d'aide et affiches régénérées sur des captures refaites.
+- Console : `plateforme:verifier`, `sauvegarder`, `restaurer` affichent « registre + N société(s) » au lieu de « N base(s) ». Un espace a toujours son registre (`finakopcore-master.db` : comptes, sociétés, licence, 2FA) et une base par société (`finakopcore.db` pour la première) ; aucune n'est vide ni superflue.
+
+Tests : `tests/marque_logo_registre_1876_6.php`.
+
+---
+
 # Patch 1.876.5 — Lecteur des vidéos d'aide
 
 Base : 1.876.4.

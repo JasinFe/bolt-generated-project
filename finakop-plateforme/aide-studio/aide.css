@@ -4,7 +4,7 @@ body{width:1280px;height:720px;overflow:hidden;font:16px/1.5 "Segoe UI",system-u
 .stage{position:relative;width:1280px;height:720px;overflow:hidden;background:#060A15}
 .fond{position:absolute;inset:0;background:radial-gradient(900px 500px at 85% -10%,rgba(76,125,255,.25),transparent),radial-gradient(700px 420px at -10% 110%,rgba(247,147,30,.18),transparent)}
 .marque{position:absolute;top:18px;right:22px;z-index:9;display:flex;gap:8px;align-items:center;font-weight:800;font-size:14px;background:rgba(6,10,21,.78);padding:6px 12px 6px 6px;border-radius:12px;border:1px solid rgba(148,170,230,.25)}
-.marque img{width:26px;height:26px;border-radius:8px;background:#fff;padding:1px}
+.marque img{width:28px;height:28px;border-radius:50%}
 .temps{position:absolute;left:0;bottom:0;height:4px;width:100%;z-index:9;background:linear-gradient(90deg,#F7931E,#22D3EE);transform-origin:left;animation:barre var(--total) linear both}
 @keyframes barre{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .sc{position:absolute;inset:0;opacity:0;animation:scIn .5s var(--a) both,scOut .4s calc(var(--b) - .4s) forwards}

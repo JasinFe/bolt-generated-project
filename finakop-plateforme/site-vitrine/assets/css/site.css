@@ -27,7 +27,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .entete.colle{background:rgba(6,10,21,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:var(--line)}
 .entete .wrap{display:flex;align-items:center;gap:18px;height:72px}
 .marque{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.01em;white-space:nowrap}
-.marque img{width:40px;height:40px;border-radius:12px;background:#fff;padding:2px}
+.marque img{width:42px;height:42px;border-radius:50%;filter:drop-shadow(0 4px 12px rgba(247,147,30,.35))}
 .marque small{display:block;font-size:11px;font-weight:600;color:var(--mut);letter-spacing:.06em;text-transform:uppercase;line-height:1}
 .nav{display:flex;gap:4px;margin-left:auto}
 .nav a{padding:8px 12px;border-radius:10px;color:var(--mut);font-size:15px;font-weight:600;transition:color .2s,background .2s}

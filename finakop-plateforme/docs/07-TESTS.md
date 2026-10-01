@@ -51,7 +51,8 @@ Il reproduit Hostinger Business **sans** en être une copie :
 | 27 | 1.876.3 : 2FA par e-mail (harnais + parcours réel) et portail redessiné | 6 | 0 |
 | 28 | 1.876.4 : 2FA par application privilégiée, centre d'aide et vidéos | 4 | 0 |
 | 29 | Vitrine 2.1 et 1.876.5 : lecture vidéo (bouton masqué, plein écran), bandes défilantes, packs métier filtrables, éditions détaillées | 22 | 0 |
-| **Total** | | **292** | **0** |
+| 30 | 1.876.6 : nouveau logo (application, portail, connexion, vitrine, vidéos) et libellé « registre + N société(s) » | 7 | 0 |
+| **Total** | | **299** | **0** |
 
 Points saillants :
 - **Hôte forgé** (test 13) : `evil.com`, `newloock.finakoperp.com.evil.com`, `newloock..finakoperp.com`, `-x.…`, `a_b.…`, port `:99999`, `[::1]` → refusés ; noms réservés → page neutre.

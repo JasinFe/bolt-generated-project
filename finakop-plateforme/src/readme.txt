@@ -2,7 +2,7 @@
 Contributors: kophisgroup
 Requires at least: 5.9
 Requires PHP: 8.1
-Stable tag: 1.876.5
+Stable tag: 1.876.6
 License: Proprietary
 
 ERP modulaire mono-produit (SYSCOHADA), application plein écran servie sur le sous-domaine finakopcore.*. Éditions sous licence Starter→Creative. Indépendant de l'extension FinaKop ERP (km-compta).
@@ -31,6 +31,10 @@ replis UTF-8, mais l'extension est plus rapide.
    Son changement est impose a la premiere connexion.
 
 == Changelog ==
+= 1.876.6 =
+* NOUVEAU LOGO FINAKOP : application, pages de connexion, portail, icône d'onglet et de l'application installée, terminal de vente, vidéos d'aide
+* CONSOLE : « registre + 1 société(s) » au lieu de « 2 base(s) » (le registre des comptes et des sociétés n'est pas une base vide)
+
 = 1.876.5 =
 * VIDÉOS D'AIDE : le bouton de lecture disparaît pendant la lecture ; bouton « Plein écran » (et double-clic sur la vidéo), y compris sur téléphone
 
