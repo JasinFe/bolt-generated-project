@@ -31,7 +31,7 @@ Les appels d'API (`/api`) et les webhooks de paiement (`/webhook`) ne sont **pas
 
 ## 2. Double authentification (2FA)
 
-- Code à 6 chiffres d'une application d'authentification : Google Authenticator, Microsoft Authenticator, Authy, 2FAS, Aegis…
+- Code à 6 chiffres d'une application d'authentification (Google Authenticator, Microsoft Authenticator, Authy, 2FAS, Aegis…), **ou**, depuis la 1.876.3, code envoyé par e-mail à l'adresse du compte (10 minutes, usage unique, 3 envois au plus). L'application reste recommandée. Le SMS demanderait un fournisseur payant : voir 11-GUIDE-PRATIQUE §5.
 - **Obligatoire pour les administrateurs** (`securite.2fa_admin_obligatoire`) ; facultative pour les autres comptes (Mot de passe → *Double authentification*).
 - À la prochaine connexion, un administrateur est conduit à l'écran d'activation : il scanne le QR code, saisit un code, puis reçoit **10 codes de secours** à usage unique. Il doit les **imprimer ou les ranger** dans un coffre de mots de passe.
 - Le secret est chiffré avec la clé de l'espace. Un code déjà utilisé ne peut pas resservir. 5 essais au plus, puis retour à la connexion, et la tentative compte dans le blocage par IP.

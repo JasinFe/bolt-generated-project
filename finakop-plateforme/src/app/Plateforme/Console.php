@@ -214,7 +214,8 @@ class FKC_Plateforme_Console {
 
 			case '2fa:etat':
 				foreach ( FKC_Master::q( 'SELECT id, login, role FROM cabinet_users WHERE actif=1 ORDER BY login' )->fetchAll() as $u ) {
-					printf( "%-24s %-8s %s\n", $u['login'], $u['role'], FKC_DeuxFacteurs::actif( (int) $u['id'] ) ? '2FA active' : '— sans 2FA' );
+					$m = FKC_DeuxFacteurs::methode( (int) $u['id'] );
+					printf( "%-24s %-8s %s\n", $u['login'], $u['role'], null === $m ? '— sans 2FA' : ( 'email' === $m ? '2FA active (code par e-mail)' : '2FA active (application)' ) );
 				}
 				return 0;
 

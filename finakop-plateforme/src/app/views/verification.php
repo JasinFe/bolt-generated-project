@@ -1,4 +1,4 @@
-<?php /** @var string|null $error */
+<?php /** @var string|null $error @var string|null $info @var string $methode */
 /**
  * Second facteur à la connexion (1.876.2) : code à 6 chiffres de l'application
  * d'authentification, ou code de secours. Hors layout : l'utilisateur n'est pas
@@ -14,6 +14,7 @@ $logo = fkc_asset( 'img/logo.png' );
 	<title>Vérification · FinaKop ERP Core</title>
 	<link rel="icon" type="image/png" href="<?= e( fkc_asset( 'img/logo-256.png' ) ) ?>">
 	<link rel="stylesheet" href="<?= e( fkc_asset( 'css/app.css' ) ) ?>?v=<?= e( FKC_VERSION ) ?>">
+	<style>@media(min-width:1081px){.auth-hero{padding:56px 60px;display:flex;flex-direction:column;justify-content:center;gap:24px}}</style>
 </head>
 <body>
 <div class="auth-top"></div>
@@ -22,16 +23,22 @@ $logo = fkc_asset( 'img/logo.png' );
 		<div class="hero-logos"><img src="<?= e( $logo ) ?>" alt="FinaKop ERP Core"></div>
 		<div class="hero-eyebrow">Double authentification</div>
 		<h1 class="hero-title">Encore une<br><span class="accent">vérification</span></h1>
-		<p class="hero-sub">Votre mot de passe est correct. Ouvrez votre application d'authentification et saisissez le code à 6 chiffres affiché pour FinaKop.</p>
+		<?php $parMail = 'email' === ( $methode ?? 'totp' ); ?>
+		<p class="hero-sub">Votre mot de passe est correct. <?= $parMail ? 'Un code à 6 chiffres vient d\'être envoyé à l\'adresse e-mail de votre compte : saisissez-le pour terminer la connexion.' : 'Ouvrez votre application d\'authentification et saisissez le code à 6 chiffres affiché pour FinaKop.' ?></p>
 		<div class="hero-cards">
+			<?php if ( $parMail ) : ?>
+			<div class="hero-card full"><span class="hc-ico">✉️</span><div><div class="hc-label">Code reçu par e-mail</div><div class="hc-value">6 chiffres, valable 10 minutes, usage unique. Pensez aux courriers indésirables.</div></div></div>
+			<?php else : ?>
 			<div class="hero-card full"><span class="hc-ico">📱</span><div><div class="hc-label">Code de l'application</div><div class="hc-value">6 chiffres, renouvelé toutes les 30 secondes</div></div></div>
-			<div class="hero-card full"><span class="hc-ico">🛟</span><div><div class="hc-label">Téléphone indisponible ?</div><div class="hc-value">Saisissez l'un de vos codes de secours (XXXX-XXXX)</div></div></div>
+			<?php endif; ?>
+			<div class="hero-card full"><span class="hc-ico">🛟</span><div><div class="hc-label"><?= $parMail ? 'E-mail non reçu ?' : 'Téléphone indisponible ?' ?></div><div class="hc-value"><?= $parMail ? 'Renvoyez un code, ou saisissez l\'un de vos codes de secours (XXXX-XXXX)' : 'Saisissez l\'un de vos codes de secours (XXXX-XXXX)' ?></div></div></div>
 		</div>
 	</section>
 	<section class="auth-form">
 		<div class="auth-brand"><img src="<?= e( $logo ) ?>" alt=""><div class="ab-name">FinaKop ERP Core<small>Vérification en deux étapes</small></div></div>
 		<h2 class="auth-h">Code de vérification</h2>
 		<?php if ( ! empty( $error ) ) : ?><div class="alert alert-err"><?= e( $error ) ?></div><?php endif; ?>
+		<?php if ( ! empty( $info ) ) : ?><div class="alert alert-ok"><?= e( $info ) ?></div><?php endif; ?>
 		<form method="post" action="<?= e( url( 'verification' ) ) ?>" autocomplete="off">
 			<?= FKC_Csrf::field() ?>
 			<label class="fld"><span>Code</span>
@@ -41,6 +48,12 @@ $logo = fkc_asset( 'img/logo.png' );
 			</label>
 			<button class="btn btn-primary btn-login" type="submit">Vérifier →</button>
 		</form>
+		<?php if ( $parMail ) : ?>
+		<form method="post" action="<?= e( url( 'verification/renvoyer' ) ) ?>" style="margin-top:10px">
+			<?= FKC_Csrf::field() ?>
+			<button class="btn btn-ghost" type="submit">✉️ Renvoyer un nouveau code</button>
+		</form>
+		<?php endif; ?>
 		<div class="auth-divider"></div>
 		<p class="auth-desc"><a href="<?= e( url( 'login' ) ) ?>">← Revenir à la connexion</a></p>
 		<p class="auth-foot">FinaKop ERP Core · KOPHI'S GROUP SAS</p>

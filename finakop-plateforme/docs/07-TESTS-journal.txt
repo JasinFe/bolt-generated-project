@@ -353,3 +353,11 @@ TEST 26 — Site vitrine 2.0 (animations, vidéos, formulaire de devis)
   [RÉUSSI] seul contact.php s'exécute (autre .php → 403) ; .json/.jsonl refusés ; GET contact.php → redirection
   [RÉUSSI] courriel impossible ET copie impossible → réponse d'échec honnête (503), plus de faux « envoyé »
   [RÉUSSI] plateforme (app., newloock.) : CSP, no-store et X-Robots-Tag inchangés sous la vitrine
+
+TEST 27 — 1.876.3 : double authentification par e-mail, design du portail
+  [RÉUSSI] harnais tests/deux_facteurs_email_1876_3.php : 22 vérifications (code haché, expiration, usage, limites d'envoi, TOTP refusé pour un compte e-mail, secours, migration de colonne)
+  [RÉUSSI] parcours réel (espace abc, SMTP de test) : mot de passe provisoire → choix de la méthode → code reçu par e-mail → activation, 10 codes de secours
+  [RÉUSSI] reconnexion : code envoyé automatiquement, adresse masquée (a***@a***.ci) ; renvoi immédiat refusé (1 par minute) ; faux code refusé ; bon code → espace ouvert
+  [RÉUSSI] console 2fa:etat : « 2FA active (code par e-mail) »
+  [RÉUSSI] portail redessiné : ordinateur et téléphone sans débordement, aucune erreur, aucune ressource extérieure ; pages d'erreur au même style ; page « robots » minimale
+  [RÉUSSI] plateforme : plus aucun appel à Google Fonts (vie privée)

@@ -242,8 +242,17 @@ class FKC_Auth {
 		if ( class_exists( 'FKC_DeuxFacteurs' ) && FKC_DeuxFacteurs::actif( (int) $row['id'] ) ) {
 			if ( PHP_SESSION_ACTIVE === session_status() ) { session_regenerate_id( true ); }
 			unset( $_SESSION['fkc_csrf'] );
-			$_SESSION['fkc_2fa_attente'] = array( 'uid' => (int) $row['id'], 'login' => (string) $login, 't' => time(), 'essais' => 0 );
-			if ( class_exists( 'FKC_Security' ) ) { FKC_Security::audit( '2fa_demande', 'login=' . $login, (int) $row['id'] ); }
+			$methode = FKC_DeuxFacteurs::methode( (int) $row['id'] );
+			$_SESSION['fkc_2fa_attente'] = array( 'uid' => (int) $row['id'], 'login' => (string) $login, 't' => time(), 'essais' => 0,
+				'methode' => $methode, 'duree' => 'email' === $methode ? FKC_DeuxFacteurs::EMAIL_DUREE : 300 );
+			if ( 'email' === $methode ) {
+				// 1.876.3 : le code part tout de suite par courriel.
+				$etat = array();
+				list( , $info ) = FKC_DeuxFacteurs::envoyerCodeEmail( (int) $row['id'], $etat, 'connexion' );
+				$_SESSION['fkc_2fa_attente']['email'] = $etat;
+				$_SESSION['fkc_2fa_attente']['info']  = $info;
+			}
+			if ( class_exists( 'FKC_Security' ) ) { FKC_Security::audit( '2fa_demande', 'login=' . $login . ' methode=' . $methode, (int) $row['id'] ); }
 			return 'deux_facteurs';
 		}
 		self::ouvrirSession( $row, $login, $ip );
@@ -254,8 +263,21 @@ class FKC_Auth {
 	public static function deuxFacteursEnAttente() {
 		$a = $_SESSION['fkc_2fa_attente'] ?? null;
 		if ( ! is_array( $a ) ) { return null; }
-		if ( time() - (int) $a['t'] > 300 ) { unset( $_SESSION['fkc_2fa_attente'] ); return null; } // 5 minutes
+		if ( time() - (int) $a['t'] > (int) ( $a['duree'] ?? 300 ) ) { unset( $_SESSION['fkc_2fa_attente'] ); return null; } // 5 min (application), 10 min (e-mail)
 		return $a;
+	}
+
+	/**
+	 * Renvoie un code par courriel pendant une connexion en attente (1.876.3).
+	 * @return array{0:bool,1:string}
+	 */
+	public static function renvoyerCodeEmail() {
+		$a = self::deuxFacteursEnAttente();
+		if ( ! $a || 'email' !== ( $a['methode'] ?? '' ) ) { return array( false, 'Aucun code à renvoyer.' ); }
+		$etat = $a['email'] ?? array();
+		$r = FKC_DeuxFacteurs::envoyerCodeEmail( (int) $a['uid'], $etat, 'connexion' );
+		$_SESSION['fkc_2fa_attente']['email'] = $etat;
+		return $r;
 	}
 
 	/**
@@ -270,7 +292,7 @@ class FKC_Auth {
 			unset( $_SESSION['fkc_2fa_attente'] );
 			return array( false, 'Trop de tentatives. Réessayez dans quelques minutes.' );
 		}
-		$type = FKC_DeuxFacteurs::verifier( (int) $a['uid'], $saisie );
+		$type = FKC_DeuxFacteurs::verifier( (int) $a['uid'], $saisie, $a['email'] ?? null );
 		if ( false === $type ) {
 			$_SESSION['fkc_2fa_attente']['essais'] = (int) $a['essais'] + 1;
 			if ( class_exists( 'FKC_Security' ) ) { FKC_Security::loginFailed( $ip, $a['login'] ); }

@@ -1,3 +1,17 @@
+# Patch 1.876.3 — Double authentification par e-mail, design du portail
+
+Base : 1.876.2.
+
+- `FKC_DeuxFacteurs` : colonne `methode` (`totp` | `email`, ajoutée d'elle-même aux registres existants) ; `methode()`, `envoyerCodeEmail()` (6 chiffres via `random_int`, haché en session, jamais stocké en clair ni en base ; 10 min, 3 envois, 1 par minute), `codeEmailValide()`, `activerEmail()` ; `verifier()` accepte le code e-mail pour les comptes en méthode `email` (un code d'application n'y est pas accepté) ; enregistrement factorisé (`enregistrer()`).
+- `FKC_Auth` : à la connexion d'un compte « e-mail », le code part aussitôt ; attente portée à 10 min ; `renvoyerCodeEmail()`. Essais toujours limités à 5 et comptés par le limiteur de connexion.
+- Contrôleur et vues : choix de la méthode à l'activation (application recommandée, e-mail en option si le compte a une adresse), passage e-mail → application, renvoi du code, désactivation par code e-mail ; routes `verification/renvoyer`, `securite/deux-facteurs/email/envoyer|activer`.
+- Console : `2fa:etat` indique la méthode.
+- `FKC_Plateforme_Pages` : gabarit refait (portail en deux colonnes, cartes d'erreur, contacts du support) ; CSP `img-src 'self'` pour le logo servi par la plateforme ; pages « robots » toujours minimales.
+
+Tests : `tests/deux_facteurs_email_1876_3.php`.
+
+---
+
 # Patch 1.876.2 — Double authentification, invisibilité, durcissements
 
 Base : 1.876.1.

@@ -1,6 +1,6 @@
 # FinaKop — Guide pratique : installation, astuces et commandes
 
-Version 1.876.2 · 1er octobre 2026
+Version 1.876.3 · 1er octobre 2026
 
 ## 1. Repères
 
@@ -182,30 +182,44 @@ Une règle WAF gratuite bloque les robots sur tous les sous-domaines de la plate
 
 ## 5. Double authentification (2FA)
 
-Avec la 2FA, un mot de passe volé ne suffit plus : il faut aussi le code à 6 chiffres affiché par votre téléphone, qui change toutes les 30 secondes. Elle est **obligatoire pour les administrateurs** et facultative pour les autres comptes.
+Avec la 2FA, un mot de passe volé ne suffit plus : il faut aussi un code à 6 chiffres. Elle est **obligatoire pour les administrateurs** et facultative pour les autres comptes. Depuis la 1.876.3, chaque utilisateur choisit sa méthode :
 
-**Activer (une seule fois)** :
+| Méthode | Comment | Pour qui |
+| --- | --- | --- |
+| **Application** (recommandé) | Code affiché par Google Authenticator, Microsoft Authenticator, Authy, 2FAS ou Aegis ; change toutes les 30 secondes ; fonctionne sans réseau | Tous, et surtout les administrateurs |
+| **Code par e-mail** | Code envoyé à l'adresse du compte à chaque connexion ; valable 10 minutes, usage unique ; bouton « Renvoyer » (3 envois au plus, 1 par minute) | Utilisateurs sans smartphone adapté. Moins sûr : quelqu'un qui pirate la boîte mail peut recevoir le code |
+| **SMS** | Non disponible : demande un fournisseur d'envoi de SMS payant (voir plus bas) | — |
 
-1. Installez une application d'authentification sur votre téléphone : Google Authenticator, Microsoft Authenticator, Authy, 2FAS ou Aegis.
-2. Connectez-vous à votre espace. Un administrateur est conduit d'office à l'écran *Double authentification*. Les autres comptes y vont par *Mot de passe → Double authentification*.
-3. Dans l'application, choisissez « Ajouter » puis **scannez le QR code**. Sans appareil photo, saisissez la clé affichée sous le QR code.
-4. Tapez le code à 6 chiffres affiché par l'application, puis validez.
-5. FinaKop affiche **10 codes de secours** (8 caractères, par exemple 3F9A-0B7C). Ils ne seront plus jamais affichés : imprimez-les ou rangez-les dans un coffre de mots de passe. Chacun ne sert qu'une fois.
+**Activer avec l'application** :
 
-**Se connecter ensuite** : identifiant et mot de passe comme d'habitude, puis le code du téléphone. Vous avez 5 minutes et 5 essais.
+1. Installez l'application sur votre téléphone.
+2. Connectez-vous. Un administrateur est conduit d'office à l'écran *Double authentification* ; les autres comptes y vont par *Mot de passe → Double authentification*.
+3. Option 1 : **scannez le QR code** (ou saisissez la clé affichée), tapez le code à 6 chiffres, validez.
+
+**Activer par e-mail** :
+
+1. Le compte doit avoir une adresse e-mail (l'administrateur la renseigne dans *Utilisateurs*). L'envoi utilise le SMTP de la plateforme (`fk --tenant=<client> mail:test vous@exemple.com` pour vérifier).
+2. Écran *Double authentification* → Option 2 → **Recevoir un code à a\*\*\*@…** → saisissez le code reçu → **Activer par e-mail**.
+
+Dans les deux cas, FinaKop affiche ensuite **10 codes de secours** (8 caractères, par exemple 3F9A-0B7C). Ils ne seront plus jamais affichés : imprimez-les ou rangez-les dans un coffre de mots de passe. Chacun ne sert qu'une fois. Un compte « e-mail » peut passer à l'application à tout moment, depuis le même écran.
+
+**Se connecter ensuite** : identifiant et mot de passe comme d'habitude, puis le code de l'application, ou celui reçu par e-mail. 5 essais au plus.
 
 | Situation | Que faire |
 | --- | --- |
-| Code refusé alors qu'il est juste | Réglez l'heure du téléphone en automatique : le code dépend de l'heure, à 30 secondes près |
-| Le même code a déjà servi | Attendez le code suivant : un code accepté ne peut pas resservir |
+| Code refusé alors qu'il est juste (application) | Réglez l'heure du téléphone en automatique : le code dépend de l'heure, à 30 secondes près |
+| E-mail non reçu | Regardez les courriers indésirables, puis « Renvoyer un nouveau code » (après 1 minute) |
+| Le même code a déjà servi | Attendez le code suivant (application) ou demandez-en un nouveau (e-mail) |
 | Téléphone oublié ou perdu | Tapez un **code de secours** à la place du code à 6 chiffres |
 | Nouveau téléphone | Autre compte : connectez-vous, désactivez puis réactivez la 2FA (mot de passe + code) et scannez le nouveau QR code. Administrateur : la 2FA obligatoire ne se désactive pas depuis l'écran ; faites 2fa:desactiver en SSH, puis reconnectez-vous pour scanner le nouveau QR code |
 | Téléphone ET codes de secours perdus | Le super administrateur lève la 2FA du compte en SSH (ci-dessous). Le compte la reconfigure à la connexion suivante |
 
+**Et le SMS ?** C'est possible, mais il faut un **fournisseur d'envoi de SMS** (par exemple un opérateur ou une passerelle SMS proposant une API pour la Côte d'Ivoire). Chaque SMS est facturé, et il faut un compte et une clé d'API chez ce fournisseur. Le SMS est aussi moins sûr que l'application : une carte SIM peut être dupliquée. Quand vous aurez choisi un fournisseur, FinaKop pourra l'utiliser comme troisième méthode.
+
 Commandes du super administrateur (SSH) :
 
 ```bash
-fk --tenant=kophisgroup 2fa:etat                       # qui a la 2FA active, combien de codes de secours restent
+fk --tenant=kophisgroup 2fa:etat                       # qui a la 2FA active, et avec quelle méthode
 fk --tenant=kophisgroup 2fa:desactiver <identifiant>   # lève la 2FA d'un compte (action journalisée)
 ```
 

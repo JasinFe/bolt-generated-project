@@ -153,8 +153,10 @@ $vitRubans = $vitPacks ? array_chunk( $vitPacks, (int) ceil( $vitNbPacks / 2 ) )
 	<meta name="robots" content="noindex,nofollow">
 	<meta name="theme-color" content="#0A0F1C">
 	<link rel="icon" type="image/png" href="<?= e( fkc_asset( 'img/logo-256.png' ) ) ?>">
+	<?php if ( ! defined( 'FKC_PLATEFORME' ) ) : // Plateforme : aucune ressource tierce (vie privée, CSP). ?>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<?php endif; ?>
 	<link rel="stylesheet" href="<?= e( fkc_asset( 'css/app.css' ) ) ?>?v=<?= e( FKC_VERSION ) ?>">
 </head>
 <body class="auth-body lg-body">

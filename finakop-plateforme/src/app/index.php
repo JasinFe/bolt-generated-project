@@ -771,9 +771,12 @@ $router->post( 'login', 'FKC_DashboardController@login' );
 // Double authentification (1.876.2) : second facteur, puis gestion par l'utilisateur.
 $router->get(  'verification', 'FKC_DeuxFacteursController@showVerification' );
 $router->post( 'verification', 'FKC_DeuxFacteursController@verifier' );
+$router->post( 'verification/renvoyer', 'FKC_DeuxFacteursController@renvoyer' );
 $router->get(  'securite/deux-facteurs',            'FKC_DeuxFacteursController@show',       array( 'auth' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
 $router->post( 'securite/deux-facteurs/activer',    'FKC_DeuxFacteursController@activer',    array( 'auth' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
 $router->post( 'securite/deux-facteurs/desactiver', 'FKC_DeuxFacteursController@desactiver', array( 'auth' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
+$router->post( 'securite/deux-facteurs/email/envoyer', 'FKC_DeuxFacteursController@emailEnvoyer', array( 'auth' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
+$router->post( 'securite/deux-facteurs/email/activer', 'FKC_DeuxFacteursController@emailActiver', array( 'auth' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
 $router->post( 'logout','FKC_DashboardController@logout', array( 'auth' => true, 'sans_mdp' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
 
 // Mot de passe du compte. « sans_mdp » : ces deux routes restent servies quand

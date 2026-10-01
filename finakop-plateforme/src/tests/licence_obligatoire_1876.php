@@ -7,7 +7,7 @@
  *   L-2  Avec FKC_LICENSE_OBLIGATOIRE et sans jeton : aucun module, espace
  *        verrouillé ; le routeur renvoie vers « licence » ; l'API répond 402.
  *   L-3  Seules « licence », « mot-de-passe », « logout » et la mise en place de la
- *        double authentification (1.876.2, ×3) restent ouvertes.
+ *        double authentification (1.876.2/1.876.3, ×5) restent ouvertes.
  *   L-4  Installer ou remplacer la licence est réservé à l'administrateur.
  *
  * Usage : php tests/licence_obligatoire_1876.php
@@ -38,9 +38,9 @@ $api = (string) file_get_contents( $racine . 'Core/Api.php' );
 verifie( false !== strpos( $api, "self::error( 402, 'licence_requise'" ), 'L-2 API : 402 licence_requise' );
 $index = (string) file_get_contents( $racine . 'index.php' );
 preg_match_all( "/'sans_licence' => true/", $index, $m );
-verifie( 8 === count( $m[0] ), 'L-3 exactement 8 routes hors verrou (licence ×2, mot-de-passe ×2, logout, 2FA ×3) — ' . count( $m[0] ) );
+verifie( 10 === count( $m[0] ), 'L-3 exactement 10 routes hors verrou (licence ×2, mot-de-passe ×2, logout, 2FA ×5) — ' . count( $m[0] ) );
 preg_match_all( '/\$router->(?:get|post)\(\s*\'([^\']+)\'[^;]*\'sans_licence\' => true/', $index, $mr );
-$attendues = array( 'licence', 'licence', 'mot-de-passe', 'mot-de-passe', 'logout', 'securite/deux-facteurs', 'securite/deux-facteurs/activer', 'securite/deux-facteurs/desactiver' );
+$attendues = array( 'licence', 'licence', 'mot-de-passe', 'mot-de-passe', 'logout', 'securite/deux-facteurs', 'securite/deux-facteurs/activer', 'securite/deux-facteurs/desactiver', 'securite/deux-facteurs/email/envoyer', 'securite/deux-facteurs/email/activer' );
 $vues = $mr[1]; sort( $vues ); sort( $attendues );
 verifie( $vues === $attendues, 'L-3 routes hors verrou attendues : ' . implode( ', ', $mr[1] ) );
 $ctl = (string) file_get_contents( $racine . 'Modules/Comptabilite/Controllers/DashboardController.php' );

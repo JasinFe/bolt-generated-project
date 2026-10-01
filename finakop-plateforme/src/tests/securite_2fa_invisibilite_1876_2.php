@@ -35,7 +35,7 @@ verifie( 32 === strlen( FKC_DeuxFacteurs::nouveauSecret() ), 'D-2 secret de 160 
 
 $auth = (string) file_get_contents( FKC_ROOT . 'Core/Auth.php' );
 $i = strpos( $auth, "FKC_DeuxFacteurs::actif( (int) \$row['id'] )" ); $j = strpos( $auth, "\$_SESSION['fkc_uid']       = (int) \$row['id'];" );
-verifie( false !== $i && false !== $j && false !== strpos( substr( $auth, $i, 600 ), "return 'deux_facteurs';" ), 'D-3 mot de passe juste + 2FA : retour avant ouverture de session' );
+verifie( false !== $i && false !== $j && false !== strpos( substr( $auth, $i, 1500 ), "return 'deux_facteurs';" ), 'D-3 mot de passe juste + 2FA : retour avant ouverture de session' );
 $router = (string) file_get_contents( FKC_ROOT . 'Core/Router.php' );
 verifie( false !== strpos( $router, "deuxFacteursEnAttente() ? 'verification' : 'login'" ) && false !== strpos( $router, "FKC_DeuxFacteurs::aConfigurer( FKC_Auth::user() )" ), 'D-3 routeur : écran du code, activation imposée' );
 
