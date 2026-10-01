@@ -91,7 +91,7 @@ $logo = fkc_asset( 'img/logo.png' );
 			<?= FKC_Csrf::field() ?>
 			<button class="btn btn-ghost" type="submit">Se déconnecter</button>
 		</form>
-		<p class="auth-foot">FinaKop ERP Core<?= fkc_version_publique() ?> · KOPHI'S GROUP SAS</p>
+		<p class="auth-foot">FinaKop ERP Core<?= function_exists( 'fkc_version_publique' ) ? fkc_version_publique() : ' v' . e( FKC_VERSION ) ?> · KOPHI'S GROUP SAS</p>
 	</section>
 </div>
 </body>

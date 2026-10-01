@@ -291,7 +291,7 @@ $vitRubans = $vitPacks ? array_chunk( $vitPacks, (int) ceil( $vitNbPacks / 2 ) )
 				<span>États DGI CI</span>
 			</div>
 
-			<p class="auth-foot">FinaKop ERP Core<?= fkc_version_publique() ?> · <a href="https://kophisgroup.com" rel="noopener">kophisgroup.com</a> · Abidjan, CI</p>
+			<p class="auth-foot">FinaKop ERP Core<?= function_exists( 'fkc_version_publique' ) ? fkc_version_publique() : ' v' . e( FKC_VERSION ) ?> · <a href="https://kophisgroup.com" rel="noopener">kophisgroup.com</a> · Abidjan, CI</p>
 		</div>
 	</section>
 </div>
