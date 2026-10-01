@@ -1,3 +1,15 @@
+# Patch 1.876.4 — Application d'authentification privilégiée, centre d'aide refait
+
+Base : 1.876.3.
+
+- 2FA : `FKC_DeuxFacteurs::emailPermis()` — jamais pour un administrateur ; pour les autres seulement si `securite.2fa_email` (plateforme, `false` par défaut, constante `FKC_2FA_EMAIL`). `aConfigurer()` conduit un compte resté en « e-mail » sans droit vers l'application ; contrôles serveur dans `emailEnvoyer`/`emailActiver` ; écran d'activation : application seule par défaut.
+- Aide : nouveau `Modules/Aide/Models/AidePlateforme.php` (`FKC_AidePlateforme`) — articles plateforme (connexion à l'espace, double authentification, confidentialité, support), remplacement sur la plateforme des textes hérités de l'extension WordPress (mot de passe par défaut, wp-config, wp-content, licence, sauvegardes), parcours (sécurisation d'abord), dépannage et glossaire complétés ; `FKC_Aide::parcours|glossaire|depannage` passent par l'adaptateur.
+- Aide : page d'accueil redessinée (héros, vidéo vedette, nouveautés, vidéos, support), nouvelle page `aide/videos` (4 vidéos MP4 sur les vrais écrans, chapitres cliquables), styles `.ah-*` dans `app.css` ; vidéos dans `app/assets/video/aide-*.mp4` (rendues par `aide-studio/`).
+
+Tests : `tests/aide_2fa_application_1876_4.php`.
+
+---
+
 # Patch 1.876.3 — Double authentification par e-mail, design du portail
 
 Base : 1.876.2.

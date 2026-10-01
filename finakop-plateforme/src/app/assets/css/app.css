@@ -1,0 +1,2958 @@
+/* FinaKop ERP Core — application plein écran (palette de marque : bleu roi + orange) */
+:root{
+  --bg:#0A0F1C; --bg2:#0E1626; --panel:#131D33; --panel2:#1A2742;
+  --line:#233149; --line2:#2E3E5C;
+
+  /* ── Alias historiques, définis ici parce qu'ils ne l'étaient NULLE PART ──
+     `--border`, `--accent` et `--hover` sont employés dans les vues de packs —
+     séparateurs de formulaires, filets d'accent, fonds au survol. Aucun n'était
+     déclaré : la propriété devenait invalide au calcul, et le trait ne
+     s'affichait tout simplement pas. Des séparateurs manquaient donc
+     silencieusement sur les écrans BTP, industrie, audiovisuel, événementiel,
+     studio, structure culturelle et retail, entre autres. */
+  --border:#233149;      /* = --line   : filets et séparateurs */
+  --accent:#F39A12;      /* = --orange : accent de la charte */
+  --hover:#1A2742;       /* = --panel2 : fond au survol */
+  --blue:#3D6FE0; --blue-d:#1E3A8A; --navy:#16245C;
+  --orange:#F39A12; --orange-d:#D07E00; --orange-l:#FFB23E;
+  --text:#EAEFF7; --muted:#93A2BE; --muted2:#647194;
+  --ok:#39B87E; --ok-bg:#10261F; --danger:#E5675F; --danger-bg:#3A1E1C;
+  --warn:#F39A12; --warn-bg:#33270F;
+  --mono:"SF Mono",Menlo,Consolas,monospace;
+  /* Échelle de design (élévation, rayons, transitions) — esprit Stripe/Notion */
+  --radius:14px; --radius-sm:9px; --radius-lg:18px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.30);
+  --shadow-md:0 6px 20px -4px rgba(0,0,0,.45);
+  --shadow-lg:0 18px 40px -10px rgba(0,0,0,.60);
+  --ring:0 0 0 3px rgba(61,111,224,.32);
+  --ease:cubic-bezier(.4,0,.2,1);
+  --grad-blue:linear-gradient(135deg,#4C7BEC,#3258C9);
+  color-scheme:dark;
+}
+html{color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-feature-settings:"cv11","ss01";background-image:radial-gradient(1200px 600px at 100% -10%,rgba(61,111,224,.06),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(243,154,18,.04),transparent 55%);background-attachment:fixed}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:Syne,Inter,sans-serif;letter-spacing:-.01em}
+
+/* ── Brand ── */
+.brand{display:flex;align-items:flex-start;gap:11px}
+.brand-logo{width:42px;height:42px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+.brand-txt{display:flex;flex-direction:column;font-family:Syne,sans-serif;font-weight:800;line-height:1;color:#fff}
+.brand-name{font-size:18px;letter-spacing:-.3px}
+.brand-sub{font-family:Inter,sans-serif;font-weight:700;font-size:9px;letter-spacing:2.5px;color:var(--orange);margin-top:4px}
+.brand-edition{align-self:flex-start;margin-top:7px;font-family:Inter,sans-serif;font-weight:800;font-size:8.5px;letter-spacing:1.1px;text-transform:uppercase;white-space:nowrap;color:var(--orange);background:rgba(243,154,18,.10);border:1px solid rgba(243,154,18,.45);padding:2px 8px;border-radius:20px}
+.brand-edition.is-creative{color:#c9a4ff;background:rgba(150,100,220,.12);border-color:rgba(160,110,230,.5)}
+.brand-tier{margin-top:4px;font-family:Inter,sans-serif;font-weight:600;font-size:9.5px;letter-spacing:.2px;color:var(--muted);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── App shell ── */
+.app{display:flex;min-height:100vh}
+.side{width:250px;flex-shrink:0;background:linear-gradient(180deg,var(--bg2),var(--bg));border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 14px;position:sticky;top:0;height:100vh}
+.side .brand{padding:4px 8px 18px}
+.nav{display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-sep{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted2);font-weight:700;padding:14px 12px 6px}
+/* ACCORDÉON DE LA BARRE LATÉRALE (1.715.0).
+   L'intitulé devient cliquable : il faut que cela se VOIE, sinon personne ne
+   découvre qu'on peut replier. D'où le curseur, le survol et le chevron. */
+.nav-sep-pliable{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  cursor:pointer;user-select:none;border-radius:6px}
+.nav-sep-pliable:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nav-sep-pliable:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.nav-chevron{flex:0 0 auto;width:10px;height:10px;border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .15s ease;
+  margin-right:4px;opacity:.7}
+/* Replié : le chevron pointe vers la droite — vers ce qui reste à ouvrir. */
+.nav-sep-pliable.is-replie .nav-chevron{transform:rotate(-45deg)}
+.nav-groupe-corps{display:flex;flex-direction:column;gap:2px}
+.nav-groupe-corps[hidden]{display:none}
+/* Une entrée de barre latérale tient sur UNE ligne, toujours.
+   `min-width:0` autorise le libellé à se raccourcir : sans lui, un texte long
+   refusait de rétrécir et repoussait l'icône, si bien que certaines entrées
+   s'étalaient sur deux lignes pendant que les autres restaient sur une. */
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;color:var(--muted);font-weight:500;font-size:13.5px;transition:.12s;min-width:0}
+.nav-item:hover{background:var(--panel);color:var(--text)}
+.nav-item.active{background:linear-gradient(90deg,rgba(61,111,224,.18),transparent);color:#fff;box-shadow:inset 2px 0 0 var(--blue)}
+.nav-item.locked{opacity:.4;cursor:not-allowed}
+/* `flex:0 0 18px` : l'icône ne s'élargit ni ne se rétrécit, quel que soit
+   l'emoji. C'est ce qui aligne tous les libellés sur une même colonne —
+   auparavant un emoji large décalait son libellé vers la droite. */
+.nav-ico{flex:0 0 18px;width:18px;text-align:center;font-size:14px;line-height:1.2}
+.nav-lbl{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lock{margin-left:auto;font-size:11px}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 30px;border-bottom:1px solid var(--line);background:rgba(14,22,38,.7);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
+.page-title{font-size:20px;font-weight:800}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.lic-dot{width:9px;height:9px;border-radius:50%;background:var(--muted2)}
+.lic-active{background:var(--ok);box-shadow:0 0 0 3px rgba(57,184,126,.18)}
+.lic-missing,.lic-invalid,.lic-expired,.lic-revoked{background:var(--danger);box-shadow:0 0 0 3px rgba(229,103,95,.18)}
+.user{font-weight:600;font-size:13px}
+.logout-form{margin:0}
+.btn-logout{background:transparent;border:1px solid var(--line2);color:var(--muted);padding:7px 13px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+.content{padding:26px 30px;max-width:var(--fkc-content-max,1560px);width:100%;margin:0 auto}
+
+/* ── Cards ── */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;margin-bottom:20px;overflow:hidden}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.card-head h2{font-size:15px;font-weight:700}
+.card-body{padding:20px}
+/* ── CARTE REPLIABLE (1.740.0) ───────────────────────────────────────────
+   Une carte dont l'en-tête est un `<summary>` : le pliage est natif, sans une
+   ligne de JavaScript, et reste accessible au clavier. Trois précautions :
+   `list-style:none` retire la puce par défaut, que Chrome et Safari dessinent
+   différemment ; un chevron dessiné en ::after la remplace et pivote à
+   l'ouverture ; et la bordure basse de l'en-tête disparaît quand le panneau
+   est fermé, pour ne pas laisser un trait qui souligne le vide. */
+.fkc-acc>summary{cursor:pointer;list-style:none;user-select:none}
+.fkc-acc>summary::-webkit-details-marker{display:none}
+.fkc-acc>summary::after{content:'⌄';margin-left:auto;font-size:16px;line-height:1;color:var(--muted);
+	transition:transform .15s ease}
+.fkc-acc[open]>summary::after{transform:rotate(180deg)}
+.fkc-acc>summary:hover{background:var(--bg2)}
+.fkc-acc:not([open])>summary{border-bottom:0}
+@media print{.fkc-acc>summary::after{display:none}}
+.card-flush .table{margin:0}
+.bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:15px;margin-bottom:22px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:18px 20px}
+.stat-accent{border-top:3px solid var(--orange)}
+.stat-label{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);font-weight:600}
+.stat-value{display:block;font-family:Syne,sans-serif;font-weight:800;font-size:27px;margin-top:7px}
+.stat-value small{font-size:13px;color:var(--muted);font-family:Inter}
+
+/* ── Modules grid ── */
+.modgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:13px;padding:20px}
+.modcard{display:flex;align-items:center;gap:11px;padding:15px;border:1px solid var(--line);border-radius:11px;background:var(--bg2)}
+.modcard.on{border-left:3px solid var(--blue)}
+.modcard.off{opacity:.5}
+.modicon{font-size:20px}
+.modname{font-weight:600;flex:1}
+.modbadge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px}
+.b-on{background:var(--ok-bg);color:var(--ok)}
+.b-warn{background:var(--warn-bg);color:var(--warn)}
+.b-off{background:#212e44;color:var(--muted2)}
+.b-err{background:var(--danger-bg);color:var(--danger)}
+/* Une pastille ne se coupe pas en deux lignes (« À / payer ») (1.742.0). */
+.modbadge{white-space:nowrap;display:inline-block}
+
+/* ── État de comptabilisation dans les listes (1.742.0) ──────────────────
+   La pastille est cliquable quand elle mène quelque part (écriture,
+   journal temporaire). Les compteurs servent aussi de filtre. */
+a.etat-compta{text-decoration:none}
+a.etat-compta:hover{filter:brightness(1.2);text-decoration:underline}
+.etat-compta-chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
+.etat-compta-chips .stat-label{margin-right:4px}
+.etat-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;
+  text-decoration:none;border:1px solid var(--line);color:var(--muted2);background:transparent;white-space:nowrap}
+.etat-chip strong{font-weight:800}
+.etat-chip:hover{border-color:var(--blue)}
+.etat-chip.on{border-color:currentColor;box-shadow:0 0 0 1px currentColor inset}
+.etat-chip:not(.on).b-on,.etat-chip:not(.on).b-warn,.etat-chip:not(.on).b-err{background:transparent}
+.etat-chip.on:not(.b-on):not(.b-warn):not(.b-err){color:var(--text,#fff)}
+/* Repère en marge : une facture sans écriture se voit d'un coup d'œil. */
+tr.compta-a-faire > td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
+tr.compta-attente > td:first-child{box-shadow:inset 3px 0 0 var(--warn)}
+tr.compta-ok > td:first-child{box-shadow:inset 3px 0 0 var(--ok)}
+
+/* ── Subnav ──────────────────────────────────────────────────────────────
+   DÉFAUT CORRIGÉ — cette règle disait `display:flex`, et les deux partiels qui
+   l'emploient (Caisse, Scan) redéfinissaient `.subnav` dans un <style> en
+   ligne SANS redonner de `display`. La propriété survivait donc : le titre
+   « 🧾 Caisse » se plaçait À GAUCHE des onglets au lieu d'être au-dessus, les
+   onglets n'avaient plus que la largeur restante et se repliaient sur deux
+   lignes, avec le titre flottant entre les deux.
+
+   La mise en forme complète vit désormais ICI, en un seul exemplaire. Les deux
+   <style> en ligne ont été retirés — c'est leur duplication, mot pour mot, qui
+   avait permis à l'écart de passer inaperçu. */
+.subnav{display:block;margin-bottom:18px}
+.subnav-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.subnav-tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.subnav-tab{padding:8px 14px;border-radius:8px 8px 0 0;font-size:13.5px;font-weight:600;
+  text-decoration:none;color:var(--muted);border:1px solid transparent;border-bottom:none;margin-bottom:-1px}
+.subnav-tab:hover{color:var(--text)}
+.subnav-tab.on{color:var(--text);background:var(--panel);border-color:var(--line)}
+.subrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:-8px;margin-bottom:20px}
+.navmenu{position:relative}
+.navmenu>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:9px;white-space:nowrap;transition:.15s}
+.navmenu>summary::-webkit-details-marker{display:none}
+.navmenu>summary:hover{color:var(--text);border-color:var(--orange)}
+.navmenu>summary .caret{font-size:10px;opacity:.7;transition:transform .15s}
+.navmenu[open]>summary .caret{transform:rotate(180deg)}
+.navmenu>summary.active{color:#fff;border-color:var(--orange);box-shadow:inset 0 -2px 0 var(--orange)}
+.navmenu>summary .cur{color:var(--orange);font-weight:600}
+.navmenu .menu{position:absolute;z-index:40;top:calc(100% + 6px);left:0;min-width:230px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:6px;box-shadow:0 14px 34px rgba(0,0,0,.4)}
+.navmenu .menu a{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-radius:7px;font-size:13px;font-weight:500;color:var(--muted)}
+.navmenu .menu a:hover{background:rgba(243,154,18,.10);color:var(--text)}
+.navmenu .menu a.active{background:rgba(243,154,18,.16);color:#fff}
+.subtab{padding:10px 16px;font-weight:600;font-size:13.5px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.subtab:hover{color:var(--text)}
+.subtab.active{color:#fff;border-bottom-color:var(--orange)}
+
+/* ── Tables ── */
+.table{width:100%;border-collapse:collapse;font-size:13.5px}
+.table th{text-align:left;font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted2);font-weight:700;padding:11px 18px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.table td{padding:11px 18px;border-bottom:1px solid var(--line)}
+.table tbody tr:last-child td{border-bottom:none}
+.table tbody tr:hover{background:var(--panel2)}
+/* Toute table dans une carte défile horizontalement si elle déborde (évite le
+   texte coupé dans une colonne étroite). */
+.card-body{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);white-space:nowrap}
+.right{text-align:right}.muted{color:var(--muted)}
+.empty{text-align:center;color:var(--muted2);padding:34px}
+.code{font-family:var(--mono);color:var(--orange);font-weight:600;font-size:12.5px}
+.total td{font-weight:700;background:var(--bg2);border-top:2px solid var(--line2)}
+.bordered{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.kv th{text-align:left;color:var(--muted);font-weight:600;width:200px;padding:9px 18px;border-bottom:1px solid var(--line)}
+.kv td{padding:9px 18px;border-bottom:1px solid var(--line)}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+.meta .stat-label{margin-bottom:3px}
+
+/* ── Forms ── */
+.fld{display:block;margin-bottom:15px}
+.fld>span{display:block;font-weight:600;font-size:12.5px;margin-bottom:6px;color:var(--muted)}
+/* Case à cocher : l'étiquette se place À CÔTÉ, pas dessous.
+   Le motif employé jusqu'ici était « class="fld" style="flex-direction:row" »,
+   sans effet : .fld est en display:block, où flex-direction ne veut rien dire.
+   Le libellé tombait donc sous la case, et l'on pouvait hésiter sur ce qu'elle
+   cochait dès que deux cases se suivaient. */
+.fld-check{display:flex;align-items:center;gap:9px;margin-bottom:15px;cursor:pointer}
+.fld-check>input[type=checkbox],.fld-check>input[type=radio]{width:auto;margin:0;flex:0 0 auto}
+.fld-check>span{display:inline;margin:0;font-weight:600;font-size:12.5px;color:var(--muted)}
+input,select,textarea{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;color:var(--text);padding:10px 12px;font-size:14px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(61,111,224,.18)}
+input[readonly]{opacity:.7}
+textarea{resize:vertical;font-family:var(--mono);font-size:12.5px}
+/* ── Grilles de formulaire ──────────────────────────────────────────────────
+   .form-grid servait à DEUX choses : disposer les CHAMPS d'une section, et
+   disposer les SECTIONS elles-mêmes. Avec minmax(260px,1fr), quatre sections
+   tenaient côte à côte sur un écran large — chacune réduite à 260 px. Les
+   libellés étaient tronqués, les tableaux imbriqués coupés, et une case à cocher
+   se retrouvait séparée de son étiquette.
+
+   Les deux usages sont désormais distincts :
+     .form-grid  → les CHAMPS d'une section. 260 px suffisent à un champ.
+     .form-rows  → les SECTIONS d'un formulaire, empilées sur toute la largeur.
+                   Chacune dispose alors de la place nécessaire, et ses champs
+                   s'étalent horizontalement au lieu de s'empiler dans une
+                   colonne étroite. */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.form-grid>*{min-width:0}
+.form-grid .fld{margin-bottom:15px}
+/* Formulaire COURT (deux ou trois champs) dans une carte pleine largeur :
+   sans plafond, chaque champ s'étirerait sur 600 px pour saisir un nom de
+   cabine. Les colonnes gardent donc une largeur raisonnable et se rangent à
+   gauche, au lieu d'occuper la ligne pour la remplir. */
+.form-grid.form-compact{grid-template-columns:repeat(auto-fit,minmax(220px,300px));justify-content:start}
+
+/* Sections d'un formulaire : une par ligne, pleine largeur. */
+.form-rows{display:grid;grid-template-columns:1fr;gap:14px}
+.form-rows>*{min-width:0}
+.form-rows .fld{margin-bottom:15px}
+/* Une section pleine largeur peut étaler ses champs : on élargit le minimum,
+   sinon on obtiendrait une file de champs de 260 px et beaucoup de vide. */
+.form-rows .form-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+
+/* En-tête d'écran : le titre à gauche, les chiffres clés à droite, alignés
+   sur la même ligne de base. Les valeurs sont alignées à DROITE, pour que les
+   montants se lisent en colonne et non en escalier. */
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.page-kpis{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end}
+.page-kpis>*{text-align:right}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   ÉCRAN « LISTE + FORMULAIRE » — empilé, jamais en colonne étroite (1.701.0).
+
+   Plusieurs écrans (Studio, notamment) plaçaient le formulaire de saisie
+   dans une colonne latérale de 320 à 380 px, à droite de la liste. Les
+   champs s'y empilaient alors verticalement, un par ligne, sur une page
+   dont les deux tiers restaient vides — alors que le même formulaire, chez
+   la Caisse, étale ses champs sur toute la largeur.
+
+   Deux mises en page pour le même besoin, c'est une de trop : l'utilisateur
+   qui passe d'un écran à l'autre réapprend à chaque fois où regarder.
+
+   La liste prend donc toute la largeur, le formulaire vient DESSOUS, et ses
+   champs s'étalent (.form-rows + .form-grid, déjà définis ci-dessus).
+   ───────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════
+   RÈGLE DE MISE EN PAGE DU PRODUIT — à lire avant d'écrire un écran.
+
+   UN ÉCRAN SE COMPOSE DE HAUT EN BAS, SUR TOUTE LA LARGEUR. Une colonne
+   latérale de largeur fixe n'est admise que pour un contenu QU'ON LIT :
+   un récapitulatif de pièce, un ticket de caisse, un sommaire. Jamais pour
+   un formulaire, jamais pour des cartes de diagnostic.
+
+   Une colonne de 320 px ne tient qu'UNE colonne de champs — .form-grid
+   réclame 260 px par champ. Les huit champs d'un formulaire s'y empilent
+   donc un par un, sur une page dont les deux tiers restent vides, et les
+   libellés s'y tronquent : on supprime la seule chose qui dit à quoi sert
+   un champ.
+
+   Les classes à employer :
+     .page-stack     la page s'empile
+     .cards-grid     des cartes côte à côte, qui se replient seules
+     .form-rows      les sections d'un formulaire
+     .form-grid      les champs d'une section
+     .form-compact   un formulaire court : colonnes plafonnées
+     .fld            un champ AVEC son libellé
+
+   À NE PAS ÉCRIRE : « grid-template-columns:1fr 320px » à la main.
+   tests/mise_en_page_1716.php compte les occurrences restantes et refuse
+   que le nombre augmente.
+   ═══════════════════════════════════════════════════════════════════════ */
+.page-stack{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+.page-stack>*{min-width:0}
+
+/* Intitulé de section à l'intérieur d'un formulaire en grille : il doit
+   occuper la ligne entière, sinon il se retrouve à côté d'un champ et ne
+   titre plus rien. */
+.form-sec{grid-column:1/-1;font-size:11px;text-transform:uppercase;letter-spacing:.4px;
+  color:var(--muted);font-weight:700;margin:2px 0 -4px}
+
+/* Cartes de tableau de bord : les colonnes sont voulues, mais 260 px les
+   rendaient illisibles dès qu'elles portaient un tableau. */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:14px}
+.cards-grid>*{min-width:0}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   UNE CARTE QUI PORTE UNE LONGUE LISTE PREND TOUTE LA LARGEUR.
+
+   Mettre les cartes côte à côte ne suffit pas : une carte de 400 px qui
+   contient vingt lignes « libellé — valeur » reste une colonne de vingt
+   lignes. On a rangé les cartes, pas leur contenu.
+
+   .card-pleine lui rend la ligne entière, et .stat-list y range ses lignes
+   en colonnes. Vingt experts sur un écran large tiennent alors sur quatre
+   rangées au lieu de vingt, et la carte cesse d'être un long ruban.
+   ───────────────────────────────────────────────────────────────────────── */
+.cards-grid>.card-pleine{grid-column:1/-1}
+
+/* Liste de couples « libellé — valeur ». Le minmax décide seul du nombre de
+   colonnes : quatre sur un grand écran, une sur un téléphone, sans qu'aucun
+   point de rupture ait à être écrit. */
+.stat-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0 22px}
+.stat-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  padding:5px 0;border-bottom:1px solid var(--line);min-width:0}
+.stat-row>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat-row>:last-child{flex:0 0 auto;text-align:right}
+/* Un intitulé de bloc à l'intérieur d'une liste occupe la ligne entière —
+   sinon il se retrouve au milieu d'une colonne et ne titre plus rien. */
+.stat-titre{grid-column:1/-1;font-size:11px;text-transform:uppercase;letter-spacing:.4px;
+  color:var(--muted2);font-weight:700;margin:12px 0 2px}
+@media(max-width:640px){
+  .stat-list{gap:0}
+  .stat-row>span:first-child{white-space:normal}
+}
+.inline{display:flex;gap:8px;align-items:center}
+.inline.wrap{flex-wrap:wrap}
+/* AIDE SOUS UN CHAMP — la marge négative n'est plus GLOBALE (1.702.0).
+   Le -8px avait été écrit pour coller l'aide au champ qui la précède : .fld
+   porte 15 px de marge basse, la remonter de 8 px donnait le bon écart.
+   Appliqué à TOUS les .help, il remontait aussi ceux qui suivent un simple
+   paragraphe ou un formulaire — dont la marge basse est bien moindre — et le
+   texte passait alors PAR-DESSUS la ligne précédente. C'était visible à
+   l'accueil du Studio et sous le bouton « Créer » d'une catégorie fiscale.
+   Le rapprochement ne vaut donc plus que là où il a un sens : juste après un
+   champ ou une grille de champs. */
+.help{font-size:12px;color:var(--muted2);margin:4px 0 14px}
+.fld+.help,.fld-check+.help,.form-grid+.help{margin-top:-8px}
+.actions{display:flex;gap:10px;align-items:center;margin-top:6px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 17px;border-radius:9px;font-weight:600;font-size:13.5px;cursor:pointer;border:1px solid transparent;font-family:inherit;transition:.12s}
+.btn-primary{background:linear-gradient(135deg,var(--orange-l),var(--orange-d));color:#241500;box-shadow:0 5px 16px rgba(243,154,18,.28)}
+.btn-primary:hover{filter:brightness(1.06)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.btn-blue{background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;box-shadow:0 5px 16px rgba(61,111,224,.28)}
+.btn-ghost{background:transparent;border-color:var(--line2);color:var(--text)}
+.btn-ghost:hover{background:var(--panel2);border-color:var(--blue)}
+.btn-sm{padding:7px 12px;font-size:12.5px}
+.btn-block{width:100%;justify-content:center}
+.danger{color:var(--danger)!important;border-color:rgba(229,103,95,.4)!important}
+.danger:hover{background:var(--danger-bg)!important}
+
+/* ── Alerts / tags ── */
+.alert{padding:12px 16px;border-radius:10px;margin-bottom:18px;font-size:13.5px;font-weight:500}
+/* 1.866.0 — un BOUTON dans un bandeau garde son style : la règle des liens lui
+   imposait un texte bleu souligné, illisible sur un bouton primaire bleu. */
+.alert a:not(.btn){font-weight:700;text-decoration:underline;margin-left:6px;color:var(--blue)}
+.alert-ok{background:var(--ok-bg);color:var(--ok);border:1px solid rgba(57,184,126,.3)}
+.alert-err{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(229,103,95,.3)}
+.alert-warn{background:var(--warn-bg);color:var(--warn);border:1px solid rgba(243,154,18,.3)}
+.pill,.tag{display:inline-block;padding:4px 11px;border-radius:20px;font-size:11.5px;font-weight:700}
+.pill{background:var(--orange);color:#241500}
+.pill-missing,.pill-invalid,.pill-expired,.pill-revoked{background:var(--danger-bg);color:var(--danger)}
+.tag{background:var(--ok-bg);color:var(--ok);margin:2px;border-radius:6px}
+.balance-state{text-align:center;padding:11px!important}
+.balance-state .ok{color:var(--ok);font-weight:700}
+.balance-state .ko{color:var(--danger);font-weight:700}
+
+/* ════════ Connexion (deux colonnes, façon maquette) ════════ */
+.auth{display:grid;grid-template-columns:1.15fr .85fr;min-height:100vh;background:var(--bg)}
+.auth-top{position:fixed;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--blue),var(--orange));z-index:5}
+.auth-hero{position:relative;padding:64px 60px;display:flex;flex-direction:column;justify-content:center;gap:26px;overflow:hidden;background:radial-gradient(900px 500px at 10% 0%,rgba(61,111,224,.16),transparent),radial-gradient(700px 500px at 90% 100%,rgba(243,154,18,.10),transparent),var(--bg2);border-right:1px solid var(--line)}
+.hero-logos{display:inline-flex;align-self:flex-start;align-items:center;gap:14px;background:#fff;border-radius:16px;padding:12px 20px;box-shadow:0 14px 40px rgba(0,0,0,.4)}
+.hero-logos img{height:48px;width:auto;object-fit:contain}
+.hero-eyebrow{display:flex;align-items:center;gap:12px;font-size:11.5px;letter-spacing:3px;font-weight:700;color:var(--orange);text-transform:uppercase}
+.hero-eyebrow::before{content:"";width:34px;height:1px;background:var(--orange)}
+.hero-title{font-family:Syne,sans-serif;font-weight:800;font-size:clamp(30px,3.4vw,50px);line-height:1.04;color:#fff;letter-spacing:-.02em}
+.hero-title .accent{background:linear-gradient(120deg,var(--orange-l),var(--orange));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);max-width:30em;line-height:1.7}
+.hero-pills{display:flex;flex-wrap:wrap;gap:10px}
+.hero-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border:1px solid var(--line2);border-radius:30px;font-size:12.5px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.02)}
+.hero-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--orange)}
+.hero-pill.b::before{background:var(--blue)}.hero-pill.g::before{background:var(--ok)}.hero-pill.p::before{background:#9D7BE0}
+.hero-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+.hero-card{display:flex;align-items:center;gap:14px;padding:15px 18px;border:1px solid var(--line);border-radius:13px;background:rgba(19,29,51,.6)}
+.hero-card.full{grid-column:1 / -1}
+.hero-card .hc-ico{font-size:20px;width:40px;height:40px;display:grid;place-items:center;background:var(--panel2);border-radius:10px;flex-shrink:0}
+.hc-label{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted2);font-weight:700}
+.hc-value{font-weight:600;font-size:13.5px;margin-top:2px}
+.auth-form{display:flex;flex-direction:column;justify-content:center;padding:56px 60px;background:var(--bg)}
+.auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:30px}
+.auth-brand img{width:44px;height:44px;object-fit:contain}
+.auth-brand .ab-name{font-family:Syne,sans-serif;font-weight:800;font-size:19px}
+.auth-brand .ab-name small{display:block;font-family:Inter;font-weight:700;font-size:8.5px;letter-spacing:2.5px;color:var(--orange);margin-top:2px}
+.auth-h{font-family:Syne,sans-serif;font-weight:800;font-size:34px;margin-bottom:6px}
+.auth-desc{color:var(--muted);font-size:14px;margin-bottom:22px}
+.auth-secure{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:30px;background:var(--ok-bg);color:var(--ok);font-size:12.5px;font-weight:700;border:1px solid rgba(57,184,126,.3);margin-bottom:24px}
+.auth-form .fld>span{text-transform:uppercase;letter-spacing:.5px;font-size:11px}
+.auth-input{position:relative}
+.auth-input .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.6}
+.auth-input input{padding-left:38px;height:48px}
+.btn-login{width:100%;justify-content:center;height:50px;font-size:15px;font-weight:700;margin-top:6px}
+.auth-divider{height:1px;background:var(--line);margin:26px 0 18px}
+.auth-tags-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2);font-weight:700;text-align:center;margin-bottom:12px}
+.auth-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.auth-tag{padding:6px 13px;border-radius:8px;font-size:11.5px;font-weight:700;border:1px solid var(--line2);color:var(--muted)}
+.auth-foot{margin-top:26px;text-align:center;color:var(--muted2);font-size:11.5px}
+.auth-foot a{color:var(--orange)}
+
+@media(max-width:980px){
+  .auth{grid-template-columns:1fr}
+  .auth-hero{display:none}
+  .auth-form{min-height:100vh;padding:40px 26px}
+}
+@media(max-width:1200px){
+  .form-grid,.meta{grid-template-columns:1fr 1fr}
+}
+@media(max-width:860px){
+  .side{position:fixed;left:-260px;z-index:50;transition:.2s}
+  .form-grid,.meta{grid-template-columns:1fr 1fr}
+  .content{padding:18px}
+}
+
+/* ── Module Multi-sociétés ── */
+.societe-box{display:flex;align-items:center;gap:10px;margin:0 8px 16px;padding:10px 11px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;border-left:3px solid var(--blue);transition:.12s}
+.societe-box:hover{border-color:var(--blue);background:var(--panel)}
+.societe-avatar{width:32px;height:32px;flex-shrink:0;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:800;font-size:12px;color:#fff}
+.societe-info{display:flex;flex-direction:column;min-width:0;flex:1}
+.societe-label{font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted2);font-weight:600}
+.societe-name{font-family:Syne,sans-serif;font-weight:800;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.societe-switch{font-size:14px;color:var(--orange);flex-shrink:0}
+.nav-count{margin-left:auto;background:var(--panel2);border:1px solid var(--line2);color:var(--muted);font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px}
+.soc-switch{margin:0}
+.soc-switch select{width:auto;min-width:150px;max-width:230px;padding:7px 11px;font-size:12.5px;font-weight:600;background:var(--panel);border-color:var(--line2)}
+.dash-soc{display:flex;align-items:center;gap:13px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--orange);border-radius:12px;padding:14px 18px;margin-bottom:20px}
+.dash-soc-ico{font-size:22px}
+.dash-soc-name{display:block;font-family:Syne,sans-serif;font-weight:800;font-size:18px;margin-top:2px}
+.dash-soc-name small{font-family:Inter,sans-serif;font-weight:500;font-size:12px}
+.societe-avatar-img{background:#fff;padding:3px;overflow:hidden}
+.societe-avatar-img img{max-width:100%;max-height:100%;object-fit:contain}
+
+/* ── Tableau de bord financier ── */
+.dash-head{display:flex;justify-content:space-between;align-items:center;gap:16px;background:linear-gradient(120deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:18px 22px;margin-bottom:20px}
+.dash-head-main{display:flex;align-items:center;gap:14px}
+.dash-head-ico{width:48px;height:48px;flex-shrink:0;border-radius:13px;background:linear-gradient(135deg,var(--orange),var(--orange-d));display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 14px rgba(243,154,18,.3)}
+.dash-title{font-family:Syne,sans-serif;font-weight:800;font-size:22px;line-height:1.15;margin:0}
+.dash-sub{color:var(--muted);font-size:13px;margin:5px 0 0}
+.dash-sub strong{color:var(--text)}
+.dash-year select{padding:10px 14px;font-size:13px;font-weight:700;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;color:var(--text)}
+.kpi .stat{position:relative;border-top:3px solid var(--line2)}
+.kpi .stat-value{font-size:23px}
+.kpi-foot{display:block;font-size:11px;color:var(--muted2);margin-top:8px;font-weight:600}
+.kpi-ca{border-top-color:var(--orange)}
+.kpi-pos{border-top-color:var(--ok)} .kpi-pos .stat-value{color:var(--ok)} .kpi-pos .kpi-foot{color:var(--ok)}
+.kpi-neg{border-top-color:var(--danger)} .kpi-neg .stat-value{color:var(--danger)} .kpi-neg .kpi-foot{color:var(--danger)}
+.kpi-treso{border-top-color:var(--blue)} .kpi-treso .stat-value{color:#7FA8FF}
+.kpi-clients{border-top-color:#8B7FE0}
+.kpi-fc{border-top-color:var(--orange-l)}
+.kpi-ff{border-top-color:#E07FB0}
+.dash-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;align-items:start}
+.dash-col{display:flex;flex-direction:column;gap:18px}
+.cr-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.cr-row:last-of-type{border-bottom:none}
+.cr-row strong{font-family:Syne,sans-serif;font-weight:800;font-size:15px}
+.cr-row .pos{color:var(--ok)} .cr-row .neg{color:var(--danger)}
+.cr-total{border-top:2px solid var(--line2);border-bottom:none;margin-top:4px;padding-top:13px}
+.cr-total span{font-weight:700} .cr-total strong{font-size:18px}
+.cr-bar{height:8px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:14px}
+.cr-bar-fill{display:block;height:100%;background:linear-gradient(90deg,var(--orange),var(--danger))}
+.treso-table td,.treso-table th{padding:11px 18px}
+.treso-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:20px;background:var(--panel2);border:1px solid var(--line2);color:var(--orange-l)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.quick-access{margin-top:4px}
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.quick-card{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;transition:.12s}
+.quick-card:hover{border-color:var(--orange);transform:translateY(-2px)}
+.quick-ico{font-size:20px}
+.quick-name{font-family:Syne,sans-serif;font-weight:700;font-size:14px}
+@media(max-width:980px){.dash-cols{grid-template-columns:1fr}.dash-head{flex-direction:column;align-items:flex-start}}
+
+/* ── Lanceur de module (accordéons + boutons CTA) ── */
+.launch-hero{display:flex;align-items:center;gap:18px;margin:4px 0 22px}
+.launch-ico{font-size:30px;width:60px;height:60px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.launch-title{font-size:22px;font-weight:800;margin:0;letter-spacing:-.2px}
+.launch-sub{margin:3px 0 0;color:var(--muted);font-size:13.5px}
+.fkc-acc{display:flex;flex-direction:column;gap:12px;max-width:1080px}
+.fkc-acc-group{background:var(--panel);border:1px solid var(--line);border-radius:13px;overflow:hidden;transition:border-color .15s}
+.fkc-acc-group.open{border-color:var(--line2)}
+.fkc-acc-head{width:100%;display:flex;align-items:center;gap:13px;padding:16px 20px;background:linear-gradient(90deg,var(--panel2),var(--panel));border:0;cursor:pointer;color:var(--text);font-family:inherit;font-size:15px;font-weight:700;text-align:left;transition:background .15s}
+.fkc-acc-head:hover{background:linear-gradient(90deg,var(--panel2),var(--panel2))}
+.fkc-acc-ico{font-size:18px;width:30px;text-align:center}
+.fkc-acc-label{flex:1}
+.fkc-acc-count{font-size:11px;font-weight:700;color:var(--muted);background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:3px 10px}
+.fkc-acc-chev{color:var(--muted);font-size:14px;transition:transform .2s}
+.fkc-acc-group.open .fkc-acc-chev{transform:rotate(90deg);color:var(--orange)}
+/* La hauteur d'ouverture est posée par app.js d'après le contenu réel : la
+   valeur figée de 900px tronquait les groupes les plus fournis. Les règles
+   ci-dessous restent le repli quand JavaScript est indisponible — auquel cas
+   l'accordéon n'est de toute façon plus interactif et tout doit rester lisible. */
+.fkc-acc-body{max-height:0;overflow:hidden;transition:max-height .28s ease}
+.fkc-acc-group.open .fkc-acc-body{max-height:2400px}
+.no-js .fkc-acc-body{max-height:none}
+.fkc-cta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px;padding:16px 20px 20px}
+.fkc-cta{position:relative;display:flex;flex-direction:column;gap:3px;padding:14px 15px;border-radius:11px;background:var(--ok-bg);border:1px solid rgba(57,184,126,.35);color:var(--text);min-height:62px;transition:transform .12s,box-shadow .12s,border-color .12s}
+.fkc-cta:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.28);border-color:var(--ok)}
+.fkc-cta-label{font-weight:700;font-size:13.5px}
+.fkc-cta-desc{font-size:11.5px;color:var(--muted)}
+.fkc-cta-go{position:absolute;right:13px;top:13px;color:var(--ok);font-weight:700;opacity:0;transition:opacity .12s}
+.fkc-cta:hover .fkc-cta-go{opacity:1}
+.fkc-cta.locked{background:var(--danger-bg);border-color:rgba(229,103,95,.35);cursor:pointer}
+.fkc-cta.locked:hover{border-color:var(--danger);box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.fkc-cta.locked .fkc-cta-label{color:var(--text)}
+.fkc-cta-lock{font-size:11px}
+@media(max-width:640px){.fkc-cta-grid{grid-template-columns:1fr}}
+
+/* ── Module Analyse (graphiques SVG) ── */
+.fkc-chart{width:100%;height:auto;display:block;overflow:visible}
+.fkc-axis{fill:var(--muted);font-size:10px}
+.fkc-legend{fill:var(--text);font-size:11px}
+.fkc-donut-c{fill:var(--text);font-size:18px;font-weight:700}
+.fkc-spark{display:block;width:100%;height:32px}
+.an-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px}
+.an-grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:14px;margin-bottom:14px}
+.an-grid-2>*{min-width:0}
+.an-kpi{display:flex;flex-direction:column;gap:4px;position:relative}
+.an-kpi-top{display:flex;align-items:center;gap:8px}
+.an-kpi-top .ico{font-size:17px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;background:var(--panel2);border:1px solid var(--line)}
+.an-kpi .v{font-size:1.7em;font-weight:800;letter-spacing:-.4px;font-variant-numeric:tabular-nums;line-height:1.1}
+.an-kpi .l{color:var(--muted);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.an-kpi .spark{margin-top:4px}
+/* Tuiles colorées (accent à gauche + dégradé sur la valeur) */
+.an-tile{position:relative;overflow:hidden;transition:transform .15s var(--ease),box-shadow .15s var(--ease),border-color .15s}
+.an-tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--muted);opacity:.9}
+.an-tile:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--line2)}
+.an-tile .v{background:linear-gradient(180deg,var(--text),var(--muted));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.an-tile-ok::before{background:var(--ok)} .an-tile-ok .ico{color:var(--ok);background:var(--ok-bg);border-color:transparent}
+.an-tile-danger::before{background:var(--danger)} .an-tile-danger .ico{color:var(--danger);background:var(--danger-bg);border-color:transparent}
+.an-tile-blue::before{background:var(--blue)} .an-tile-blue .ico{color:var(--blue);background:rgba(61,111,224,.14);border-color:transparent}
+.an-tile-orange::before{background:var(--orange)} .an-tile-orange .ico{color:var(--orange);background:rgba(243,154,18,.14);border-color:transparent}
+.an-tile-violet::before{background:#8B5CF6} .an-tile-violet .ico{color:#8B5CF6;background:rgba(139,92,246,.14);border-color:transparent}
+.an-tile-ok .v{background:linear-gradient(180deg,var(--ok),#1f8f5e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.an-tile-danger .v{background:linear-gradient(180deg,#ff8d85,var(--danger));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.an-tile-blue .v{background:linear-gradient(180deg,#7aa0f0,var(--blue));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.an-tile-orange .v{background:linear-gradient(180deg,#ffc266,var(--orange));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.an-tile-violet .v{background:linear-gradient(180deg,#b69cf5,#8B5CF6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+/* En-tête de carte graphique + légende */
+.an-chart-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.an-chart-head .ico{font-size:15px}
+.an-legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:2px 0 8px;font-size:11.5px;color:var(--muted)}
+.an-legend span{display:inline-flex;align-items:center;gap:6px}
+.an-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.couche{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid var(--line)}
+/* En-tête de filtre période (module Analyse) */
+.an-filter{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:16px}
+.an-filter-row{display:flex;gap:22px;align-items:flex-end;flex-wrap:wrap}
+.anf-group{display:flex;flex-direction:column;gap:7px}
+.anf-group>label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.anf-dates{display:flex;align-items:center;gap:8px}
+.anf-dates input{width:auto;min-width:138px}
+.anf-dates .sep{color:var(--muted)}
+.anf-quick{display:flex;gap:6px;flex-wrap:wrap}
+.anf-chip{background:var(--panel2);border:1px solid var(--line2);color:var(--text);border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .12s var(--ease)}
+.anf-chip:hover{border-color:var(--orange);color:var(--orange)}
+.anf-chip-y{background:var(--orange);border-color:var(--orange);color:#231400}
+.anf-cmp{min-width:190px}
+.anf-go{background:var(--orange);color:#231400;font-weight:800;border:0;padding:11px 18px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.anf-go:hover{filter:brightness(1.06)}
+.anf-summary{margin-top:12px;color:var(--orange);font-size:12.5px;font-weight:600}
+.anf-delta{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px}
+.anf-delta.up{color:var(--ok);background:var(--ok-bg)} .anf-delta.down{color:var(--danger);background:var(--danger-bg)}
+.an-kpi .v small{font-size:.5em;font-weight:600;color:var(--muted);-webkit-text-fill-color:var(--muted)}
+@media(max-width:760px){.an-filter-row{gap:14px}.anf-go{width:100%}}
+.couche-op{color:var(--blue);background:rgba(61,111,224,.12)}
+.couche-perf{color:var(--orange);background:rgba(243,154,18,.12)}
+.couche-pred{color:#8B5CF6;background:rgba(139,92,246,.12)}
+.an-status{display:inline-block;width:9px;height:9px;border-radius:50%}
+.an-ok{background:var(--ok)}.an-warn{background:var(--orange)}.an-danger{background:var(--danger)}.an-na{background:var(--muted)}
+.an-alert{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;margin-bottom:8px;border:1px solid var(--line)}
+.an-alert .ico{font-size:16px}
+.an-alert.n-info{background:rgba(61,111,224,.10);border-color:rgba(61,111,224,.3)}
+.an-alert.n-warn{background:var(--danger-bg);border-color:rgba(243,154,18,.3)}
+.an-alert.n-danger{background:var(--danger-bg);border-color:rgba(229,103,95,.4)}
+
+/* ── Barre Retour / Fermer des pages de données ── */
+.modbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.modbar .btn-ghost{color:var(--muted)}
+.modbar .btn-ghost:hover{color:var(--text)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Raffinement UI v2 — esprit Notion / Stripe : élévation, micro-animations,
+   états de focus, contrôles & scrollbars natifs en dark. (Aucun markup modifié.)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Scrollbars discrètes (WebKit + Firefox) */
+*{scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background:var(--muted2);background-clip:content-box}
+*::-webkit-scrollbar-track{background:transparent}
+
+/* Transitions globales sur les éléments interactifs */
+a,button,.btn,.nav-item,.subtab,.card,.stat,.modcard,.fkc-cta,input,select,textarea,.modbadge{
+  transition:background-color .16s var(--ease),border-color .16s var(--ease),color .16s var(--ease),
+             box-shadow .18s var(--ease),transform .18s var(--ease),opacity .16s var(--ease)}
+
+/* Focus visible homogène et accessible */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+  outline:none;box-shadow:var(--ring);border-radius:8px}
+
+/* Apparition douce du contenu */
+@keyframes fkc-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes fkc-pop{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:none}}
+.content{animation:fkc-fade .34s var(--ease) both}
+.card,.stat{animation:fkc-pop .3s var(--ease) both}
+
+/* Élévation & survol des cartes-métriques (pas les cartes de formulaire) */
+.card{box-shadow:var(--shadow-sm)}
+.stat,.modcard,.fkc-cta{box-shadow:var(--shadow-sm)}
+.stat:hover,.modcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--line2)}
+.card:has(.an-kpi):hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--line2)}
+.fkc-cta:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+
+/* Boutons — finition Stripe (dégradé subtil, pression tactile) */
+.btn{transition:transform .12s var(--ease),box-shadow .18s var(--ease),background-color .16s,border-color .16s,color .16s}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn-primary{background:var(--grad-blue);border-color:transparent;box-shadow:0 2px 8px -1px rgba(61,111,224,.45),inset 0 1px 0 rgba(255,255,255,.12)}
+.btn-primary:hover{filter:brightness(1.06);box-shadow:0 4px 14px -2px rgba(61,111,224,.55),inset 0 1px 0 rgba(255,255,255,.16)}
+.btn-ghost:hover{background:var(--panel2);border-color:var(--line2)}
+
+/* Tables — survol de ligne discret (lisibilité Notion) */
+.table tbody tr{transition:background-color .12s var(--ease)}
+.table tbody tr:hover{background:rgba(255,255,255,.025)}
+.table thead th{position:sticky;top:0}
+
+/* Champs de formulaire — focus net */
+.fld input,.fld select,.fld textarea,input[type=text],input[type=number],input[type=date],input[type=email],input[type=password],select,textarea{
+  transition:border-color .15s var(--ease),box-shadow .15s var(--ease),background-color .15s}
+.fld input:focus,.fld select:focus,.fld textarea:focus,input:focus,select:focus,textarea:focus{
+  border-color:var(--blue);box-shadow:var(--ring);outline:none}
+
+/* Navigation latérale — indicateur animé */
+.nav-item{position:relative}
+.nav-item.active{background:linear-gradient(90deg,rgba(61,111,224,.22),rgba(61,111,224,.04));color:#fff}
+.nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--grad-blue);box-shadow:0 0 12px rgba(61,111,224,.6)}
+.nav-item:hover{transform:translateX(1px)}
+
+/* Sous-onglets / barre Retour-Fermer */
+.subtab{transition:color .15s var(--ease),border-color .15s var(--ease)}
+.subtab.active{position:relative}
+
+/* En-tête collant — légère ombre portée */
+.topbar{backdrop-filter:saturate(1.2) blur(10px);box-shadow:0 1px 0 rgba(255,255,255,.03),0 8px 24px -16px rgba(0,0,0,.6)}
+
+/* Badge d'édition — éclat subtil */
+.brand-edition{box-shadow:0 0 12px -4px rgba(243,154,18,.45)}
+.brand-edition.is-creative{box-shadow:0 0 12px -4px rgba(160,110,230,.5)}
+
+/* Graphiques — transition douce des barres/segments au survol */
+.fkc-chart rect,.fkc-chart path,.fkc-chart circle{transition:opacity .15s var(--ease)}
+.fkc-chart:hover rect:hover,.fkc-chart:hover path:hover{opacity:.85}
+
+/* Statuts (pastilles) — légère pulsation pour l'état actif/licence */
+.lic-active{animation:fkc-pulse 2.4s var(--ease) infinite}
+@keyframes fkc-pulse{0%,100%{box-shadow:0 0 0 3px rgba(57,184,126,.18)}50%{box-shadow:0 0 0 5px rgba(57,184,126,.05)}}
+
+/* Respect des préférences d'accessibilité */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+
+/* ── Centre d'aide / Documentation ── */
+.aide-hero{text-align:center;padding:30px 16px 26px;background:radial-gradient(700px 300px at 50% -20%,rgba(76,123,236,.14),transparent 60%);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:22px;animation:fkc-fade .34s var(--ease) both}
+.aide-hero h1{font-size:27px;letter-spacing:-.5px}
+.aide-hero>p{color:var(--muted);margin:8px 0 18px}
+.aide-search{display:flex;align-items:center;gap:8px;max-width:600px;margin:0 auto;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:7px 8px 7px 14px;box-shadow:var(--shadow-md)}
+.aide-search:focus-within{border-color:var(--blue);box-shadow:var(--ring)}
+.aide-search-ico{opacity:.7}
+.aide-search input{flex:1;background:transparent;border:0;color:var(--text);font-size:15px;font-family:inherit;outline:none}
+.aide-quick{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+.aide-chip{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:.16s var(--ease)}
+.aide-chip:hover{color:var(--text);border-color:var(--blue);transform:translateY(-1px)}
+.aide-h2{font-size:17px;margin:6px 0 12px}
+.aide-cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:13px;margin-bottom:8px}
+.aide-cat{display:flex;flex-direction:column;gap:3px;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow-sm);transition:.18s var(--ease)}
+.aide-cat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--line2)}
+.aide-cat-ico{font-size:24px}
+.aide-cat-t{font-weight:700;color:var(--text);margin-top:4px}
+.aide-cat-i{font-size:12.5px;color:var(--muted)}
+.aide-result{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;transition:background .14s var(--ease)}
+.aide-result:hover{background:var(--panel2)}
+.aide-result-ico{font-size:18px;width:24px;text-align:center}
+.aide-tuto-row{display:flex;align-items:center;gap:12px;padding:9px 8px;border-radius:9px;transition:background .14s var(--ease)}
+.aide-tuto-row:hover{background:var(--panel2)}
+.aide-tuto-ico{font-size:17px;width:24px;text-align:center}
+.aide-article{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px 30px;margin-bottom:20px;max-width:760px;box-shadow:var(--shadow-sm)}
+.aide-article-cat{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px}
+.aide-article h1{font-size:25px;margin:6px 0 16px;letter-spacing:-.4px}
+.aide-article-body{color:#C9D4E8;line-height:1.75;font-size:14.5px}
+.aide-article-body p{margin:0 0 12px}
+.aide-article-body ol,.aide-article-body ul{margin:0 0 14px 20px}
+.aide-article-body li{margin:5px 0}
+.aide-article-body em{color:var(--text);font-style:normal;font-weight:600;background:var(--panel2);padding:1px 6px;border-radius:5px}
+.aide-article-body code{font-family:var(--mono);background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.9em;color:var(--orange)}
+.aide-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.aide-steps li{display:flex;align-items:center;gap:13px;padding:11px 4px;border-bottom:1px solid var(--line)}
+.aide-steps li:last-child{border-bottom:0}
+.aide-step-n{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--grad-blue);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.aide-step-c{flex:1;font-size:13.5px}
+
+/* ===================================================================
+   RESPONSIVE — affichage optimisé téléphone / tablette / bureau (v1.45)
+   =================================================================== */
+.menu-toggle{display:none;align-items:center;justify-content:center;width:40px;height:40px;flex-shrink:0;
+  border:1px solid var(--line2);background:var(--panel);color:var(--text);border-radius:9px;cursor:pointer;font-size:17px;line-height:1}
+.menu-toggle:hover{border-color:var(--blue);color:#fff}
+.side-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:45;opacity:0;visibility:hidden;transition:opacity .2s ease}
+.side-overlay.show{opacity:1;visibility:visible}
+body.nav-open{overflow:hidden}
+
+/* Tablette & téléphone : barre latérale en tiroir (off-canvas) */
+@media (max-width:860px){
+  .side{position:fixed;top:0;left:-300px;width:268px;height:100vh;height:100dvh;z-index:50;
+    transition:left .24s cubic-bezier(.4,0,.2,1);box-shadow:0 0 48px rgba(0,0,0,.55);overflow-y:auto}
+  .side.open{left:0}
+  .menu-toggle{display:inline-flex}
+  .topbar{padding:12px 16px;gap:10px}
+  .page-title{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .topbar-right{gap:12px}
+  .content{padding:18px 14px}
+  .bar{flex-wrap:wrap;gap:10px}
+  .actions{flex-wrap:wrap}
+  /* Tableaux : défilement horizontal plutôt que colonnes écrasées */
+  .card-flush{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .card-flush .table{min-width:600px}
+  .soc-switch select{min-width:120px;max-width:170px}
+}
+
+/* Téléphone */
+@media (max-width:560px){
+  .form-grid,.meta{grid-template-columns:1fr!important}
+  .page-title{font-size:16px}
+  .content{padding:14px 11px}
+  .topbar{padding:10px 12px}
+  .topbar-right{gap:8px}
+  .user{display:none}                 /* le nom réapparaît sur écrans plus larges */
+  .modgrid{grid-template-columns:1fr 1fr;padding:14px}
+  .stats{grid-template-columns:1fr 1fr}
+  .dash-cols{grid-template-columns:1fr}
+  .btn{padding:9px 13px;font-size:13px}
+  .table th,.table td{padding:9px 12px}
+  .bar .btn-sm{font-size:12px}
+  h1,.page-title{letter-spacing:0}
+}
+
+/* Petit téléphone */
+@media (max-width:400px){
+  .modgrid,.stats{grid-template-columns:1fr}
+  .societe-box{margin:0 0 14px}
+}
+.pj-flag{font-size:12px;opacity:.9;white-space:nowrap;vertical-align:middle}
+.pj-flag sup{font-size:9px;font-weight:700;color:var(--orange);margin-left:1px}
+
+/* ── Recherche/filtre instantané de liste ── */
+.list-search{display:flex;align-items:center;gap:8px;margin:0 0 12px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;max-width:420px}
+.list-search-ico{opacity:.6;font-size:14px;line-height:1}
+.list-search-input{flex:1;border:0;background:transparent;color:var(--text);font-size:14px;outline:none;min-width:0}
+.list-search-input::placeholder{color:var(--muted)}
+.list-search-input::-webkit-search-cancel-button{cursor:pointer}
+
+/* ── Cloche de notifications ── */
+.notif-bell{position:relative;font-size:18px;text-decoration:none;line-height:1;display:inline-flex;align-items:center;margin-right:4px}
+.notif-badge{position:absolute;top:-6px;right:-8px;background:var(--orange);color:#241500;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* ── Centre d'aide : compléments (guide, essentiels, glossaire, dépannage) ── */
+.aide-chip-hot{background:var(--accent);border-color:var(--accent);color:#fff}
+.aide-cat-n{display:inline-block;min-width:20px;padding:1px 6px;margin-left:6px;border-radius:10px;background:var(--line);color:var(--muted);font-size:11.5px;font-weight:600;vertical-align:middle}
+.aide-start{margin-bottom:18px}
+.aide-start-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.aide-start-head h2{margin:0 0 4px;font-size:16px}
+.aide-start-head p{margin:0;font-size:13px;max-width:60ch}
+.aide-start-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.aide-start-step{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;color:var(--text);text-decoration:none}
+.aide-start-step:hover{border-color:var(--accent);background:var(--hover)}
+.aide-start-n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--line);color:var(--muted);font-size:12px;font-weight:700;flex:none}
+.aide-ess{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-bottom:6px}
+.aide-ess-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;color:var(--text);text-decoration:none;font-size:13.5px}
+.aide-ess-item:hover{background:var(--hover)}
+.aide-ess-ico{font-size:18px;line-height:1.2;flex:none}
+.aide-res-t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:14px 0 6px}
+.aide-res-t:first-child{margin-top:0}
+.aide-qa{padding:10px 0;border-bottom:1px solid var(--line)}
+.aide-qa:last-child{border-bottom:none}
+.aide-qa strong{font-size:13.5px}
+.aide-qa p{margin:4px 0 0;font-size:13px;line-height:1.6}
+
+/* ── Cascade SYSCOHADA (SIG) du Centre de Pilotage ─────────────────────────
+   Grille en quatre colonnes : libellé, barre proportionnelle, montant,
+   progression. Les soldes majeurs (valeur ajoutée, EBE, résultat net) sont
+   accentués, car ce sont eux qu'un dirigeant lit en premier. */
+.ckp-cascade { padding: 14px 16px; }
+.ckp-cascade-per { font-size: 12px; margin-bottom: 10px; }
+.ckp-casc-l { display: grid; grid-template-columns: minmax(150px, 2fr) minmax(60px, 3fr) minmax(90px, auto) 72px;
+              gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border, #2a2a3a); }
+.ckp-casc-l:last-child { border-bottom: 0; }
+.ckp-casc-l.maj { font-weight: 700; }
+.ckp-casc-code { display: inline-block; min-width: 26px; font-family: ui-monospace, monospace;
+                 font-size: 11px; opacity: .6; }
+.ckp-casc-bar { height: 8px; border-radius: 4px; background: rgba(127,127,127,.15); overflow: hidden; }
+.ckp-casc-bar > span { display: block; height: 100%; border-radius: 4px; }
+.ckp-casc-val { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ckp-casc-val.neg { color: var(--danger); }
+.ckp-casc-evo { text-align: right; font-size: 12px; white-space: nowrap; }
+@media (max-width: 700px) {
+  .ckp-casc-l { grid-template-columns: 1fr auto; }
+  .ckp-casc-bar { display: none; }
+}
+
+/* ── Décisions expliquées & sections différées ─────────────────────────────
+   La chaîne de raisonnement est repliée par défaut : la conclusion se lit
+   d'un coup d'œil, la démonstration se déplie à la demande. */
+.ckp-decisions{display:grid;gap:10px;padding:4px 0}
+.ckp-dec{padding:12px 14px}
+.ckp-dec-head{display:flex;align-items:center;gap:8px;font-weight:700}
+.ckp-dec-ico{flex:0 0 auto}
+.ckp-dec-lab{flex:1;min-width:0}
+.ckp-dec-dom{font-size:11px;text-transform:uppercase;letter-spacing:.4px;opacity:.55}
+.ckp-dec-msg{margin-top:6px;font-size:13.5px}
+.ckp-dec-reco{margin-top:6px;font-size:13px;font-weight:600}
+.ckp-dec-why{margin-top:8px;font-size:12.5px}
+.ckp-dec-why summary{cursor:pointer;opacity:.7}
+.ckp-dec-why summary:hover{opacity:1}
+.ckp-dec-why ol{margin:8px 0 0 18px;padding:0;line-height:1.55;opacity:.85}
+.ckp-dec .btn{margin-top:10px}
+
+/* Squelette d'attente : signale qu'un contenu arrive, sans faire sauter la mise
+   en page quand il arrive réellement. */
+.ckp-skel{padding:16px;display:grid;gap:9px}
+.ckp-skel span{display:block;height:11px;border-radius:6px;
+  background:linear-gradient(90deg,rgba(127,127,127,.10),rgba(127,127,127,.22),rgba(127,127,127,.10));
+  background-size:200% 100%;animation:ckpSkel 1.3s ease-in-out infinite}
+.ckp-skel span.court{width:45%}
+@keyframes ckpSkel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.ckp-skel span{animation:none}}
+
+/* ── Consolidation du groupe ───────────────────────────────────────────────
+   Trois colonnes : cumul, éliminations, consolidé. Le lecteur doit pouvoir
+   vérifier ce qui a été retiré, pas seulement lire le résultat. */
+.ckp-conso{padding:12px 14px}
+.ckp-conso-per{font-size:12px;margin-bottom:8px}
+.ckp-conso .ckp-table td.num,.ckp-conso .ckp-table th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ckp-conso .ckp-table td.neg{color:var(--danger)}
+.ckp-conso .ckp-table td.strong{font-weight:700}
+.ckp-conso-res td{border-top:2px solid var(--border,#2a2a3a);font-weight:700;padding-top:8px}
+.ckp-conso-alerte{margin-top:12px;padding:10px 12px;border-radius:8px;
+  border-left:3px solid var(--warn,orange);background:rgba(255,165,0,.07);font-size:13px}
+.ckp-conso-alerte ul{margin:6px 0 0 18px;padding:0}
+.ckp-conso-note{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MODE UI — Simple / Professionnel / Expert (1.520.155)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Bascule de mode dans la barre du haut : discrète, mais toujours là. */
+.mode-switch{display:flex;align-items:center;gap:5px}
+.mode-switch-lbl{font-size:13px;line-height:1;cursor:default}
+.mode-switch select{background:var(--panel);border:1px solid var(--line);color:var(--muted);
+  border-radius:var(--radius-sm);padding:5px 8px;font-size:12px;font-weight:600;cursor:pointer}
+.mode-switch select:hover{color:var(--text);border-color:var(--line2)}
+
+/* ── Accueil du Mode Simple ─────────────────────────────────────────── */
+.simple-home{max-width:820px;margin:0 auto}
+.simple-hello{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:6px 0 22px}
+.simple-hello-titre{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.simple-hello-date{color:var(--muted);font-size:14px;margin-top:2px}
+.simple-hello-soc{font-size:12px;color:var(--muted2);border:1px solid var(--line);
+  border-radius:999px;padding:5px 12px;white-space:nowrap}
+
+.simple-tuiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.simple-tuile{position:relative;display:flex;align-items:center;gap:16px;padding:22px 20px;
+  border-radius:var(--radius-lg);background:var(--panel);border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);transition:transform .12s var(--ease),box-shadow .12s var(--ease),border-color .12s}
+.simple-tuile:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--blue)}
+.simple-tuile-ico{font-size:32px;line-height:1;flex-shrink:0}
+.simple-tuile-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.simple-tuile-label{font-family:Syne,Inter,sans-serif;font-weight:800;font-size:17px;letter-spacing:.02em}
+.simple-tuile-sous{font-size:12.5px;color:var(--muted)}
+.simple-tuile-go{margin-left:auto;color:var(--muted2);font-weight:700;font-size:18px;flex-shrink:0}
+.simple-tuile:hover .simple-tuile-go{color:var(--blue)}
+/* La vente est l'action principale : elle se voit de loin. */
+.simple-tuile.tuile-vendre{background:linear-gradient(135deg,rgba(243,154,18,.13),var(--panel));
+  border-color:rgba(243,154,18,.42)}
+.simple-tuile.tuile-vendre:hover{border-color:var(--orange)}
+.simple-tuile.tuile-vendre .simple-tuile-go{color:var(--orange)}
+
+.simple-alertes{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.simple-alerte{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius-sm);
+  font-size:13px;border-left:3px solid var(--muted2);background:var(--panel)}
+.simple-alerte.niv-danger{border-left-color:var(--danger);background:var(--danger-bg)}
+.simple-alerte.niv-warn{border-left-color:var(--warn);background:var(--warn-bg)}
+.simple-alerte.niv-info{border-left-color:var(--blue);background:var(--panel2)}
+.simple-alerte-txt{flex:1;min-width:0}
+.simple-alerte-go{color:var(--blue);font-weight:600;white-space:nowrap}
+.simple-vide{color:var(--muted);padding:26px;text-align:center;border:1px dashed var(--line);
+  border-radius:var(--radius)}
+.simple-pied{margin-top:26px;text-align:center;font-size:12.5px;color:var(--muted2)}
+.simple-pied a{color:var(--blue);font-weight:600}
+
+/* En Mode Simple, la barre latérale s'efface au profit des grandes actions
+   sur les écrans larges — mais reste ouvrable par le bouton ☰. */
+body.fkc-mode-simple .simple-home{padding-top:8px}
+
+/* ── « Mon activité » ───────────────────────────────────────────────── */
+.mact-brief{margin-bottom:18px;border-left:3px solid var(--blue)}
+.mact-brief.mact-alerte{border-left-color:var(--danger)}
+.mact-brief.mact-vigilance{border-left-color:var(--warn)}
+.mact-salut{font-size:12px;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em}
+.mact-resume{font-size:15px;margin-top:6px;line-height:1.6}
+.mact-reco{margin-top:10px;font-size:13.5px;color:var(--muted);font-style:italic}
+.mact-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+.mact-kpi{display:flex;flex-direction:column;gap:4px;padding:15px 16px;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+.mact-kpi-lib{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.mact-kpi-val{font-family:Syne,Inter,sans-serif;font-size:22px;font-weight:800}
+.mact-kpi-unite{font-size:11px;color:var(--muted2)}
+
+/* ── Écran de réglage du mode ───────────────────────────────────────── */
+.mode-source{color:var(--muted);margin-bottom:16px;font-size:13.5px}
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:22px}
+.mode-card{position:relative;display:flex;flex-direction:column;gap:6px;text-align:left;padding:20px 18px;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);color:var(--text);
+  cursor:pointer;font:inherit;transition:transform .12s var(--ease),border-color .12s}
+.mode-card:hover{transform:translateY(-2px);border-color:var(--blue)}
+.mode-card.is-active{border-color:var(--blue);box-shadow:var(--ring)}
+.mode-card-pastille{font-size:22px}
+.mode-card-label{font-family:Syne,Inter,sans-serif;font-weight:800;font-size:16px}
+.mode-card-devise{font-size:13px;color:var(--text);font-style:italic}
+.mode-card-cible{font-size:12px;color:var(--muted)}
+.mode-card-obj{font-size:12px;color:var(--muted2)}
+.mode-card-badge{position:absolute;top:12px;right:12px;font-size:10px;font-weight:700;
+  background:var(--blue);color:#fff;border-radius:999px;padding:3px 9px;letter-spacing:.04em}
+.mode-ordre{margin:10px 0 0 20px;font-size:13px;color:var(--muted);line-height:1.9}
+.mode-ordre li.on{color:var(--text)}
+.mode-ordre li.on strong{color:var(--blue)}
+.mode-reset{margin-top:14px}
+.mode-note{margin-top:14px;font-size:12px;color:var(--muted2);line-height:1.6}
+
+@media(max-width:640px){
+  .simple-hello{flex-direction:column;gap:8px}
+  .simple-tuiles{grid-template-columns:1fr}
+  .simple-tuile{padding:18px 16px}
+  .mode-switch select{max-width:96px}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DÉMARRAGE — onboarding en trois questions (1.520.157)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.onb{max-width:820px;margin:0 auto}
+.onb-hero{display:flex;align-items:center;gap:18px;margin:4px 0 26px}
+.onb-hero-ico{font-size:34px;line-height:1}
+.onb-hero-titre{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.onb-hero-sub{color:var(--muted);font-size:14px;margin-top:3px}
+
+.onb-etape{display:flex;gap:16px;padding:22px 20px;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius-lg);margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.onb-num{flex-shrink:0;width:30px;height:30px;border-radius:999px;display:flex;align-items:center;
+  justify-content:center;font-family:Syne,Inter,sans-serif;font-weight:800;font-size:14px;
+  background:var(--grad-blue);color:#fff}
+.onb-corps{flex:1;min-width:0}
+.onb-q{font-family:Syne,Inter,sans-serif;font-size:17px;font-weight:800;margin-bottom:5px}
+.onb-aide{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.onb-champ{display:block}
+.onb-lbl{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);
+  font-weight:700;margin-bottom:6px}
+.onb-fige{padding:13px 15px;background:var(--panel2);border:1px solid var(--line2);border-radius:var(--radius-sm);
+  display:flex;flex-direction:column;gap:4px}
+.onb-fige span{font-size:12px;color:var(--muted)}
+
+.onb-tailles{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px}
+.onb-taille{position:relative;display:flex;flex-direction:column;gap:3px;padding:14px 14px 12px;
+  background:var(--bg2);border:1px solid var(--line2);border-radius:var(--radius);cursor:pointer;
+  transition:border-color .12s,transform .12s var(--ease)}
+.onb-taille:hover{border-color:var(--blue);transform:translateY(-1px)}
+.onb-taille.is-active{border-color:var(--blue);box-shadow:var(--ring)}
+.onb-taille input{position:absolute;opacity:0;pointer-events:none}
+.onb-taille-ico{font-size:22px;line-height:1}
+.onb-taille-lbl{font-weight:700;font-size:13.5px}
+.onb-taille-aide{font-size:11.5px;color:var(--muted)}
+.onb-taille-mode{margin-top:5px;font-size:11px;color:var(--muted2)}
+
+.onb-modules{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.onb-mod{display:flex;align-items:center;gap:9px;padding:10px 12px;background:var(--bg2);
+  border:1px solid var(--line2);border-radius:var(--radius-sm);cursor:pointer;font-size:13px}
+.onb-mod:hover{border-color:var(--line2);background:var(--panel2)}
+.onb-mod input[type=checkbox]{width:auto;margin:0}
+.onb-mod-ico{font-size:15px;line-height:1}
+.onb-mod-lbl{flex:1;min-width:0}
+.onb-mod.is-socle{opacity:.75;cursor:default}
+.onb-mod-socle{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em}
+
+.onb-pied{display:flex;align-items:center;gap:12px;margin-top:22px}
+.btn-lg{padding:13px 26px;font-size:15px;font-weight:700}
+.onb-ecarter{margin-top:18px;text-align:center}
+.onb-journal{margin:14px 0 0 18px;font-size:12.5px;color:var(--muted);line-height:1.9}
+.onb-note{margin-top:16px;font-size:12px;color:var(--muted2);line-height:1.7}
+.onb-note a{color:var(--blue);font-weight:600}
+
+/* Bandeau d'invitation, en tête de contenu */
+.onb-invite{display:flex;align-items:center;gap:13px;padding:13px 16px;margin-bottom:18px;
+  border-radius:var(--radius);border:1px solid rgba(61,111,224,.4);
+  background:linear-gradient(135deg,rgba(61,111,224,.14),var(--panel))}
+.onb-invite-ico{font-size:20px;line-height:1;flex-shrink:0}
+.onb-invite-txt{flex:1;min-width:0;font-size:13px;line-height:1.55}
+.onb-invite-non{background:none;border:none;color:var(--muted2);font:inherit;font-size:12px;
+  cursor:pointer;padding:6px 4px;text-decoration:underline}
+.onb-invite-non:hover{color:var(--text)}
+
+@media(max-width:640px){
+  .onb-etape{flex-direction:column;gap:10px}
+  .onb-tailles,.onb-modules{grid-template-columns:1fr}
+  .onb-invite{flex-wrap:wrap}
+  .onb-pied{flex-direction:column;align-items:stretch}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PACK GESTION COLLECTIVE DES DROITS — ruban de navigation et formulaires
+   horizontaux (1.520.159).
+
+   Le pack compte vingt écrans et des formulaires de vingt champs. À plat et
+   en colonne, l'un mangeait trois lignes d'en-tête, l'autre deux écrans de
+   défilement. Les règles ci-dessous n'inventent pas de thème : elles
+   réutilisent les variables du socle, pour qu'un changement de palette
+   continue de s'appliquer ici sans retouche.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Ruban : deux lignes fixes, jamais dépliables ── */
+.gc-ruban{margin:-4px 0 18px}
+.gc-ruban-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.gc-rub{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:10px;font-size:13px;font-weight:600;
+  color:var(--muted);background:var(--panel);border:1px solid var(--line);white-space:nowrap;transition:.13s}
+.gc-rub:hover{color:var(--text);border-color:var(--line2);background:var(--panel2)}
+.gc-rub.is-on{color:#fff;background:var(--panel2);border-color:var(--orange);box-shadow:inset 0 -2px 0 var(--orange)}
+.gc-rub-n{font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;background:var(--bg2);color:var(--muted2)}
+.gc-rub.is-on .gc-rub-n{background:rgba(243,154,18,.18);color:var(--orange)}
+.gc-ruban-profil{margin-left:auto;font-size:11px;color:var(--muted2);font-weight:600;white-space:nowrap}
+.gc-ruban-sub{margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--bg2);border:1px solid var(--line)}
+.gc-sub{padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.gc-sub:hover{color:var(--text);background:var(--panel2)}
+.gc-sub.is-on{color:#241500;background:linear-gradient(135deg,var(--orange-l),var(--orange-d))}
+
+/* ── En-tête d'écran ── */
+.gc-titre{margin-bottom:16px}
+.gc-titre h1{font-size:21px;font-weight:700;margin-bottom:4px}
+.gc-titre p{font-size:12.5px;max-width:900px}
+
+/* ── Bandeau d'indicateurs ── */
+.gc-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.gc-kpi-c{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.gc-kpi-c span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted2);font-weight:700}
+.gc-kpi-c b{display:block;font-size:23px;font-weight:600;margin-top:4px}
+.gc-kpi-c i{display:block;font-style:normal;font-size:11px;color:var(--muted2);margin-top:2px}
+
+/* ── Le parcours en étapes ── */
+.gc-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;padding:14px 20px;
+  border-bottom:1px solid var(--line);background:var(--bg2)}
+.gc-step{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);opacity:.55}
+.gc-step b{display:block;font-size:12.5px;font-weight:700;color:var(--muted)}
+.gc-step span{display:block;font-size:11px;color:var(--muted2);margin-top:3px;line-height:1.4}
+.gc-step.on{opacity:1;border-color:var(--orange);box-shadow:inset 0 -2px 0 var(--orange)}
+.gc-step.on b{color:#fff}
+.gc-step.done{opacity:1;border-color:rgba(57,184,126,.4)}
+.gc-step.done b{color:var(--ok)}
+
+/* ── Fiche en lecture : des paires libellé/valeur qui se lisent en largeur ── */
+.gc-fiche{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 20px}
+.gc-fiche>div{border-left:2px solid var(--line);padding-left:10px}
+.gc-fiche span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted2);font-weight:700}
+.gc-fiche strong{display:block;font-size:13.5px;margin-top:2px}
+
+/* ── Formulaires : la grille remplace la colonne ── */
+.gc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0 14px;align-items:end}
+.gc-grid>*{min-width:0}
+.gc-bloc{border-top:1px solid var(--line);padding-top:14px;margin-top:6px}
+.gc-bloc:first-child{border-top:none;padding-top:0;margin-top:0}
+.gc-bloc h3{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--orange);font-weight:700;margin-bottom:12px}
+.gc-details{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--bg2)}
+.gc-details>summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--muted)}
+.gc-details>summary:hover{color:var(--text)}
+.gc-instruire{display:flex;gap:8px;align-items:end;margin-bottom:8px}
+.gc-instruire .fld{flex:1;margin-bottom:0}
+
+/* ── Bilan des clés : une pastille par famille et territoire ── */
+.gc-bilan{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.gc-bilan-c{padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);min-width:150px}
+.gc-bilan-c span{display:block;font-size:10.5px;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.gc-bilan-c b{display:block;font-size:18px;font-weight:600;margin-top:2px}
+.gc-bilan-c i{display:block;font-style:normal;font-size:11px;margin-top:1px}
+.gc-bilan-c.ok{border-color:rgba(57,184,126,.35)} .gc-bilan-c.ok i{color:var(--ok)}
+.gc-bilan-c.ko{border-color:rgba(243,154,18,.35)} .gc-bilan-c.ko i{color:var(--warn)}
+
+.gc-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700;
+  background:var(--bg2);border:1px solid var(--line);color:var(--muted);vertical-align:middle}
+.gc-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+
+@media(max-width:900px){
+  .gc-2col{grid-template-columns:1fr}
+  .gc-ruban-profil{margin-left:0;width:100%}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FIN DE LA COLONNE ÉTROITE (1.520.161)
+
+   Dix-neuf écrans du pack reprenaient la même disposition : une liste à
+   gauche, et à droite une colonne de 320 à 360 pixels contenant le formulaire
+   de saisie, dont les champs s'empilaient verticalement.
+
+   Trois défauts en découlaient. Le formulaire demandait deux écrans de
+   défilement là où la fiche papier tient en une feuille. La colonne restait
+   figée quelle que soit la largeur de l'écran, gaspillant la moitié d'un 27
+   pouces. Et surtout, un champ de saisie de 300 pixels ne peut afficher ni un
+   titre d'œuvre complet, ni un nom d'ayant droit long, ni une référence de
+   contrat : l'agent saisit sans relire ce qu'il saisit.
+
+   .gc-split empile désormais les deux zones, chacune sur toute la largeur ;
+   le formulaire, une fois libéré, se met en grille horizontale.
+   ═══════════════════════════════════════════════════════════════════════ */
+.gc-split{display:block}
+.gc-split>*+*{margin-top:16px}
+
+/* Le formulaire d'un panneau latéral devient une grille horizontale.
+   Les éléments qui ne sont pas des champs — aide, titre, alerte — prennent la
+   ligne entière : les voir découpés en cellules de 190 pixels rendrait
+   l'explication illisible au moment précis où elle sert. */
+.gc-grid>p,.gc-grid>.help,.gc-grid>.alert,.gc-grid>h3,.gc-grid>hr,
+.gc-grid>table,.gc-grid>.table-wrap,.gc-grid>details,.gc-grid>.gc-bilan{grid-column:1/-1}
+.gc-grid>button,.gc-grid>.btn{align-self:end;margin-bottom:15px}
+.gc-grid>input[type=hidden]{display:none}
+/* Une zone de texte respire mal dans une cellule étroite : on lui laisse
+   deux colonnes dès que la place existe. */
+.gc-grid>label.fld:has(textarea){grid-column:span 2}
+
+@media(max-width:700px){
+  .gc-grid{grid-template-columns:1fr}
+  .gc-grid>label.fld:has(textarea){grid-column:auto}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BARRE TRANSVERSALE + PROFIL UX (1.530.0)
+
+   La barre est la seule zone d'interface qui ne change ni avec le module ni
+   avec le mode. Sa constance EST sa fonction : on doit pouvoir créer,
+   chercher, consulter ses alertes et interroger le copilote sans avoir à
+   réapprendre où ils sont selon l'écran ouvert.
+
+   Elle se place sous la barre de titre et reste collante avec elle : au
+   défilement d'une longue liste, la recherche demeure atteignable — c'est
+   précisément quand la liste est longue qu'on en a besoin.
+   ═══════════════════════════════════════════════════════════════════════ */
+.fkc-barre{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:10px;
+  padding:9px 30px;border-bottom:1px solid var(--line);background:rgba(14,22,38,.86);
+  backdrop-filter:blur(8px)}
+.fkc-barre-btn{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:9px;
+  border:1px solid var(--line2);background:var(--panel);color:var(--muted);font:inherit;font-size:12.5px;
+  font-weight:600;cursor:pointer;transition:.12s var(--ease);position:relative;white-space:nowrap}
+.fkc-barre-btn:hover{border-color:var(--blue);color:var(--text)}
+.fkc-barre-btn[aria-expanded=true]{border-color:var(--blue);color:#fff;background:var(--panel2)}
+.fkc-barre-action{border-color:rgba(243,154,18,.5);color:var(--orange)}
+.fkc-barre-action:hover{background:rgba(243,154,18,.10);border-color:var(--orange)}
+.fkc-barre-ico{font-size:14px;line-height:1}
+.fkc-barre-action .fkc-barre-ico{font-size:17px;font-weight:700}
+
+.fkc-barre-rech{flex:1;min-width:120px;display:flex;align-items:center;gap:8px;padding:6px 12px;
+  border:1px solid var(--line2);border-radius:9px;background:var(--bg2)}
+.fkc-barre-rech:focus-within{border-color:var(--blue);box-shadow:var(--ring)}
+.fkc-barre-input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);
+  font:inherit;font-size:13px}
+.fkc-barre-input::placeholder{color:var(--muted2)}
+.fkc-barre-kbd{font-family:var(--mono);font-size:10.5px;color:var(--muted2);border:1px solid var(--line2);
+  border-radius:5px;padding:1px 6px}
+
+.fkc-barre-pastille{min-width:17px;height:17px;padding:0 5px;border-radius:9px;font-size:10px;
+  font-weight:800;display:inline-flex;align-items:center;justify-content:center;color:#fff;background:var(--muted2)}
+.fkc-barre-pastille.niv-danger{background:var(--danger)}
+.fkc-barre-pastille.niv-warn{background:var(--warn);color:#231a05}
+.fkc-barre-pastille.niv-info{background:var(--blue)}
+.fkc-barre-alertes.a-des{border-color:rgba(229,103,95,.45)}
+
+/* Le panneau unique — quatre panneaux auraient produit quatre façons de se
+   fermer, dont l'une aurait fini par ne plus fonctionner. */
+.fkc-barre-panneau{position:absolute;top:calc(100% + 7px);right:30px;left:auto;width:min(520px,calc(100vw - 60px));
+  max-height:min(70vh,620px);overflow:auto;background:var(--panel);border:1px solid var(--line2);
+  border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:40}
+.fkc-panneau-tete{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+.fkc-panneau-titre{font-weight:700;font-size:13px;color:var(--text)}
+.fkc-panneau-fermer{background:transparent;border:0;color:var(--muted2);font-size:15px;cursor:pointer;
+  padding:2px 6px;border-radius:6px;font-family:inherit}
+.fkc-panneau-fermer:hover{color:var(--text);background:var(--panel2)}
+.fkc-panneau-corps{padding:8px}
+.fkc-panneau-section{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted2);
+  font-weight:700;padding:11px 10px 5px}
+.fkc-panneau-attente,.fkc-panneau-vide{color:var(--muted);font-size:13px;padding:18px 12px;text-align:center}
+
+.fkc-item{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;
+  color:var(--text);text-decoration:none;transition:.1s var(--ease)}
+a.fkc-item:hover{background:var(--panel2)}
+.fkc-item-ico{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.fkc-item-txt{display:flex;flex-direction:column;min-width:0;flex:1}
+.fkc-item-label{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fkc-item-sous{font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fkc-item-badge{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);
+  border:1px solid var(--line2);border-radius:20px;padding:2px 7px;flex-shrink:0}
+.fkc-item.est-contexte{background:rgba(61,111,224,.08);box-shadow:inset 2px 0 0 var(--blue)}
+.fkc-item.niv-danger .fkc-item-label{color:var(--danger)}
+.fkc-item.niv-warn .fkc-item-label{color:var(--orange-l)}
+
+.fkc-copilot-tete{padding:12px 12px 14px;border-radius:11px;background:var(--bg2);margin-bottom:6px}
+.fkc-copilot-tete.humeur-alerte{box-shadow:inset 3px 0 0 var(--danger)}
+.fkc-copilot-tete.humeur-vigilance{box-shadow:inset 3px 0 0 var(--warn)}
+.fkc-copilot-tete.humeur-serein{box-shadow:inset 3px 0 0 var(--ok)}
+.fkc-copilot-salut{font-weight:700;font-size:13.5px;margin-bottom:5px}
+.fkc-copilot-resume{font-size:12.5px;color:var(--muted);line-height:1.55;margin:0}
+.fkc-copilot-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;padding:6px 2px 2px}
+.fkc-copilot-kpi{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  display:flex;flex-direction:column;gap:3px}
+.fkc-copilot-kpi-val{font-weight:800;font-size:15px}
+.fkc-copilot-kpi-lbl{font-size:10.5px;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px}
+.fkc-copilot-reco{margin:10px 4px 4px;padding:10px 12px;border-radius:9px;background:rgba(243,154,18,.08);
+  border:1px solid rgba(243,154,18,.28);font-size:12.5px;color:var(--text);line-height:1.55}
+
+@media(max-width:860px){
+  .fkc-barre{padding:8px 14px;gap:7px;flex-wrap:wrap}
+  /* Sous 860 px, les libellés disparaissent avant les icônes : trois boutons
+     illisibles valent moins que trois icônes reconnaissables. */
+  .fkc-barre-btn .fkc-barre-txt{display:none}
+  .fkc-barre-rech{order:-1;flex-basis:100%}
+  .fkc-barre-panneau{right:8px;left:8px;width:auto}
+}
+
+/* ── Écran d'aperçu du profil UX ──────────────────────────────────────── */
+.ux-couches{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:20px}
+.ux-couche{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.ux-couche-num{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted2);font-weight:700}
+.ux-couche-val{font-size:15px;font-weight:700;margin-top:4px}
+.ux-couche-sous{font-size:11.5px;color:var(--muted);margin-top:3px}
+.ux-menu-liste{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}
+.ux-menu-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);
+  border-radius:9px;background:var(--bg2)}
+.ux-menu-item code{font-family:var(--mono);font-size:10.5px;color:var(--muted2)}
+.ux-kpi-branche{color:var(--ok);font-weight:700}
+.ux-kpi-absent{color:var(--muted2)}
+.simple-devise{color:var(--muted2);font-size:12px;letter-spacing:.6px;text-transform:uppercase;
+  font-weight:700;margin:-6px 0 16px}
+.simple-suggestions{display:grid;gap:9px;margin-bottom:18px}
+.simple-suggestion{display:flex;align-items:center;gap:12px;padding:12px 15px;border-radius:11px;
+  background:rgba(61,111,224,.09);border:1px solid rgba(61,111,224,.3);color:var(--text);transition:.12s var(--ease)}
+.simple-suggestion:hover{background:rgba(61,111,224,.16)}
+.simple-suggestion-ico{font-size:19px}
+.simple-suggestion-txt{display:flex;flex-direction:column;gap:2px}
+.simple-suggestion-txt strong{font-size:13.5px}
+.simple-suggestion-txt span{font-size:11.5px;color:var(--muted)}
+.ux-kpi-socle{color:var(--blue);font-weight:700;font-size:11.5px}
+
+/* ── Démarrage en cinq questions (1.530.0) ────────────────────────────── */
+.onb-familles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px}
+.onb-famille{display:flex;align-items:center;gap:9px;padding:11px 13px;border:1px solid var(--line2);
+  border-radius:10px;cursor:pointer;background:var(--bg2);transition:.12s var(--ease)}
+.onb-famille:hover{border-color:var(--blue)}
+.onb-famille.is-active{border-color:var(--blue);background:rgba(61,111,224,.10)}
+.onb-famille input{margin:0}
+.onb-famille-lbl{flex:1;font-size:13px;font-weight:600}
+.onb-famille-nb{font-size:10.5px;color:var(--muted2);border:1px solid var(--line2);border-radius:20px;padding:1px 7px}
+.onb-facons{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.onb-facon{display:grid;grid-template-columns:auto 1fr;gap:4px 11px;align-items:center;padding:12px 14px;
+  border:1px solid var(--line2);border-radius:11px;cursor:pointer;background:var(--bg2);transition:.12s var(--ease)}
+.onb-facon:hover{border-color:var(--blue)}
+.onb-facon.is-active{border-color:var(--blue);background:rgba(61,111,224,.10)}
+/* Rang de préférence : la première façon cochée pèse le plus, et le chiffre
+   le dit. Sans lui, l'utilisateur ne saurait pas que l'ordre compte — et il
+   compte, puisque c'est lui qui décide de ce qui remonte en premier. */
+.onb-facon-rang{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;
+  margin-left:6px;border-radius:9px;font-size:11px;font-weight:700;line-height:1}
+.onb-facon-rang:not(:empty){background:var(--bleu,#3d6fe0);color:#fff}
+/* Plafond atteint : on grise ce qui n'est pas coché plutôt que de laisser
+   cliquer pour rien puis refuser. */
+.onb-facon.is-plein{opacity:.45}
+.onb-facon.is-plein input{cursor:not-allowed}
+.onb-facon input{grid-row:1/3;margin:0}
+.onb-facon-ico{display:none}
+.onb-facon-lbl{font-size:13px;font-weight:700}
+.onb-facon-aide{font-size:11.5px;color:var(--muted);line-height:1.45}
+.onb-roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px;margin-bottom:18px}
+.onb-role{display:flex;align-items:center;gap:9px;padding:11px 13px;border:1px solid var(--line2);
+  border-radius:10px;cursor:pointer;background:var(--bg2);transition:.12s var(--ease)}
+.onb-role:hover{border-color:var(--blue)}
+.onb-role.is-active{border-color:var(--blue);background:rgba(61,111,224,.10)}
+.onb-role-lbl{flex:1;font-size:13px;font-weight:600}
+.onb-sous-q{font-size:14px;margin:20px 0 4px}
+.onb-aide-fine{font-size:11.5px;opacity:.85}
+
+/* ── Workflow métier (1.531.0) ─────────────────────────────────────────
+   Une frise horizontale plutôt qu'une liste : le workflow exprime un ORDRE,
+   et une liste verticale se lit comme un menu — c'est-à-dire comme des choix
+   parallèles, ce qu'une suite d'étapes n'est justement pas. */
+.ux-wf{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.ux-wf-fleche{color:var(--muted2);font-size:13px}
+.ux-wf-etape{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:9px;
+  border:1px solid var(--line2);background:var(--bg2);color:var(--text);text-decoration:none;
+  font-size:12.5px;font-weight:600;transition:.12s var(--ease)}
+a.ux-wf-etape:hover{border-color:var(--blue);background:var(--panel2)}
+/* Étape sans écran : présente, lisible, non cliquable. On ne l'efface pas —
+   un workflow amputé de ses étapes non outillées serait un workflow faux. */
+.ux-wf-etape.est-absente{opacity:.5;border-style:dashed;cursor:default}
+.ux-wf-ico{font-size:14px}
+.simple-wf{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:-4px 0 18px}
+.simple-wf-lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);
+  font-weight:700;margin-right:4px}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COCKPITS & TABLEAUX DE BORD (déplacé ici en 1.539.0)
+
+   Ces règles vivaient dans un bloc <style> du fragment « Creative Suite »,
+   rendu en dernier et parfois pas rendu du tout. Un cockpit métier ou un
+   tableau de bord de module n'avait alors AUCUNE de ces règles : les cartes
+   tombaient les unes sous les autres, sans grille. Elles sont désormais
+   servies à tous les écrans, avant tout contenu.
+   ═══════════════════════════════════════════════════════════════════════ */
+.pv-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 18px;transition:border-color .18s ease, box-shadow .18s ease}
+.pv-card:hover{border-color:color-mix(in srgb, var(--orange) 34%, var(--line));box-shadow:0 6px 22px rgba(0,0,0,.16)}
+.dash-block{margin-bottom:18px}
+.dash-block.hidden{display:none}
+.pv-h2{font-size:15px;font-weight:800;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.pv-h2 .pv-link{margin-left:auto;font-size:12px;font-weight:600;color:var(--orange);text-decoration:none}
+.pv-2col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:900px){.pv-2col{grid-template-columns:1fr}}
+.pos{color:var(--ok)} .neg{color:var(--danger)}
+/* Santé */
+.pv-health{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.pv-score{text-align:center}.pv-score-tag{margin-top:6px;font-weight:700;font-size:13px;color:var(--muted)}
+.pv-demarrage{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.pv-demarrage-ring{width:96px;height:96px;flex:0 0 auto;border-radius:50%;border:6px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:var(--muted)}
+.pv-demarrage-txt{flex:1;min-width:240px}
+.pv-demarrage-title{font-weight:800;font-size:16px;margin-bottom:4px}
+.pv-demarrage-txt p{margin:0 0 10px}.pv-demarrage-txt .btn{margin-right:8px}
+.pv-health-doms{flex:1;min-width:280px;display:flex;flex-direction:column;gap:11px}
+.pv-dom{display:flex;align-items:center;gap:10px;font-size:13px}
+.pv-dom-dot{font-size:13px}.pv-dom-lab{width:110px;font-weight:600}
+.pv-dom-bar{flex:1;height:9px;background:var(--line);border-radius:6px;overflow:hidden}
+.pv-dom-bar i{display:block;height:100%;border-radius:6px;background-image:linear-gradient(90deg, color-mix(in srgb, currentColor 55%, transparent), currentColor);transform-origin:left;animation:pvGrow .7s ease}
+@keyframes pvGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.pv-dom-sc{width:30px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:700}
+.pv-dom-na{opacity:.55}
+.pv-dom-nalab{width:auto;font-size:11px;font-weight:600;font-style:italic}
+.pv-how{margin-top:6px;font-size:12.5px;color:var(--muted)}
+.pv-how summary{cursor:pointer;font-weight:600;color:var(--orange);list-style:none}
+.pv-how summary::-webkit-details-marker{display:none}
+.pv-how[open] summary{margin-bottom:8px}
+.pv-how ul{margin:0 0 8px;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.pv-how p{margin:0}
+.pv-how b{color:var(--text)}
+.pv-health-note{margin:4px 0 0;font-size:11.5px;color:var(--muted)}
+/* KPI */
+.pv-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.pv-kpi{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 16px;overflow:hidden;transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease}
+.pv-kpi::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--orange),transparent 70%);opacity:.85}
+.pv-kpi:hover{transform:translateY(-2px);border-color:color-mix(in srgb, var(--orange) 40%, var(--line));box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.pv-kpi-top{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12.5px;font-weight:600}
+.pv-kpi-ico{font-size:16px}
+.pv-kpi-val{font-size:24px;font-weight:800;margin:8px 0 4px;font-variant-numeric:tabular-nums}.pv-kpi-val small{font-size:12px;color:var(--muted);font-weight:600}
+.pv-kpi-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:20px}
+.pv-trend{font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px}
+.pv-trend.up{color:var(--ok);background:var(--ok-bg)}.pv-trend.down{color:var(--danger);background:var(--danger-bg)}.pv-trend.flat{color:var(--muted);background:var(--line)}
+.pv-kpi-sous{font-size:11.5px;color:var(--muted)}
+.pv-kpi-spark{margin-top:10px}.pv-kpi-spark .fkc-spark{width:100%;height:38px;display:block}
+.pv-kpi-obj{margin-top:8px;font-size:11.5px;color:var(--muted)}
+.pv-kpi-obj .pv-obj-bar{display:block;height:5px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:4px}
+.pv-kpi-obj .pv-obj-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--orange),var(--ok));border-radius:4px}
+/* Risques */
+.pv-risks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.pv-risk{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;text-decoration:none;color:var(--text);border:1px solid var(--line);background:var(--panel2);transition:transform .14s ease}
+.pv-risk:hover{transform:translateY(-1px)}
+.pv-risk-ico{font-size:16px}.pv-risk-lab{flex:1;font-size:13px}.pv-risk-val{font-weight:800}
+.pv-risk.lvl-high{border-color:var(--danger);background:var(--danger-bg)}.pv-risk.lvl-high .pv-risk-val{color:var(--danger)}
+.pv-risk.lvl-mid{border-color:var(--orange)}.pv-risk.lvl-mid .pv-risk-val{color:var(--orange)}
+/* Cash / rent / mini */
+.pv-cash{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.pv-cash-total{display:flex;flex-direction:column;gap:4px}.pv-cash-total strong{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.pv-caisse{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 13px;border:1px dashed color-mix(in srgb, var(--orange) 55%, var(--line));border-radius:12px;text-decoration:none;color:var(--text);background:color-mix(in srgb, var(--orange) 7%, transparent)}
+.pv-caisse:hover{background:color-mix(in srgb, var(--orange) 13%, transparent)}
+.pv-caisse-ico{font-size:16px}.pv-caisse-lab{flex:1;font-size:13px;font-weight:600}
+.pv-caisse-vals{font-size:12.5px;font-variant-numeric:tabular-nums;display:flex;gap:8px}
+.pv-list{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.pv-list li{display:flex;justify-content:space-between;font-size:13px;border-top:1px solid var(--line);padding-top:6px}
+.pv-list b{font-variant-numeric:tabular-nums}
+.pv-rent{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px}
+.pv-rent div{display:flex;flex-direction:column;gap:3px}.pv-rent b{font-size:17px;font-variant-numeric:tabular-nums}
+.pv-legend{display:flex;gap:16px;margin-top:6px;font-size:12px;color:var(--muted)}
+.pv-leg{display:flex;align-items:center;gap:6px}
+.pv-leg i{width:16px;height:3px;border-radius:2px;display:inline-block}
+.pv-leg i.dash{background:repeating-linear-gradient(90deg,var(--muted) 0 4px,transparent 4px 7px);height:2px}
+.pv-rec{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:8px}
+.pv-rec-kpi{display:flex;flex-direction:column;gap:3px}.pv-rec-kpi strong{font-size:18px;font-variant-numeric:tabular-nums}
+.pv-mini{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pv-mini.sm b{font-size:14px}
+.pv-mini div{display:flex;flex-direction:column;gap:3px}.pv-mini b{font-size:18px;font-variant-numeric:tabular-nums}
+.pv-chart{margin-top:10px}
+.pv-chart .fkc-chart{width:100%;height:auto;display:block}
+/* Tops */
+.pv-tops{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.pv-top-h{font-size:13px;font-weight:700;margin:0 0 10px;color:var(--muted)}
+.pv-rank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.pv-rank li{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.pv-rank-n{width:18px;height:18px;border-radius:6px;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 auto}
+.pv-rank-lab{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-rank-bar{width:60px;height:6px;background:var(--line);border-radius:5px;overflow:hidden;flex:0 0 auto}.pv-rank-bar i{display:block;height:100%;background:var(--orange)}
+.pv-rank-v{width:90px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.pv-bigname{font-size:16px;font-weight:800;margin:0 0 2px}
+/* Feed */
+.pv-feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.pv-feed li{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.pv-feed li:last-child{border-bottom:0}
+.pv-feed-t{color:var(--muted);font-variant-numeric:tabular-nums;width:84px;flex:0 0 auto;font-size:12px}
+.pv-feed-ico{font-size:15px}
+.sm{font-size:12px}
+/* Personnalisation */
+.pv-pers{background:var(--panel);border:1px solid var(--orange);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.pv-pers-head{font-weight:700;margin-bottom:10px}
+.pv-pers-list{display:flex;flex-wrap:wrap;gap:10px 18px}
+.pv-pers-list label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+/* ── Ajustements de disposition (1.539.0) ─────────────────────────────────
+   Trois défauts se voyaient à l'écran, tous dus au même oubli : les cartes
+   d'une grille sont dimensionnées par leur contenu, et un contenu inégal
+   produit une grille en dents de scie. */
+
+/* 1. HAUTEURS ÉGALES. Une carte « Résultat net » porte un badge de marge,
+      une carte « Chiffre d'affaires » non : sans cette règle, la première
+      est plus haute et la ligne paraît bancale. On aligne les cartes, et
+      l'on pousse la métadonnée en bas de chacune. */
+.pv-kpis{align-items:stretch}
+.pv-kpi{display:flex;flex-direction:column}
+.pv-kpi-meta{margin-top:auto;padding-top:6px}
+.pv-kpi-spark,.pv-kpi-obj{margin-top:10px}
+
+/* 2. GRILLE PRÉVISIBLE. « auto-fit » laisse une carte seule s'étirer sur
+      toute la largeur — un indicateur unique occupait la ligne entière et
+      paraissait démesuré. « auto-fill » garde la largeur des colonnes, et le
+      plafond de 4 colonnes évite les rangées de six cartes minuscules sur un
+      grand écran. */
+.pv-kpis{grid-template-columns:repeat(auto-fill,minmax(228px,1fr));max-width:100%}
+@media(min-width:1500px){.pv-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:600px){.pv-kpis{grid-template-columns:1fr}}
+
+/* 3. RYTHME VERTICAL CONSTANT entre les blocs, quel que soit celui qui rend.
+      Les fragments avaient chacun leur marge : l'écart entre deux sections
+      changeait selon les modules activés. */
+.dash-block{margin-bottom:22px}
+.dash-block:last-child{margin-bottom:0}
+.dash-block > .pv-h2{margin-bottom:12px}
+
+/* Cartes de contenu : même respiration que les cartes d'indicateurs, et
+   hauteurs égales dans les grilles à deux colonnes — un graphique court ne
+   doit pas laisser un vide sous la carte voisine. */
+.pv-2col,.pv-tops{align-items:stretch}
+.pv-2col > .pv-card,.pv-tops > .pv-card{display:flex;flex-direction:column}
+.pv-tops{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.pv-top-h{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted2);
+  font-weight:700;margin:0 0 10px}
+
+/* Les tableaux d'un cockpit débordaient sur mobile : ils poussaient la page
+   en largeur au lieu de défiler dans leur carte. */
+.pv-card .table-wrap,.dash-block .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* Les nombres s'alignent en colonne : sans chiffres à chasse fixe, « 1 234 »
+   et « 987 » ne se comparent pas d'un coup d'œil. */
+.pv-mini b,.pv-risk-val,.pv-kpi-val,.ux-copilot-kpi-val{font-variant-numeric:tabular-nums}
+
+/* ── Bandeaux de statistiques des MODULES (1.539.0) ───────────────────────
+   `.stats` est la grille que tous les écrans de module utilisent en tête de
+   page (Ventes, Achats, Stock, Caisse…). Elle souffrait des mêmes maux que
+   les cockpits, et les corriger ici les corrige partout d'un coup. */
+
+/* Une tuile seule s'étirait sur toute la largeur avec « auto-fit » : un écran
+   qui n'affiche qu'un chiffre montrait une carte démesurée, dont la valeur
+   flottait perdue au milieu. */
+.stats{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));align-items:stretch}
+@media(min-width:1500px){.stats{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr;gap:10px}}
+@media(max-width:380px){.stats{grid-template-columns:1fr}}
+
+/* Hauteurs égales, et la mention secondaire poussée en bas de tuile. */
+.stat{display:flex;flex-direction:column}
+.stat-value{font-variant-numeric:tabular-nums}
+.stat > .muted:last-child,.stat-sous{margin-top:auto;padding-top:6px;font-size:11.5px}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   CORRECTION 1.718.0 — « auto-fill » ne convenait PAS aux cartes.
+
+   Cette règle appliquait aux cartes le traitement des tuiles de chiffres
+   ci-dessus, et le raisonnement ne tenait pas pour elles.
+
+   `auto-fill` CRÉE DES COLONNES VIDES : sur un écran de 1 900 px, il en
+   fabrique cinq de 340 px et n'en remplit que deux. Les deux cartes se
+   serraient donc à gauche, avec 60 % de la page inoccupée à leur droite —
+   c'est ce qu'on voyait sur Maestro, sur l'accueil du Studio et sur le
+   tableau de bord.
+
+   `auto-fit` REPLIE les colonnes vides et répartit la place entre les cartes
+   présentes : deux cartes prennent la moitié chacune, trois un tiers.
+
+   La crainte d'origine — une carte seule étirée sur toute la largeur —
+   valait pour une TUILE qui n'affiche qu'un nombre, perdu au milieu. Elle ne
+   vaut pas pour une carte, qui porte un tableau ou une liste : celle-là a
+   besoin de toute la largeur qu'on lui donne. Les tuiles `.stats` gardent
+   donc `auto-fill`, les cartes passent à `auto-fit`.
+   ───────────────────────────────────────────────────────────────────────── */
+.cards-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));align-items:start}
+/* Sur un très grand écran, on évite malgré tout la carte unique démesurée :
+   une liste de trois lignes étalée sur 1 900 px se lit moins bien qu'à
+   900 px. Deux cartes ou plus se partagent la largeur sans plafond. */
+@media(min-width:1600px){
+  .cards-grid>.card:only-child:not(.card-pleine){max-width:1100px}
+}
+
+/* Rythme vertical : une carte suivie d'une autre garde toujours le même
+   écart, quel que soit le module qui la rend. */
+.card + .card,.card + .stats,.stats + .card{margin-top:18px}
+/* DANS UNE GRILLE, C'EST LE « gap » QUI ESPACE. La règle ci-dessus ajouterait
+   18 px par-dessus, donc un écart double entre les rangées — et seulement
+   entre les rangées, ce qui désaligne visuellement toute la grille. */
+.cards-grid > .card + .card,.cards-grid > .card{margin-top:0}
+/* 1.857.0 — LA MÊME RÈGLE POUR LES GRILLES ÉCRITES EN LIGNE. Nombre de vues
+   (brique verticale du commerce, SAV, scénarios, rapports…) posent leurs
+   cartes d'indicateurs dans un `display:grid` inline : la première carte
+   restait 18 px plus haute que ses voisines, la rangée n'était jamais
+   alignée. Dans une grille, c'est le `gap` qui espace. */
+[style*="display:grid"] > .card,[style*="display: grid"] > .card{margin-top:0;margin-bottom:0}
+/* ET LA GOUTTIÈRE BASSE AVEC (1.720.0). La règle ci-dessus ne neutralisait
+   que le rythme vertical — or `.card` porte SA PROPRE `margin-bottom:20px`
+   depuis toujours. Additionnée au `gap`, elle creusait 34 px entre deux
+   rangées de `.cards-grid` (gap 14) et 36 px dans une `.page-stack`
+   (gap 16), au lieu des 14 et 16 prévus : exactement le double écart, et
+   seulement entre les rangées — le désalignement que 1.719.0 croyait avoir
+   supprimé en ne touchant que `margin-top`. Le constat était pourtant déjà
+   écrit plus bas pour `.form-rows` ; il valait pour les DEUX conteneurs que
+   la règle de mise en page prescrit. La gouttière est celle du conteneur,
+   jamais celle de l'enfant. */
+.cards-grid > .card,.cards-grid > .pv-card,
+.page-stack > .card,.page-stack > .pv-card{margin-bottom:0}
+
+/* Un tableau large ne doit pas élargir la page : il défile dans sa carte. */
+.card > .table,.card > table{width:100%}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOTEUR DE MISE EN PAGE (1.546.0)
+   ─────────────────────────────────────────────────────────────────────────
+   Une grille de douze colonnes, en flux DENSE : une section étroite vient
+   combler le trou laissé par sa voisine large, au lieu d'ouvrir une ligne
+   pour elle seule. C'est ce qui produit la mosaïque ajustée — et c'est le
+   navigateur qui la calcule, pas une disposition écrite pack par pack.
+
+   Les largeurs sont posées par FKC_Layout::span() d'après le CONTENU réel de
+   chaque section. Voir app/Core/Layout.php.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  --fkc-content-max:1560px;   /* largeur utile maximale de l'application */
+  --fkc-gap:18px;             /* gouttière de la mosaïque */
+}
+
+/*
+ * ZONES (1.553.0) — `align-items:stretch`, et non plus `start`.
+ *
+ * Une ligne de la grille est une ZONE : elle prend toute la largeur, et les
+ * blocs qui la composent partagent sa hauteur. « Radar de risques » et
+ * « Centre de recouvrement » se terminent donc au même niveau, même si l'un a
+ * deux fois moins à dire — ce qui donne les bandes régulières de la maquette.
+ *
+ * `start` produisait l'inverse : chaque bloc s'arrêtait à son contenu, les
+ * bas de bloc étaient en dents de scie, et le vide sous le plus court appelait
+ * un tassement — lequel, en réservant des rangées d'après une hauteur mesurée
+ * à un instant donné, finissait par faire SE CHEVAUCHER les blocs dès qu'un
+ * contenu grandissait après la mesure. La zone supprime le vide au lieu de
+ * courir après.
+ */
+.fkc-mosaique{
+  display:grid;
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  gap:var(--fkc-gap);
+  align-items:stretch;
+  grid-auto-flow:row dense;
+}
+/* Sans cela, une carte au contenu large (tableau, graphique) fait déborder sa
+   colonne et toute la grille part en biais. */
+/*
+ * `> *` ET `> .fkc-passe > *`, systématiquement.
+ *
+ * `display:contents` ne change QUE la génération des boîtes : pour le moteur
+ * de sélecteurs, l'enveloppe .fkc-passe reste un nœud de l'arbre. Un
+ * `.fkc-mosaique > .dash-block` ne voit donc PAS les blocs qu'elle contient —
+ * et ce sont justement ceux du Cockpit de Direction, qui passent tous par une
+ * enveloppe. Chaque règle de mosaïque doit couvrir les deux niveaux, sans quoi
+ * elle ne s'applique qu'à la moitié des écrans.
+ */
+.fkc-mosaique > *,
+.fkc-mosaique > .fkc-passe > *{min-width:0}
+
+/* Cellule qui ne doit PAS devenir un élément de grille : ses enfants prennent
+   sa place. Un fragment qui fournit lui-même plusieurs <section> se range donc
+   dans la mosaïque section par section, et non en un seul bloc pleine page. */
+.fkc-passe{display:contents}
+
+/* Deux sections voisines partagent la même hauteur : la plus courte ne laisse
+   plus un vide sous elle. */
+/* Le bloc remplit la hauteur de sa zone, et son contenu s'étire avec lui :
+   sans cela le panneau s'arrêterait à son texte et la bande serait creuse. */
+.fkc-mosaique > .ckp-sec,
+.fkc-mosaique > .dash-block,
+.fkc-mosaique > .fkc-passe > .ckp-sec,
+.fkc-mosaique > .fkc-passe > .dash-block{display:flex;flex-direction:column;margin-bottom:0;height:100%}
+.fkc-mosaique > .ckp-sec > .card,
+.fkc-mosaique > .ckp-sec > .ckp-cards,
+.fkc-mosaique > .dash-block > .pv-card,
+.fkc-mosaique > .dash-block > .pv-tops,
+.fkc-mosaique > .fkc-passe > .dash-block > .pv-card,
+.fkc-mosaique > .fkc-passe > .dash-block > .pv-tops{flex:1}
+/* Même principe pour les blocs du Cockpit de Direction : le panneau prend la
+   hauteur de sa zone, ses cartes gardent la leur. */
+.fkc-mosaique > .dash-block > .pv-kpis,
+.fkc-mosaique > .dash-block > .pv-tops,
+.fkc-mosaique > .dash-block > .pv-2col,
+.fkc-mosaique > .fkc-passe > .dash-block > .pv-kpis,
+.fkc-mosaique > .fkc-passe > .dash-block > .pv-tops,
+.fkc-mosaique > .fkc-passe > .dash-block > .pv-2col{align-content:start}
+.ckp-sec > .ckp-decisions{align-content:start}
+.fkc-mosaique > .dash-block > .pv-card,
+.fkc-mosaique > .fkc-passe > .dash-block > .pv-card{margin-bottom:0}
+
+/* Largeurs — 3 à 12 colonnes. */
+.sp-3{grid-column:span 3}
+.sp-4{grid-column:span 4}
+.sp-5{grid-column:span 5}
+.sp-6{grid-column:span 6}
+.sp-7{grid-column:span 7}
+.sp-8{grid-column:span 8}
+.sp-9{grid-column:span 9}
+.sp-10{grid-column:span 10}
+.sp-11{grid-column:span 11}
+.sp-12{grid-column:span 12}
+
+/*
+ * Réduction progressive. Plutôt que de changer le nombre de colonnes de la
+ * grille — ce qui déplacerait tout d'un coup — on ARRONDIT les largeurs vers
+ * le haut à mesure que la place manque : 3 devient 4, puis 6, puis 12. La
+ * mosaïque se simplifie par paliers au lieu de s'effondrer.
+ */
+@media(max-width:1400px){
+  .sp-3{grid-column:span 4}
+  .sp-5{grid-column:span 6}
+  .sp-7{grid-column:span 8}
+  .sp-9,.sp-10,.sp-11{grid-column:span 12}
+}
+@media(max-width:1100px){
+  .sp-3,.sp-4,.sp-5{grid-column:span 6}
+  .sp-7,.sp-8{grid-column:span 12}
+}
+/*
+ * 680 px et non 820 : une tablette en portrait fait 810-834 px de large. À
+ * 820 px, tout le tableau de bord retombait sur UNE colonne alors que deux
+ * blocs de 400 px y tiennent parfaitement — l'iPad se retrouvait moins bien
+ * servi qu'il ne pouvait l'être. En dessous de 680 px on est sur un
+ * téléphone, et là la colonne unique est le bon choix.
+ */
+@media(max-width:680px){
+  .fkc-mosaique{gap:14px}
+  .fkc-mosaique > *,
+  .fkc-mosaique > .fkc-passe > *{grid-column:1 / -1!important}
+}
+
+/* Une section masquée par la personnalisation ne doit pas garder sa colonne. */
+.fkc-mosaique > .hidden,
+.fkc-mosaique > .dash-block.hidden,
+.fkc-mosaique > .ckp-sec.hidden,
+.fkc-mosaique > .fkc-passe > .hidden,
+.fkc-mosaique > .fkc-passe > .dash-block.hidden,
+.fkc-mosaique > .fkc-passe > .ckp-sec.hidden{display:none!important}
+
+/* ── Rangées autonomes ────────────────────────────────────────────────────
+   À utiliser dans une vue de module ou de pack quand des blocs de même nature
+   doivent se ranger côte à côte : `<div class="fkc-rangee">…</div>`. Les
+   enfants directs sont automatiquement mis en colonnes ; aucune classe à
+   poser sur chacun. */
+.fkc-rangee{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;align-items:stretch}
+.fkc-rangee > *{min-width:0;margin-bottom:0}
+.fkc-rangee > .card{display:flex;flex-direction:column;margin-bottom:0}
+.fkc-rangee > .card > .card-body{flex:1}
+.fkc-rangee.large{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.fkc-rangee.serree{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.fkc-rangee + .fkc-rangee,.fkc-rangee + .card,.card + .fkc-rangee{margin-top:18px}
+@media(max-width:620px){.fkc-rangee,.fkc-rangee.large,.fkc-rangee.serree{grid-template-columns:1fr}}
+
+/*
+ * Rangée POSÉE PAR LE NAVIGATEUR (voir assets/js/layout.js).
+ *
+ * Certaines vues de modules et de packs alignent encore verticalement des
+ * tuiles d'indicateurs, faute d'un conteneur autour d'elles. Le script les
+ * regroupe et pose cette classe. La règle est identique à `.fkc-rangee` :
+ * sans JavaScript, l'affichage reste celui d'aujourd'hui — dégradé, jamais
+ * cassé.
+ */
+.fkc-rangee-auto{display:grid;gap:14px;align-items:stretch;margin-bottom:18px}
+.fkc-rangee-auto > *{min-width:0;margin-bottom:0!important;margin-top:0!important}
+.fkc-rangee-auto > .card{display:flex;flex-direction:column}
+.fkc-rangee-auto > .card > .card-body{flex:1}
+
+/* ── Normalisation horizontale des blocs de chiffres ──────────────────────
+   `.pv-mini` et `.pv-rent` étaient figés à deux et quatre colonnes : dans une
+   demi-largeur de mosaïque ils débordaient, en pleine largeur ils laissaient
+   la moitié de la ligne vide. Ils s'ajustent désormais à la place reçue. */
+.pv-mini{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.pv-rent{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.pv-2col{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.pv-tops{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.pv-kpis{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+
+/* Le bloc « Santé » occupe cinq colonnes : l'anneau et la liste des domaines
+   s'alignent en haut plutôt qu'au centre, sans quoi la liste — plus haute —
+   décentrait l'anneau vers le bas. */
+.pv-health{align-items:flex-start;gap:22px}
+.pv-health-doms{min-width:230px}
+.pv-demarrage-txt{min-width:200px}
+
+/* Compatibilité : `.ckp-grid` devient un simple alias de la mosaïque, pour les
+   gabarits (dossier de conseil, vues de packs) qui portent encore ce nom. Les
+   largeurs viennent des classes `sp-*` ; aucune règle ne les écrase ici, sans
+   quoi la spécificité l'emporterait sur le calcul du moteur. */
+.ckp-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--fkc-gap);align-items:start;grid-auto-flow:row dense}
+.ckp-grid > *{min-width:0}
+.ckp-sec-half{grid-column:span 6}
+.fkc-mosaique > .fkc-passe > .ckp-sec:not([class*="sp-"]),
+.fkc-mosaique > .ckp-sec:not([class*="sp-"]),
+.ckp-grid > .ckp-sec:not([class*="sp-"]){grid-column:span 12}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PAGE DE CONNEXION — VITRINE (1.546.0)
+   ─────────────────────────────────────────────────────────────────────────
+   La colonne gauche est devenue une véritable présentation du produit : elle
+   défile DANS ELLE-MÊME, pendant que le formulaire reste fixe à droite. C'est
+   la seule disposition qui permet d'exposer soixante-deux packs sans jamais
+   éloigner le champ « Identifiant » de l'utilisateur qui, lui, vient
+   simplement travailler.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.auth-body{height:100vh;overflow:hidden}
+.auth{grid-template-columns:minmax(0,1.25fr) minmax(420px,.75fr);height:100vh;min-height:0}
+
+/* Colonne vitrine : hauteur fixe, défilement interne. */
+.auth-hero{padding:0;display:block;overflow-y:auto;overscroll-behavior:contain;min-height:0}
+/* Barre de défilement discrète : la vitrine ne doit pas avoir l'air d'un site web. */
+.auth-hero::-webkit-scrollbar{width:9px}
+.auth-hero::-webkit-scrollbar-thumb{background:var(--line2);border-radius:9px}
+.auth-hero::-webkit-scrollbar-track{background:transparent}
+
+.hero-title{font-size:clamp(30px,3vw,46px)}
+
+/* ── Colonne formulaire : fixe, jamais entraînée par le défilement ── */
+.auth-form{overflow-y:auto;min-height:0;padding:40px 52px}
+.auth-form-inner{margin:auto 0;width:100%}
+.auth-mini{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:18px}
+.auth-mini span{font-size:10.5px;font-weight:700;color:var(--muted2);background:var(--panel);
+  border:1px solid var(--line);border-radius:20px;padding:4px 11px}
+
+/* Sur petit écran, la vitrine disparaît : on ne fait pas défiler quatre écrans
+   de présentation à quelqu'un qui veut se connecter depuis son téléphone. Le
+   bandeau « auth-mini » en garde l'essentiel. */
+@media(max-width:1080px){
+  .auth-body{height:auto;overflow:auto}
+  .auth{grid-template-columns:1fr;height:auto}
+  .auth-hero{display:none}
+  .auth-form{min-height:100vh;padding:40px 26px;overflow:visible}
+}
+@media(max-width:1400px) and (min-width:1081px){
+  .auth-form{padding:36px 36px}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FORMULAIRES — LES CHAMPS SE RANGENT SELON LA PLACE (1.546.0)
+   ─────────────────────────────────────────────────────────────────────────
+   LE DÉFAUT. `.fld` est un bloc. Un formulaire n'affichait donc ses champs
+   côte à côte QUE si son auteur les avait entourés d'un `.form-grid`. Un
+   relevé sur les vues montre 193 formulaires qui ne l'ont pas fait — dont un
+   à dix-sept champs, empilés sur une seule colonne, qui demande deux écrans
+   de défilement pour une fiche que l'on saisit d'un coup d'œil.
+
+   LE REMÈDE. Le formulaire devient lui-même une grille, et c'est le
+   NAVIGATEUR qui décide du nombre de colonnes d'après la largeur reçue :
+   trois dans une carte pleine largeur, deux dans une demi-carte, une seule
+   dans un panneau latétal de 320 px — où l'empilement est justement le bon
+   choix. Aucune vue n'a à déclarer quoi que ce soit.
+
+   POURQUOI `:has()` ET PAS UNE CLASSE. Poser une classe aurait demandé de
+   toucher 137 fichiers, puis de recommencer à chaque écran ajouté. Le
+   sélecteur `> .fld ~ .fld` désigne exactement « un formulaire qui a au moins
+   deux champs directs » — la condition qu'on voulait exprimer.
+
+   CE QUI EST ÉPARGNÉ :
+     — tout formulaire portant un `style="display:…"` en ligne (barres de
+       recherche, filtres, boutons isolés) : le style en ligne l'emporte ;
+     — la page de connexion, hors de `.content` ;
+     — les formulaires à un seul champ, qui ne remplissent pas la condition.
+
+   PLAFOND À TROIS COLONNES. `max(240px, (100% - 2*gap)/3)` impose à chaque
+   colonne de valoir au moins un tiers du conteneur : au-delà de trois, un
+   formulaire cesse d'être lisible et devient un tableur.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.content form:has(> .fld ~ .fld){
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(max(240px,(100% - 28px)/3),1fr));
+  gap:0 14px;
+  align-items:start;
+}
+/* Tout ce qui n'est PAS un champ garde la ligne entière : boutons, notes,
+   tableaux, sous-grilles, messages. Un bouton « Enregistrer » coincé dans une
+   colonne de formulaire serait pire que le mal qu'on soigne. */
+.content form:has(> .fld ~ .fld) > *{grid-column:1 / -1}
+.content form:has(> .fld ~ .fld) > .fld{grid-column:auto}
+/* Une zone de texte a besoin de la largeur : commentaire, adresse, constat. */
+.content form:has(> .fld ~ .fld) > .fld:has(textarea){grid-column:1 / -1}
+/* Repli pour un navigateur sans `:has()` — la classe est posée par layout.js. */
+.content form.fkc-form-auto{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(max(240px,(100% - 28px)/3),1fr));
+  gap:0 14px;
+  align-items:start;
+}
+.content form.fkc-form-auto > *{grid-column:1 / -1}
+.content form.fkc-form-auto > .fld{grid-column:auto}
+.content form.fkc-form-auto > .fld.fkc-fld-large{grid-column:1 / -1}
+
+/* ── Grilles de page : ne plus étirer une carte courte ────────────────────
+   `.form-grid` sert AUSSI à poser deux cartes côte à côte. Sans réglage,
+   l'alignement par défaut étire la plus courte à la hauteur de sa voisine :
+   d'où ces grands panneaux à moitié vides — « Opérations de la session » vide
+   sur toute la hauteur du formulaire de saisie. Chaque carte prend désormais
+   sa hauteur propre. */
+.form-grid{align-items:start}
+.form-grid > .card,.form-grid > .pv-card{margin-bottom:0}
+/*
+ * `.form-rows` empile ses enfants sur toute la largeur. Une carte porte
+ * `margin-bottom:20px` : additionnée au `gap`, elle creusait un écart de
+ * 34 px entre deux cartes empilées, deux fois celui de la grille voisine.
+ * La gouttière est celle du conteneur, pas celle de l'enfant.
+ */
+.form-rows > .card,.form-rows > .pv-card{margin-bottom:0}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TABLETTE & TÉLÉPHONE — LES GRILLES POSÉES EN STYLE EN LIGNE
+   ─────────────────────────────────────────────────────────────────────────
+   LE PROBLÈME, ET POURQUOI IL A RÉSISTÉ JUSQU'ICI. 252 vues posent leur
+   grille dans un attribut `style="grid-template-columns:…"`. Un style en
+   ligne l'emporte sur toute feuille de style : AUCUNE requête média ne
+   pouvait les atteindre. Sur un téléphone, `1fr 320px` laissait 60 px au
+   contenu principal, et `repeat(4,1fr)` quatre colonnes de 90 px.
+
+   D'où `!important` — employé ici à contrecœur, mais c'est le seul outil qui
+   passe devant un style en ligne. Il est strictement borné : uniquement sous
+   un seuil de largeur, uniquement dans `.content`, uniquement sur des grilles
+   figées.
+
+   DEUX SEUILS, PARCE QUE LES DEUX FAMILLES NE SOUFFRENT PAS AU MÊME MOMENT.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Seuil 1 · ≤1024 px — les panneaux latéraux passent SOUS le contenu ───
+   89 vues affichent « contenu + panneau de saisie » avec un panneau figé à
+   280-380 px. Sur une tablette en portrait (810 px), ce panneau mange près de
+   la moitié de l'écran et le tableau d'à côté devient illisible. Il passe donc
+   dessous, pleine largeur — la saisie y gagne aussi.
+
+   Les sélecteurs énumèrent les gabarits RÉELLEMENT relevés dans les vues,
+   plutôt qu'un `[style*="px"]` qui aurait aussi attrapé le moindre
+   `gap:16px` et mis à plat des grilles qui vont très bien. */
+@media(max-width:1024px){
+  .content [style*="fr 320px"],.content [style*="fr 340px"],
+  .content [style*="fr 300px"],.content [style*="fr 360px"],
+  .content [style*="fr 380px"],.content [style*="fr 280px"],
+  .content [style*="fr 260px"],
+  .content [style*="280px 1fr"],.content [style*="320px 1fr"],
+  .content [style*="260px 1fr"],.content [style*="220px 1fr"],
+  .content [style*="340px 1fr"],
+  .content [style*="minmax(220px,280px)"],.content [style*="minmax(280px,320px)"],
+  .content [style*="fr minmax(280px,340px)"]{
+    grid-template-columns:1fr!important;
+  }
+}
+
+/* ── Seuil 2 · ≤680 px — une seule colonne, quelle que soit la grille ─────
+   En dessous de 680 px on est sur un téléphone : deux colonnes de 160 px ne
+   servent personne. Les grilles qui s'adaptent DÉJÀ (`auto-fit`, `auto-fill`)
+   sont exclues — elles font le bon calcul toutes seules, et les écraser leur
+   ferait perdre la finesse qu'elles ont.
+
+   Échappatoire : `data-fkc-fige` sur un conteneur qui doit garder ses
+   colonnes sur téléphone (pavé numérique, calendrier, plan de salle). */
+@media(max-width:680px){
+  .content [style*="grid-template-columns"]:not([style*="auto-fit"]):not([style*="auto-fill"]):not([data-fkc-fige]){
+    grid-template-columns:1fr!important;
+  }
+  /* Les gouttières horizontales n'ont plus lieu d'être en colonne unique. */
+  .content [style*="grid-template-columns"]:not([style*="auto-fit"]):not([style*="auto-fill"]):not([data-fkc-fige]) > *{
+    min-width:0;
+  }
+}
+
+/* ── Onglets de module : défilement plutôt que trois lignes ───────────────
+   L'écran Caisse compte jusqu'à treize onglets. Sur téléphone ils se
+   repliaient sur trois ou quatre lignes et repoussaient le contenu sous la
+   ligne de flottaison. Ils défilent maintenant à l'horizontale, comme les
+   onglets d'un navigateur — geste que tout le monde connaît. */
+@media(max-width:860px){
+  .subnav-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;padding-bottom:1px}
+  .subnav-tabs::-webkit-scrollbar{display:none}
+  .subnav-tab{white-space:nowrap;flex-shrink:0}
+}
+
+/* ── Cibles tactiles ──────────────────────────────────────────────────────
+   Un doigt vise mal : en dessous de ~40 px on rate. Les boutons et les
+   champs sont remontés sur mobile. Le 16 px sur les champs n'est pas
+   cosmétique — en dessous, iOS ZOOME automatiquement à la mise au point et
+   l'utilisateur se retrouve sur une page décadrée qu'il doit repincer. */
+@media(max-width:680px){
+  .btn{min-height:40px;padding-top:9px;padding-bottom:9px}
+  .btn-sm{min-height:34px}
+  .fld input,.fld select,.fld textarea,
+  input[type=text],input[type=number],input[type=date],input[type=email],
+  input[type=password],select,textarea{font-size:16px;min-height:44px}
+  .actions .btn,.bar .btn{flex:1 1 auto}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHAQUE SECTION DE COCKPIT EST UN BLOC (1.551.0)
+   ─────────────────────────────────────────────────────────────────────────
+   CE QUI MANQUAIT. Une section de type « cartes » — « KPI stratégiques »,
+   « Trésorerie par canal & autonomie », et l'essentiel des sections de packs
+   — se rendait en titre NU posé au-dessus d'une grille de sous-cartes :
+
+       <section class="ckp-sec sp-8">
+         <h2>KPI stratégiques</h2>          ← flottant, sans cadre
+         <div class="ckp-cards"> … </div>   ← grille sans panneau
+       </section>
+
+   Rien ne reliait visuellement le titre à ses indicateurs, et rien ne séparait
+   une section de sa voisine : on lisait une suite de cartes, pas des blocs.
+   Les autres types (liste, tableau, graphique) avaient un panneau — un
+   `.card` — et paraissaient donc corrects. D'où une incohérence d'un type à
+   l'autre, sur le même écran.
+
+   LE REMÈDE. C'est la SECTION qui devient le panneau. Le titre entre alors
+   dedans, avec son contenu, et le bloc existe comme unité — « KPI
+   stratégiques » est une carte qui contient ses quatre indicateurs.
+
+   Une seule règle, et les 62 packs comme les modules en héritent : tous
+   passent par le même gabarit de rendu.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.ckp-sec,.dash-block{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:18px 20px;
+  box-shadow:var(--shadow-sm);
+  transition:border-color .18s ease,box-shadow .18s ease;
+}
+.ckp-sec:hover,.dash-block:hover{border-color:var(--line2)}
+
+/*
+ * Le conteneur intérieur qui était DÉJÀ un panneau perd son cadre : sans
+ * cela, une section « liste » ou « tableau » afficherait deux bordures
+ * concentriques à 18 px d'écart — l'effet boîte dans une boîte.
+ *
+ * Uniquement l'enfant DIRECT : les sous-cartes d'une grille (indicateurs,
+ * décisions) gardent le leur, et c'est bien ce qu'on veut — un bloc qui
+ * contient des cartes.
+ */
+.ckp-sec > .card,
+.dash-block > .pv-card{
+  background:transparent;border:0;border-radius:0;padding:0;box-shadow:none;margin-bottom:0;
+}
+/* Le tableau d'une section pleine largeur doit toucher les bords du panneau,
+   sinon il perd 40 px de large pour rien. */
+.ckp-sec > .card.ckp-table-wrap,
+.ckp-sec > .card-flush{margin:0 -20px -18px;width:auto}
+.ckp-sec > .card.ckp-table-wrap .table th:first-child,
+.ckp-sec > .card.ckp-table-wrap .table td:first-child{padding-left:20px}
+.ckp-sec > .card.ckp-table-wrap .table th:last-child,
+.ckp-sec > .card.ckp-table-wrap .table td:last-child{padding-right:20px}
+
+/* Le titre appartient maintenant au bloc : il se rapproche de son contenu. */
+.ckp-sec > .pv-h2,.dash-block > .pv-h2{margin-bottom:14px}
+
+/* La marge basse était le seul séparateur entre sections ; la gouttière de la
+   mosaïque s'en charge désormais. */
+.dash-block{margin-bottom:0}
+
+/* Les sous-cartes d'un bloc se posent sur un fond légèrement plus clair, pour
+   se détacher du panneau qui les porte sans avoir besoin d'un trait épais. */
+.ckp-sec .ckp-card,.dash-block .pv-kpi{background:var(--panel2)}
+
+/* Un bloc vide ne mérite pas un panneau de la hauteur d'un écran. */
+.ckp-sec > .ckp-vide,.dash-block > .pv-vide{padding:6px 0}
+
+@media(max-width:680px){
+  .ckp-sec,.dash-block{padding:14px 14px;border-radius:13px}
+  .ckp-sec > .card.ckp-table-wrap,.ckp-sec > .card-flush{margin:0 -14px -14px}
+  .ckp-sec > .card.ckp-table-wrap .table th:first-child,
+  .ckp-sec > .card.ckp-table-wrap .table td:first-child{padding-left:14px}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LES CARTES S'ADAPTENT À LEUR CONTENEUR, PLUS À L'ÉCRAN (1.732.0)
+   ─────────────────────────────────────────────────────────────────────────
+   LE DÉFAUT, VU SUR LE COCKPIT DE DIRECTION
+
+   « Intelligence analytique » occupe six colonnes sur douze. Sa grille
+   interne y range deux listes de front, soit environ 245 px par colonne. Une
+   ligne de classement vaut alors :
+
+       18 px (rang) + 60 px (barre) + 90 px (valeur) + 24 px de gouttières
+       = 192 px de gabarit fixe, pour 53 px de libellé.
+
+   D'où « CHA… », « KOP… », « JASI… » : le nom du premier client de
+   l'entreprise, illisible, dans le bloc censé le désigner. Le chiffre était
+   juste, la disposition le rendait inexploitable.
+
+   POURQUOI CELA ARRIVE, ET POURQUOI AUCUNE MEDIA QUERY NE LE CORRIGE
+
+   Toutes les ruptures de ce fichier interrogent la LARGEUR DE L'ÉCRAN. Or ce
+   qui contraint une carte, c'est la largeur du BLOC qui l'accueille : la même
+   liste dispose de 1 040 px en `sp-12` et de 510 px en `sp-6`, sur le même
+   écran, à la même seconde. Une media query ne peut pas distinguer les deux —
+   elle voit un écran large et suppose de la place qui n'existe pas.
+
+   Les requêtes de conteneur posent la question au bon endroit : « de combien
+   de place CETTE carte dispose-t-elle ? ». Chaque carte décide alors seule,
+   où qu'on la pose — mosaïque du cockpit, rangée d'un module, colonne d'un
+   pack métier.
+
+   DÉGRADATION. Tout est enfermé dans un `@supports` : un navigateur sans
+   requêtes de conteneur garde EXACTEMENT l'affichage d'aujourd'hui. Rien
+   n'est retiré, rien ne dépend de cette couche pour fonctionner.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@supports (container-type: inline-size) {
+
+  /*
+   * DEUX ÉCHELLES DE CONTENEUR, ET PAS UNE SEULE.
+   *
+   * Un bloc de cockpit contient des sous-cartes. Une règle qui interroge
+   * « le conteneur » sans le nommer viserait le plus proche — donc tantôt le
+   * bloc, tantôt la sous-carte, selon la profondeur où vit le sélecteur. Les
+   * deux échelles sont donc nommées : `fkc-bloc` pour le panneau, `fkc-carte`
+   * pour ce qu'il range à l'intérieur. Chaque règle dit laquelle elle
+   * interroge, et ne se trompe plus de référence quand un gabarit change.
+   *
+   * UN PANNEAU PORTE LES DEUX NOMS. Dans un écran de module ordinaire, il n'y
+   * a pas de sous-carte : la carte EST le panneau, et une règle écrite pour
+   * l'échelle intérieure doit quand même trouver une référence. Sans ce
+   * second nom, les listes d'un module ne bénéficieraient de rien — la moitié
+   * du produit resterait à l'écart du correctif.
+   */
+  .card,.ckp-sec,.dash-block{container:fkc-bloc fkc-carte / inline-size}
+  .pv-card,.pv-kpi,.ckp-card,.ckp-liste{container:fkc-carte / inline-size}
+
+  /* ── Lignes de classement — le nom passe avant la décoration ───────────
+     Sous 330 px, la ligne se replie sur deux niveaux : le libellé prend
+     toute la largeur, la barre et la valeur descendent en dessous. On ne
+     perd rien — la barre y gagne même en longueur, donc en lisibilité — et
+     le nom du client redevient un nom de client. */
+  @container fkc-carte (max-width: 330px) {
+    .pv-rank{gap:12px}
+    .pv-rank li{
+      display:grid;
+      grid-template-columns:18px minmax(0,1fr) auto;
+      grid-template-areas:"num lab lab" "bar bar val";
+      column-gap:8px;row-gap:5px;align-items:center;
+    }
+    .pv-rank-n{grid-area:num}
+    .pv-rank-lab{
+      grid-area:lab;
+      white-space:normal;overflow:visible;text-overflow:clip;
+      overflow-wrap:anywhere;line-height:1.3;
+    }
+    .pv-rank-bar{grid-area:bar;width:auto}
+    .pv-rank-v{grid-area:val;width:auto;min-width:0;text-align:right}
+  }
+
+  /*
+   * Au-delà, la ligne reste sur un seul niveau — mais la valeur cesse de
+   * réserver 90 px quoi qu'elle affiche. « 5 000 » n'a pas besoin de la place
+   * de « 1 250 000 » ; les 30 px rendus vont au libellé, qui en manquait.
+   */
+  @container fkc-carte (min-width: 331px) {
+    .pv-rank-v{width:auto;min-width:72px}
+  }
+
+  /* ── Indicateurs : plus de colonne fantôme dans un demi-bloc ───────────
+     `auto-fill` réserve les colonnes même vides — voulu en pleine largeur,
+     où un indicateur seul étiré sur 1 040 px paraîtrait démesuré. Dans un
+     bloc étroit, l'effet s'inverse : une prévision unique occupait 228 px
+     et laissait 280 px de vide à sa droite, ce qui se lit comme un bug
+     d'affichage. En dessous de 700 px, les cartes se partagent donc toute
+     la place reçue. */
+  @container fkc-bloc (max-width: 700px) {
+    .pv-kpis{grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr))}
+  }
+
+  /* ── Flux d'activité : l'heure sur sa ligne plutôt qu'en colonne ───────
+     `.pv-feed-t` fige 84 px pour l'horodatage. Dans un bloc étroit, le
+     libellé de l'événement — « Facture FAC-2025-0018 créé(e) » — se
+     retrouvait comprimé sur trois lignes à côté d'une heure qui, elle,
+     gardait sa largeur. */
+  @container fkc-bloc (max-width: 420px) {
+    .pv-feed li{flex-wrap:wrap;row-gap:2px}
+    .pv-feed-t{width:auto;flex:0 0 100%;order:-1}
+  }
+
+  /*
+   * ── Le fil d'activité se range en COLONNES quand le bloc est large ──────
+   *
+   * Passé en pleine largeur (1.733.0), « Activité récente » posait le
+   * problème inverse de celui qu'on venait de corriger : chaque événement
+   * occupait une ligne entière pour un horodatage, une icône et six mots,
+   * laissant sept cents pixels de vide à droite. Une pleine largeur ne sert à
+   * rien si le contenu ne s'y déploie pas — c'est du vide promu au rang de
+   * mise en page.
+   *
+   * Au-delà de 820 px, le fil se range donc en deux ou trois colonnes de
+   * 360 px : la même hauteur affiche deux à trois fois plus d'événements, et
+   * chacun garde sa ligne unique. En dessous, rien ne change.
+   */
+  @container fkc-bloc (min-width: 820px) {
+    .pv-feed{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));
+      column-gap:28px;
+    }
+    /* La colonne de gauche garderait sinon un séparateur que la droite n'a
+       plus : en grille, « dernier enfant » ne veut plus dire « dernière
+       ligne ». On aligne donc toutes les lignes sur le même trait. */
+    .pv-feed li:last-child{border-bottom:1px solid var(--line)}
+  }
+
+  /* ── Lignes libellé / valeur des listes de cockpit ─────────────────────
+     Même principe : sous 300 px, la valeur passe sous son libellé au lieu
+     de lui disputer la ligne. */
+  @container fkc-carte (max-width: 300px) {
+    .ckp-li{flex-wrap:wrap;row-gap:2px}
+    .ckp-li-lab{flex:1 1 100%}
+    .ckp-li-val{margin-left:32px}
+  }
+
+  /* ── Rangées autonomes des modules et des packs ────────────────────────
+     `.fkc-rangee` fixe un plancher de 240 px par colonne. Posée dans une
+     demi-largeur de mosaïque, elle imposait donc deux colonnes là où une
+     seule, large, aurait mieux servi le contenu. */
+  @container fkc-bloc (max-width: 520px) {
+    .fkc-rangee,.fkc-rangee.large{grid-template-columns:minmax(0,1fr)}
+    .fkc-rangee.serree{grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))}
+  }
+}
+
+/*
+ * Un nombre long ne pousse plus sa carte : il se coupe.
+ *
+ * Hors de toute requête de conteneur — donc y compris sur les navigateurs qui
+ * ne les connaissent pas — une valeur monétaire à huit chiffres dans une
+ * carte étroite débordait sous forme de dépassement horizontal. La règle vaut
+ * partout et ne coûte rien.
+ */
+.ckp-card-val,.pv-kpi-val,.pv-rank-v,.pv-rec-kpi strong,.pv-mini b{overflow-wrap:anywhere}
+
+/*
+ * ═══════════════════════════════════════════════════════════════════════
+ *  TYPOGRAPHIE FLUIDE DU COCKPIT DE DIRECTION (blocs « pv- »)
+ * ═══════════════════════════════════════════════════════════════════════
+ *  Même principe que pour les cartes « ckp- » : le texte s'adapte à la
+ *  carte, plutôt que de la faire déborder. Trois cas se produisaient
+ *  réellement à l'écran :
+ *
+ *   — « GOAT POUR CHRIST (DELUXE) » en gras 16 px dépassait la carte
+ *     « Top album » et se coupait en plein mot ;
+ *   — les quatre indicateurs de la carte Royalties partagent une grille de
+ *     deux colonnes : un montant à 18 px y tenait, un montant à sept
+ *     chiffres non ;
+ *   — les libellés que le métier impose — « Relevés à comptabiliser »,
+ *     « Reste à reverser » — sont plus longs que « À payer », et
+ *     bousculaient la mise en page dès que la carte rétrécissait.
+ *
+ *  Les tailles fixes restent déclarées ailleurs dans cette feuille : ce bloc
+ *  ne fait que les plafonner vers le bas quand la place manque. Un
+ *  navigateur sans requêtes de conteneur garde le rendu d'origine.
+ * ═══════════════════════════════════════════════════════════════════════
+ */
+/*
+ * Un titre d'œuvre n'est pas un nombre : le réduire indéfiniment ne le fera
+ * pas tenir sur une ligne. « GOAT POUR CHRIST (DELUXE) » demande environ
+ * 227 px même à 12,5 px de corps — soit plus que la carte entière.
+ *
+ * Il se replie donc sur DEUX lignes, et au-delà se termine par des points de
+ * suspension. Le titre complet reste accessible en survol (attribut `title`
+ * posé par la vue) : rien n'est perdu, et la carte garde sa hauteur.
+ */
+.pv-bigname{line-height:1.2;overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pv-mini div{min-width:0}
+.pv-mini span.muted{font-size:11.5px;line-height:1.25}
+.pv-mini b{line-height:1.15;letter-spacing:-.01em}
+
+@supports (font-size: 1cqi) {
+  .pv-bigname{font-size:clamp(12.5px, 8.5cqi, 16px)}
+  .pv-mini b{font-size:clamp(13px, 9cqi, 18px)}
+  .pv-mini.sm b{font-size:clamp(11.5px, 7.5cqi, 14px)}
+  .pv-mini span.muted{font-size:clamp(10px, 5.8cqi, 11.5px)}
+  .pv-rec-kpi strong{font-size:clamp(13px, 9cqi, 18px);line-height:1.15}
+
+  /*
+   * Sous 260 px, deux colonnes d'indicateurs ne laissent que ~115 px
+   * chacune : le libellé et le montant s'y écrasent l'un l'autre. Une seule
+   * colonne rend à chaque indicateur toute la largeur de la carte — la
+   * carte s'allonge un peu, ce qui est sans conséquence, au lieu de devenir
+   * illisible, ce qui en a une.
+   */
+  @container fkc-carte (max-width: 260px) {
+    .pv-mini{grid-template-columns:1fr;gap:10px}
+  }
+
+  /*
+   * La colonne de valeur d'un classement était figée à 90 px. Dans une carte
+   * étroite, ces 90 px étaient pris au NOM — celui qu'on vient lire. La
+   * valeur ne réclame plus que la place de son contenu.
+   */
+  @container fkc-carte (max-width: 380px) {
+    .pv-rank-v{width:auto;min-width:0;white-space:nowrap}
+    .pv-rank-bar{width:42px}
+  }
+}
+
+
+/* ── Barre latérale repliable (1.773.0) ────────────────────────────────────
+   Au-delà de 860 px, la barre occupait 250 px que rien ne permettait de
+   récupérer : un tableau large s'en trouvait tronqué. Repliée, elle garde ses
+   icônes — on navigue encore sans la rouvrir. */
+.side-collapse{display:none;background:none;border:1px solid var(--line);color:var(--muted);
+  border-radius:8px;width:30px;height:30px;line-height:1;cursor:pointer;flex-shrink:0;transition:.12s}
+.side-collapse:hover{color:var(--text);border-color:var(--blue)}
+@media(min-width:861px){.side-collapse{display:inline-flex;align-items:center;justify-content:center}}
+@media(min-width:861px){
+  body.side-collapsed .side{width:62px;padding-left:8px;padding-right:8px}
+  body.side-collapsed .side .brand{padding:4px 0 14px;justify-content:center}
+  body.side-collapsed .side .brand-txt,
+  body.side-collapsed .side .societe-info,
+  body.side-collapsed .side .societe-switch,
+  body.side-collapsed .side .nav-lbl{display:none}
+  body.side-collapsed .side .societe-box{justify-content:center;padding:8px 4px}
+  body.side-collapsed .side .nav-item{justify-content:center;padding:10px 4px;gap:0}
+  body.side-collapsed .side .nav-ico{font-size:17px}
+  /* Le titre de section devient un simple filet : il ne tient pas en 62 px. */
+  body.side-collapsed .side .nav-sep{height:1px;padding:0;margin:12px 6px;overflow:hidden;
+    text-indent:-9999px;background:var(--line);border-radius:1px}
+  body.side-collapsed .side .nav-sep::after{display:none}
+}
+
+/* ── 1.810.0 — PRÉVISIONS EN PLEINE LARGEUR ─────────────────────────────────
+   « Prévisions de chiffre d'affaires » occupe désormais seule sa ligne. Ses
+   trois horizons (30 / 90 / 365 jours) restaient sur la grille « auto-fill »
+   des indicateurs : sur douze colonnes, une quatrième colonne vide à droite —
+   le contenu groupé à gauche, exactement ce que la pleine largeur devait
+   supprimer. Ici « auto-fit » : les horizons se partagent toute la ligne. */
+.dash-block[data-widget="previsions"] .pv-kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+@media(max-width:600px){.dash-block[data-widget="previsions"] .pv-kpis{grid-template-columns:1fr}}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TÉLÉPHONE — PLUS RIEN NE DÉBORDE (1.837.0)
+   Les grilles de cartes (340 px) et d'analyse (440 px) imposaient
+   leur largeur minimale à un écran de 360-390 px : la page défilait de
+   côté. Elles sont bornées à 100 % (min(100%,…)). La barre du haut, elle,
+   alignait sélecteur de société, pastilles, mode et « Déconnexion » sur
+   une seule ligne plus large que l'écran : sur téléphone, le bouton passe
+   en icône et les sélecteurs se resserrent.
+   ═══════════════════════════════════════════════════════════════════════ */
+.btn-logout .lo-ico{display:none}
+@media (max-width:560px){
+  .topbar{gap:8px}
+  .topbar-right{gap:6px;min-width:0;flex-shrink:1}
+  .page-title{flex:1 1 auto}
+  /* Le changement de société reste dans le tiroir (encart « Entité active ») :
+     dans la barre, sur un écran de 390 px, il poussait « Déconnexion » hors champ. */
+  .topbar .soc-switch{display:none}
+  .mode-switch select{max-width:74px;padding-left:6px;padding-right:6px}
+  .btn-logout{padding:6px 9px}
+  .btn-logout .lo-txt{display:none}
+  .btn-logout .lo-ico{display:inline}
+  .notif-bell{margin-right:0}
+  .mode-switch-lbl,.lic-dot{display:none}
+  .page-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+@media (max-width:380px){
+  .mode-switch select{max-width:64px}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  COCKPIT — CARTES, LISTES, TABLEAUX (1.851.0)
+ *
+ *  Déplacé depuis le <style> en ligne de views/cockpit.php : le dossier de
+ *  conseil imprimable rend les mêmes sections mais ne chargeait pas ces
+ *  règles — ses cartes sortaient empilées, sans grille ni hiérarchie.
+ *  Une seule feuille sert désormais la page, les sections différées et
+ *  l'impression.
+ * ═══════════════════════════════════════════════════════════════════════ */
+.ckp-sec > .card{display:flex;flex-direction:column}
+.ckp-sec > .card,.ckp-sec > .ckp-cards,.ckp-sec > .ckp-liste{flex:1}
+
+/* auto-fit : les cartes occupent toute la largeur reçue (pas de colonne
+   fantôme) ; align-content:start garde le surplus de hauteur SOUS les
+   cartes plutôt qu'entre elles. */
+.ckp-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;align-items:stretch;align-content:start}
+@media(max-width:620px){.ckp-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+@media(max-width:380px){.ckp-cards{grid-template-columns:1fr}}
+@supports (container-type: inline-size) {
+  @container fkc-bloc (max-width: 480px) {
+    .ckp-cards{grid-template-columns:repeat(auto-fit,minmax(min(155px,100%),1fr))}
+  }
+}
+
+/*
+ * `.card` porte une marge basse de 20 px et `.card + .card` une marge haute
+ * de 18 px : pensées pour des cartes EMPILÉES, elles décalaient dans une
+ * grille toutes les cartes sauf la première — la rangée n'était jamais
+ * alignée, et l'écart vertical valait 12 + 20 px au lieu de 12.
+ */
+.ckp-cards > .card,.ckp-decisions > .card{margin:0}
+
+.ckp-card{position:relative;padding:14px 16px 14px 18px;display:flex;flex-direction:column;min-width:0;
+  text-decoration:none;color:inherit;transition:border-color .15s,transform .15s,box-shadow .15s}
+/* Liseré de statut : pseudo-élément plutôt que border-left en ligne — il
+   suit l'arrondi de la carte et ne décale plus le contenu d'un pixel. */
+.ckp-card::before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:transparent}
+.ckp-card[data-statut="ok"]::before{background:var(--ok)}
+.ckp-card[data-statut="warn"]::before{background:var(--warn,orange)}
+.ckp-card[data-statut="danger"]::before{background:var(--danger)}
+.ckp-card[data-statut="danger"] .ckp-card-val{color:var(--danger)}
+a.ckp-card-link{cursor:pointer}
+a.ckp-card-link:hover{border-color:var(--line2,rgba(127,127,127,.4));transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.18)}
+a.ckp-card-link:focus-visible{outline:2px solid var(--orange,#F39A12);outline-offset:2px}
+a.ckp-card-link::after{content:'›';position:absolute;right:12px;top:11px;font-size:16px;line-height:1;color:var(--muted);opacity:0;transition:opacity .15s}
+a.ckp-card-link:hover::after,a.ckp-card-link:focus-visible::after{opacity:1}
+@media (prefers-reduced-motion:reduce){.ckp-card{transition:none}a.ckp-card-link:hover{transform:none}}
+
+.ckp-card-top{font-size:12.5px;color:var(--muted);font-weight:600;display:flex;gap:6px;align-items:flex-start;
+  line-height:1.25;min-height:2.5em;min-width:0;overflow-wrap:break-word;padding-right:14px}
+.ckp-card-top a{color:inherit;text-decoration:underline;text-decoration-color:rgba(127,127,127,.4);text-underline-offset:2px}
+.ckp-card-ico{flex:0 0 auto}
+.ckp-dot{flex:0 0 auto;width:7px;height:7px;border-radius:50%;margin:5px 0 0 auto;background:var(--muted)}
+.ckp-card[data-statut="ok"] .ckp-dot{background:var(--ok)}
+.ckp-card[data-statut="warn"] .ckp-dot{background:var(--warn,orange)}
+.ckp-card[data-statut="danger"] .ckp-dot{background:var(--danger);box-shadow:0 0 0 3px rgba(229,103,95,.18)}
+.ckp-card-val{font-size:22px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums;
+  line-height:1.15;letter-spacing:-.01em;min-width:0}
+.ckp-card-val small{font-size:.58em;color:var(--muted);font-weight:600;letter-spacing:0}
+.ckp-card-sous{font-size:12px;color:var(--muted);margin-top:auto;padding-top:6px;line-height:1.3}
+.ckp-card-spark{margin-top:6px;opacity:.9}
+.ckp-card-spark svg{max-width:100%;height:auto;display:block}
+.ckp-card-act{margin-top:10px}
+/* Jauge d'atteinte de la cible (KPI de pack). */
+.ckp-cible{height:4px;border-radius:3px;background:rgba(127,127,127,.18);margin-top:6px;overflow:hidden}
+.ckp-cible i{display:block;height:100%;background:var(--orange,#F39A12);border-radius:3px}
+.ckp-card[data-statut="ok"] .ckp-cible i{background:var(--ok)}
+.ckp-card[data-statut="danger"] .ckp-cible i{background:var(--danger)}
+@supports (font-size: 1cqi) {
+  .ckp-card-top{font-size:clamp(11px, 6.6cqi, 12.5px)}
+  .ckp-card-val{font-size:clamp(15px, 11cqi, 22px)}
+  .ckp-card-sous{font-size:clamp(10.5px, 6.2cqi, 12px)}
+}
+
+.ckp-liste{padding:6px 4px}
+.ckp-li{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;text-decoration:none;color:inherit;font-size:13.5px;position:relative}
+.ckp-li + .ckp-li{border-top:1px solid rgba(127,127,127,.1)}
+a.ckp-li:hover{background:rgba(127,127,127,.08)}
+a.ckp-li:focus-visible{outline:2px solid var(--orange,#F39A12);outline-offset:-2px}
+.ckp-li[data-niveau="danger"]{box-shadow:inset 3px 0 0 var(--danger)}
+.ckp-li[data-niveau="warn"]{box-shadow:inset 3px 0 0 var(--warn,orange)}
+.ckp-li-ico{width:22px;text-align:center;flex:0 0 auto}
+.ckp-li-lab{flex:1;min-width:0}
+.ckp-li-niv{flex:0 0 auto;font-size:11px}
+.ckp-li-val{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ckp-li-go{color:var(--muted);font-size:16px;line-height:1;flex:0 0 auto}
+.ckp-table-wrap{padding:4px 8px;overflow-x:auto}
+.ckp-table{width:100%;font-size:13px}
+.ckp-table td{font-variant-numeric:tabular-nums}
+.ckp-vide{padding:22px;text-align:center;color:var(--muted);font-size:13px}
+
+/* En-tête du cockpit : outils qui passent à la ligne sur mobile au lieu de déborder. */
+.ckp-head-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ckp-pers-badge{display:inline-block;min-width:18px;height:18px;line-height:18px;margin-left:6px;padding:0 5px;
+  border-radius:9px;background:var(--orange,#F39A12);color:#231a05;font-size:11px;font-weight:800;text-align:center}
+.pv-pers-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ckp-pers-badge[hidden]{display:none}
+/* Texte réservé aux lecteurs d'écran. La classe était utilisée par le
+   sélecteur d'exercice mais jamais définie : « Exercice » s'affichait en
+   clair et poussait le sélecteur sur une ligne à part dans l'en-tête. */
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:680px){.ckp-head-tools{width:100%}.ckp-head-tools .dash-year{flex:1 1 100%}}
+
+/* Impression (dossier de conseil) : pas d'effets d'écran. */
+@media print{
+  a.ckp-card-link::after{display:none}
+  .ckp-card{break-inside:avoid;transform:none!important;box-shadow:none!important}
+}
+
+/* Centre de Pilotage sans cockpit accessible (1.851.0). */
+.ckp-etat-vide{padding:40px 28px;text-align:center;color:var(--muted);max-width:620px;margin:10px auto}
+.ckp-etat-vide-ico{font-size:34px;margin-bottom:6px}
+.ckp-etat-vide strong{color:var(--text)}
+
+/* Graphiques de cockpit : dessin compact sous 600 px (1.851.0). */
+.ckp-chart-compact{display:none}
+@media(max-width:600px){
+  .ckp-chart-large{display:none}
+  .ckp-chart-compact{display:block}
+}
+@media print{.ckp-chart-compact{display:none!important}.ckp-chart-large{display:block!important}}
+.pv-h2-ico{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:rgba(127,127,127,.12);font-size:14px;flex:0 0 auto}
+.ckp-donut{max-width:460px;margin:0 auto}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  FISCALITÉ — SYNTHÈSE, FRISE DES OBLIGATIONS, DÉCLARATIONS (1.852.0)
+ *  Les cartes d'indicateurs réutilisent le gabarit du Cockpit (.ckp-card).
+ * ═══════════════════════════════════════════════════════════════════════ */
+.fi-sm{font-size:12.5px}
+.fi-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 18px}
+.fi-head-reg{display:flex;gap:12px;align-items:center;min-width:0;flex:1 1 360px}
+.fi-head-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(127,127,127,.12);flex:0 0 auto}
+.fi-head-titre{font-size:17px;font-weight:800;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fi-periode{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.fi-periode .fld{margin:0}
+.fi-raccourcis{display:flex;gap:6px;flex-wrap:wrap;width:100%;justify-content:flex-end}
+.fi-chip{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none}
+.fi-chip:hover{color:var(--text)}
+.fi-chip.on{background:var(--orange,#F39A12);border-color:transparent;color:#231a05}
+.fi-kpis{margin-bottom:18px}
+
+.fi-cal .card-head{display:flex;justify-content:space-between;align-items:center}
+.fi-cal-wrap{overflow-x:auto;padding:4px 14px 8px}
+.fi-cal-t{border-collapse:separate;border-spacing:4px;width:100%;min-width:640px}
+.fi-cal-t th{font-size:11.5px;font-weight:700;color:var(--muted);text-align:center;white-space:nowrap}
+.fi-cal-t tbody th{text-align:left;color:var(--text);font-size:12.5px;padding-right:8px}
+.fi-cal-t td{text-align:center;padding:0}
+.fi-cell{display:inline-flex;align-items:center;justify-content:center;width:100%;min-width:30px;height:28px;border-radius:7px;
+  font-size:12px;font-weight:800;text-decoration:none;border:1px solid transparent;color:var(--text)}
+a.fi-cell:hover{filter:brightness(1.15);outline:1px solid rgba(127,127,127,.4)}
+a.fi-cell:focus-visible{outline:2px solid var(--orange,#F39A12);outline-offset:1px}
+.fi-cell.payee{background:var(--ok-bg,#10261F);color:var(--ok);border-color:rgba(57,184,126,.35)}
+.fi-cell.declaree{background:rgba(61,111,224,.16);color:var(--blue,#3D6FE0)}
+.fi-cell.comptabilisee{background:rgba(61,111,224,.10);color:var(--blue,#3D6FE0)}
+.fi-cell.en_cours{background:rgba(243,154,18,.10);color:var(--warn)}
+.fi-cell.a_faire{background:transparent;border:1px dashed var(--warn);color:var(--warn)}
+.fi-cell.en_retard{background:var(--danger-bg,#3A1E1C);color:var(--danger);border-color:rgba(229,103,95,.45)}
+.fi-cell.a_venir{background:rgba(127,127,127,.06);color:var(--muted)}
+.fi-cell.sans_objet{background:transparent}
+.fi-cal-leg{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;padding:8px 16px 14px;font-size:12px;color:var(--muted)}
+.fi-cal-leg .fi-cell{width:26px;min-width:26px;height:22px;font-size:11px}
+.fi-cal-is{margin-left:auto;color:var(--text)}
+.fi-cal-is .fi-cell{width:30px}
+
+.fi-anos .card-head{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.fi-ano{padding:9px 12px;border-radius:8px;margin-bottom:6px;box-shadow:inset 3px 0 0 var(--muted)}
+.fi-ano[data-niveau="danger"]{box-shadow:inset 3px 0 0 var(--danger);background:rgba(229,103,95,.06)}
+.fi-ano[data-niveau="warn"],.fi-ano[data-niveau="attention"]{box-shadow:inset 3px 0 0 var(--warn);background:rgba(243,154,18,.05)}
+.fi-ano-t{font-weight:700}
+.fi-ano-g{margin-top:3px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fi-anos-plus > summary{cursor:pointer;color:var(--muted);font-size:12.5px;padding:4px 0 8px}
+
+.fisc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:16px}
+.fisc-grid > .card{margin:0}
+.fi-bloc .card-head{display:flex;justify-content:space-between;align-items:center}
+/* Portée limitée à la grille fiscale : ailleurs, `.kv` est une classe de TABLEAU (fiche facture, licence…). */
+.fisc-grid .kv{display:flex;justify-content:space-between;padding:5px 0;gap:12px;font-variant-numeric:tabular-nums}
+.fisc-grid .kv span{color:var(--muted)}
+.fisc-grid .kv strong{color:var(--text);text-align:right}
+.fisc-grid .kv strong.pos{color:var(--ok)} .fisc-grid .kv strong.neg{color:var(--danger)}
+.fisc-grid .kv-total{border-top:1px solid var(--line);margin-top:6px;padding-top:9px}
+.fisc-grid .kv-total span{color:var(--text);font-weight:700}
+.fi-du{color:var(--orange,#F39A12)!important;font-size:17px}
+.fi-note{margin-top:14px}
+
+/* Étapes d'une déclaration */
+.fi-steps{display:flex;gap:0;list-style:none;margin:0 0 16px;padding:0;overflow-x:auto}
+.fi-steps li{flex:1 1 0;min-width:96px;position:relative;text-align:center;font-size:12px;color:var(--muted);padding-top:26px}
+.fi-steps li::before{content:'';position:absolute;top:10px;left:0;right:0;height:3px;background:var(--line)}
+.fi-steps li:first-child::before{left:50%} .fi-steps li:last-child::before{right:50%}
+.fi-steps li::after{content:'';position:absolute;top:4px;left:50%;width:15px;height:15px;margin-left:-7.5px;border-radius:50%;background:var(--panel);border:3px solid var(--line)}
+.fi-steps li.fait{color:var(--text)}
+.fi-steps li.fait::before{background:var(--ok)}
+.fi-steps li.fait::after{background:var(--ok);border-color:var(--ok)}
+.fi-steps li.actuel{color:var(--text);font-weight:700}
+.fi-steps li.actuel::after{border-color:var(--orange,#F39A12);background:var(--orange,#F39A12)}
+.fi-retard{color:var(--danger);font-weight:700}
+@media(max-width:680px){
+  .fi-head{padding:14px}
+  .fi-raccourcis{justify-content:flex-start}
+  .fi-cal-is{margin-left:0}
+}
+/* Période : champs côte à côte (la classe .fld est pleine largeur par défaut). */
+/* `.content form:has(> .fld ~ .fld)` met en GRILLE tout formulaire à deux champs : la période doit rester en ligne. */
+.content form.fi-periode,.fi-head form.fi-periode{display:flex!important;flex:1 1 520px;justify-content:flex-end;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.fi-periode .fld{display:flex;flex-direction:column;gap:2px;width:auto;flex:0 0 165px}
+.fi-periode .fld span{font-size:11.5px;color:var(--muted)}
+.fi-periode .fld input[type=date]{width:100%;min-width:0}
+.fi-periode .btn{width:auto;flex:0 0 auto;display:inline-flex;align-self:flex-end;align-items:center;min-height:40px;margin:0}
+.fisc-grid .kv strong{white-space:nowrap}
+@media(max-width:680px){.fi-periode{justify-content:flex-start}.fi-periode input[type=date]{min-width:0;width:100%}.fi-periode .fld{flex:1 1 130px}}
+
+/* ═══════════ FAMILLE SANTÉ (1.858.0) — écrans planning, praticiens, lits, DME ═══════════
+   Classes préfixées « sa- » : aucun effet hors des écrans santé. */
+.sa-nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;padding:6px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+.sa-nav a{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:background .15s var(--ease),color .15s var(--ease)}
+.sa-nav a:hover{background:var(--hover);color:var(--text)}
+.sa-nav a.on{background:#39B87E;color:#fff}
+.sa-nav .sa-nav-sep{flex:1}
+.sa-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:0 0 16px}
+.sa-kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);border-top:3px solid var(--sa-c,#39B87E)}
+.sa-kpi .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.sa-kpi .v{font-size:22px;font-weight:800;margin-top:4px;color:var(--text);font-variant-numeric:tabular-nums}
+.sa-kpi .s{font-size:12px;color:var(--muted2);margin-top:2px}
+.sa-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.sa-grid-main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.sa-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;align-items:end}
+.sa-badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--bg2);color:var(--muted)}
+.sa-badge.ok{background:var(--ok-bg);color:var(--ok)}
+.sa-badge.warn{background:var(--warn-bg);color:var(--warn)}
+.sa-badge.err{background:var(--danger-bg);color:var(--danger)}
+.sa-badge.info{background:rgba(59,130,246,.12);color:var(--blue)}
+.sa-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:0 0 14px}
+.sa-week a{display:block;text-align:center;padding:8px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--panel);text-decoration:none;color:var(--text)}
+.sa-week a:hover{border-color:#39B87E}
+.sa-week a.on{background:#39B87E;border-color:#39B87E;color:#fff}
+.sa-week .j{font-size:11px;text-transform:uppercase;opacity:.75}
+.sa-week .d{font-size:16px;font-weight:800}
+.sa-week .n{font-size:11px;opacity:.8}
+.sa-beds{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.sa-bed{border:1px solid var(--border);border-left:4px solid var(--ok);border-radius:var(--radius-sm);padding:10px 12px;background:var(--panel)}
+.sa-bed.busy{border-left-color:var(--warn);background:linear-gradient(0deg,var(--warn-bg),var(--warn-bg)),var(--panel)}
+.sa-bed .n{font-weight:800;font-size:15px}
+.sa-bed .s{font-size:12px;color:var(--muted)}
+.sa-bed .p{font-size:13px;margin-top:6px;font-weight:600}
+.sa-bed form{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.sa-bed input[type=date]{flex:1;min-width:0}
+.sa-gauge{height:8px;border-radius:999px;background:var(--bg2);overflow:hidden;margin-top:8px}
+.sa-gauge>span{display:block;height:100%;border-radius:999px;background:var(--sa-c,#39B87E)}
+.sa-patient{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+.sa-avatar{width:48px;height:48px;border-radius:50%;background:#39B87E;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex:none}
+.sa-patient h1{font-size:20px;margin:0}
+.sa-patient .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.sa-patient .act{margin-left:auto}
+.sa-allergy{display:flex;gap:8px;align-items:flex-start;background:var(--danger-bg);color:var(--danger);border:1px solid rgba(220,38,38,.35);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;font-size:13.5px}
+.sa-consult{border-bottom:1px solid var(--border);padding:12px 16px}
+.sa-consult:last-child{border-bottom:0}
+.sa-vitals{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.sa-help{font-size:12.5px;color:var(--muted);margin:0 0 12px}
+.sa-table-wrap{overflow-x:auto}
+.sa-right{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:980px){.sa-grid-main{grid-template-columns:1fr}}
+@media (max-width:760px){.sa-grid2{grid-template-columns:1fr}.sa-week{grid-template-columns:repeat(7,minmax(38px,1fr));overflow-x:auto}.sa-kpi .v{font-size:19px}.sa-patient .act{margin-left:0}}
+/* Santé 1.859.0 — impression des bordereaux et ordonnances : seul le document part au papier. */
+@media print{.side,.topbar,.fkc-barre,.sa-nav,.sa-noprint,.onb-invite,.modnav{display:none!important}.main,.content{margin:0!important;padding:0!important}.sa-kpi,.card{box-shadow:none!important;break-inside:avoid}}
+.sa-rx{max-width:720px;margin:0 auto;background:#fff;color:#111;border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px}
+.sa-rx h1{font-size:20px;margin:0 0 4px}.sa-rx .en-tete{display:flex;justify-content:space-between;gap:12px;border-bottom:2px solid #39B87E;padding-bottom:12px;margin-bottom:16px}
+.sa-rx ol{padding-left:20px}.sa-rx li{margin-bottom:10px}.sa-rx .sign{margin-top:40px;text-align:right}
+
+/* ═══════════ KIT D'ÉCRAN PARTAGÉ (1.860.0) — Restauration, Hôtellerie, Loisirs ═══════════
+   Mêmes principes que « sa-* » (Santé), sans couleur de famille imposée. */
+.fk-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.fk-grid-side{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.fk-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:0 0 16px}
+.fk-kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);border-top:3px solid var(--fk-c,var(--orange))}
+.fk-kpi .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.fk-kpi .v{font-size:22px;font-weight:800;margin-top:4px;color:var(--text);font-variant-numeric:tabular-nums}
+.fk-kpi .s{font-size:12px;color:var(--muted2);margin-top:2px}
+.fk-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;align-items:end}
+.fk-badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--bg2);color:var(--muted)}
+.fk-badge.ok{background:var(--ok-bg);color:var(--ok)}.fk-badge.warn{background:var(--warn-bg);color:var(--warn)}.fk-badge.err{background:var(--danger-bg);color:var(--danger)}
+.fk-help{font-size:12.5px;color:var(--muted);margin:0 0 12px}
+.fk-right{text-align:right;font-variant-numeric:tabular-nums}
+.fk-wrap{overflow-x:auto}
+.fk-access{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px;border-radius:var(--radius);border:2px dashed var(--border);background:var(--panel)}
+.fk-access input{flex:1;min-width:200px;font-size:18px;padding:10px 12px}
+.fk-verdict{margin-top:12px;padding:14px 16px;border-radius:var(--radius);font-size:16px;font-weight:700}
+.fk-verdict.ok{background:var(--ok-bg);color:var(--ok)}.fk-verdict.err{background:var(--danger-bg);color:var(--danger)}
+@media (max-width:980px){.fk-grid-side{grid-template-columns:1fr}}
+@media (max-width:760px){.fk-grid2{grid-template-columns:1fr}.fk-kpi .v{font-size:19px}}
+/* 1.860.0 — colonnes latérales à gauche (liste de commandes, filtres) : repliées sur mobile. */
+.fk-grid-lead{display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px;align-items:start}
+.fk-kpis4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+@media (max-width:980px){.fk-grid-lead{grid-template-columns:1fr}.fk-kpis4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.fk-kpis4{grid-template-columns:1fr}}
+
+/* ── 1.868.0 — Créatif & Médias : bandeau de pilotage d'un dossier ── */
+.crea-kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.crea-kpis .stat{padding:14px 16px}
+.crea-kpis .stat-value{font-size:21px}
+.crea-jauge{display:block;height:4px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+.crea-jauge i{display:block;height:100%;background:var(--ok);border-radius:4px}
+/* Règlement d'un cachet : le moyen tient sur la ligne du bouton. */
+form select.input-sm{width:auto;max-width:150px;padding-top:4px;padding-bottom:4px;font-size:12px}
+@media (max-width:640px){.crea-kpis{grid-template-columns:1fr 1fr}.crea-kpis .stat-value{font-size:18px}}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PAGE DE CONNEXION — VITRINE EN UN ÉCRAN (1.872.0)
+   ─────────────────────────────────────────────────────────────────────────
+   La vitrine 1.546.0 défilait sur quatre écrans ; celle-ci tient sur un seul.
+   Promesse, domaines couverts, chiffres animés, quatre atouts, signature et
+   ruban continu de tous les packs (textes revus en 1.873.0).
+
+   Tout est préfixé « lg- » : les classes partagées avec l'écran de choix du
+   mot de passe (auth-*, hero-title, hero-logos) gardent leur comportement.
+
+   Titres en Syne, mais à taille mesurée : Syne est une police TRÈS large, et
+   un titre de 60 px déborde dès qu'elle est réellement chargée.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.lg-hero{display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;isolation:isolate;
+  background:radial-gradient(1100px 620px at 0% 0%,rgba(61,111,224,.20),transparent 60%),
+    radial-gradient(800px 560px at 100% 100%,rgba(243,154,18,.12),transparent 60%),#070B16}
+
+/* Fond vivant : trois halos qui dérivent lentement, et une trame qui s'efface. */
+.lg-bg{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.lg-orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;animation:lgDerive 22s ease-in-out infinite alternate}
+.lg-orb.a{width:460px;height:460px;left:-120px;top:-140px;background:#2F5BD6}
+.lg-orb.b{width:380px;height:380px;right:-80px;top:30%;background:#F39A12;opacity:.28;animation-duration:26s;animation-delay:-8s}
+.lg-orb.c{width:340px;height:340px;left:30%;bottom:-160px;background:#7B5CE0;opacity:.30;animation-duration:30s;animation-delay:-14s}
+.lg-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse 70% 60% at 35% 35%,#000 20%,transparent 75%);
+  mask-image:radial-gradient(ellipse 70% 60% at 35% 35%,#000 20%,transparent 75%)}
+@keyframes lgDerive{from{transform:translate(0,0) scale(1)}to{transform:translate(70px,50px) scale(1.15)}}
+
+.lg-inner{flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(16px,2.6vh,26px);
+  padding:clamp(22px,4vh,44px) clamp(32px,4vw,60px) clamp(14px,2.2vh,22px);max-width:980px;width:100%;margin:0 auto}
+
+.lg-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.lg-logo{padding:8px 14px;border-radius:13px}
+.lg-logo img{height:34px}
+.lg-badge{display:inline-flex;align-items:center;gap:9px;padding:6px 13px;border-radius:30px;font-size:11.5px;font-weight:700;
+  letter-spacing:.3px;color:#dfe7f7;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(8px)}
+.lg-badge i{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:lgPing 2.4s infinite}
+@keyframes lgPing{0%{box-shadow:0 0 0 0 rgba(57,184,126,.55)}70%,100%{box-shadow:0 0 0 9px rgba(57,184,126,0)}}
+
+.lg-pitch{display:flex;flex-direction:column;gap:clamp(10px,1.8vh,16px);min-width:0}
+
+.lg-title{font-size:clamp(26px,2.4vw,40px);line-height:1.12;letter-spacing:-.02em}
+.lg-title .accent{background:linear-gradient(100deg,#FFD08A 0%,var(--orange-l) 25%,var(--orange) 50%,#FF7A3D 75%,var(--orange-l) 100%);
+  background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:lgReflet 7s linear infinite}
+@keyframes lgReflet{to{background-position:-200% center}}
+
+/* Domaines couverts */
+.lg-domaines{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.lg-domaines li{font-size:11px;font-weight:600;color:#cfd9ee;padding:3px 10px;border-radius:20px;
+  background:rgba(61,111,224,.12);border:1px solid rgba(100,140,230,.25)}
+.lg-domaines li:last-child{color:var(--orange-l);background:rgba(243,154,18,.10);border-color:rgba(243,154,18,.32)}
+
+.lg-textes{display:flex;flex-direction:column;gap:6px;max-width:44em}
+.lg-sub{font-size:14.5px;line-height:1.6;color:var(--muted)}
+.lg-sub strong{color:#fff;font-weight:700}
+.lg-sub-s{font-size:13px;color:var(--muted2);line-height:1.55}
+
+/* Chiffres clés : compacts, chiffre et libellé côte à côte. */
+.lg-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-width:640px}
+.lg-stat{position:relative;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;
+  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);overflow:hidden}
+.lg-stat::before{content:"";position:absolute;left:0;top:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--orange));opacity:.8}
+.lg-stat b{font-family:Inter,sans-serif;font-weight:800;font-size:22px;line-height:1;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.lg-stat span{font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;color:var(--muted2);line-height:1.3}
+
+/* Les quatre atouts */
+.lg-atouts{display:flex;flex-direction:column;gap:12px}
+.lg-accroche{font-family:Inter,sans-serif;font-size:clamp(15px,1.25vw,18px);font-weight:700;color:#fff;letter-spacing:-.01em}
+.lg-accroche span{color:var(--orange-l)}
+.lg-forces{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.lg-force{display:flex;flex-direction:column;gap:9px;padding:13px 13px 12px;border-radius:14px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.07);transition:transform .25s var(--ease),border-color .25s var(--ease),background .25s var(--ease)}
+.lg-force:hover{transform:translateY(-3px);border-color:rgba(120,150,230,.45);background:rgba(61,111,224,.07)}
+.lg-force-ico{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;flex-shrink:0}
+.lg-force-ico svg{width:18px;height:18px}
+.lg-force-ico.b{color:#8fb0ff;background:rgba(61,111,224,.16)}
+.lg-force-ico.o{color:var(--orange-l);background:rgba(243,154,18,.14)}
+.lg-force-ico.g{color:#5fd8a0;background:rgba(57,184,126,.14)}
+.lg-force-ico.p{color:#c2a9ff;background:rgba(157,123,224,.16)}
+.lg-force-lab{font-weight:700;font-size:13px;color:#fff;line-height:1.3}
+.lg-force-txt{font-size:11.5px;line-height:1.5;color:var(--muted);margin-top:3px}
+
+.lg-signature{font-size:13px;color:var(--muted);padding-top:12px;border-top:1px solid rgba(255,255,255,.07)}
+.lg-signature b{color:#fff;font-weight:800}
+
+/* Ruban continu des packs : il défile TOUJOURS, voir la note plus bas. */
+.lg-ruban{flex-shrink:0;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:10px 0 14px;border-top:1px solid rgba(255,255,255,.06);
+  background:rgba(4,7,14,.35)}
+.lg-ruban-titre{display:flex;align-items:center;gap:10px;padding:0 clamp(32px,4vw,60px);font-size:11.5px;color:var(--muted2);font-weight:600}
+.lg-ruban-titre span{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;font-weight:800;color:var(--orange);
+  background:rgba(243,154,18,.10);border:1px solid rgba(243,154,18,.3);border-radius:20px;padding:2px 9px}
+.lg-ruban-rangs{display:flex;flex-direction:column;gap:8px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.lg-ruban-rang{display:flex;width:max-content}
+.lg-ruban-piste{display:flex;gap:8px;padding-right:8px;animation:lgDefile var(--d,90s) linear infinite}
+.lg-ruban-rang.inv .lg-ruban-piste{animation-direction:reverse}
+.lg-ruban:hover .lg-ruban-piste{animation-play-state:paused}
+.lg-pk{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;padding:5px 12px 5px 6px;border-radius:30px;font-size:12px;font-weight:600;
+  color:#c9d4ea;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.lg-pk b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.07);font-size:12px;font-weight:400}
+@keyframes lgDefile{to{transform:translateX(-100%)}}
+
+/* Colonne formulaire : une carte de verre posée sur un halo. */
+.lg-form{position:relative;align-items:center;
+  background:radial-gradient(600px 420px at 50% 0%,rgba(61,111,224,.14),transparent 70%),
+    radial-gradient(500px 380px at 50% 100%,rgba(243,154,18,.07),transparent 70%),var(--bg)}
+.lg-card{max-width:430px;padding:32px 32px 24px;border-radius:24px;background:linear-gradient(180deg,rgba(26,39,66,.55),rgba(19,29,51,.35));
+  border:1px solid rgba(255,255,255,.08);box-shadow:0 30px 70px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(10px)}
+.lg-card .auth-brand{margin-bottom:22px}
+.lg-card .auth-brand .ab-name{font-size:17px}
+.lg-card .auth-h{font-family:Inter,sans-serif;font-weight:800;font-size:clamp(21px,1.7vw,25px);line-height:1.2;letter-spacing:-.01em;margin-bottom:8px}
+.lg-card .auth-desc{font-size:13.5px;line-height:1.55}
+.lg-card .auth-input input{transition:border-color .2s var(--ease),box-shadow .2s var(--ease),background .2s var(--ease)}
+.lg-card .auth-input input:focus{background:#0c1323;box-shadow:0 0 0 4px rgba(61,111,224,.22),0 8px 24px -10px rgba(61,111,224,.6)}
+.lg-card .auth-input input[name=password]{padding-right:46px}
+.lg-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;display:grid;place-items:center;
+  border:0;border-radius:9px;background:transparent;color:var(--muted2);cursor:pointer}
+.lg-eye:hover,.lg-eye[aria-pressed=true]{color:var(--text);background:rgba(255,255,255,.06)}
+.lg-eye:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.lg-eye svg{width:18px;height:18px}
+.lg-caps{margin:-6px 0 12px;font-size:11.5px;font-weight:700;color:var(--warn)}
+.lg-card .btn-login{position:relative;overflow:hidden;gap:10px;border-radius:12px;
+  box-shadow:0 12px 30px -8px rgba(243,154,18,.55),inset 0 1px 0 rgba(255,255,255,.35)}
+.lg-card .btn-login::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:lgBalaye 4.5s 1.5s infinite}
+@keyframes lgBalaye{0%{left:-60%}22%,100%{left:130%}}
+.lg-arrow{display:inline-block;transition:transform .25s var(--ease)}
+.lg-card .btn-login:hover .lg-arrow{transform:translateX(5px)}
+.lg-card .btn-login.is-envoi .lg-arrow{animation:lgTourne .8s linear infinite}
+@keyframes lgTourne{to{transform:rotate(360deg)}}
+.lg-card .auth-tag{border-radius:30px;background:rgba(255,255,255,.03)}
+/* Options du formulaire : changement de mot de passe, mot de passe oublié. */
+.lg-options{margin:-4px 0 14px}
+.lg-check{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:12.5px;color:var(--muted);font-weight:500;user-select:none}
+.lg-check input{appearance:none;-webkit-appearance:none;width:17px;height:17px;padding:0;margin:0;flex:0 0 17px;border-radius:5px;
+  border:1px solid var(--line2);background:var(--bg2);display:grid;place-items:center;cursor:pointer;transition:background .15s,border-color .15s}
+.lg-check input::after{content:"";width:9px;height:5px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px);opacity:0}
+.lg-check input:checked{background:var(--blue);border-color:var(--blue)}
+.lg-check input:checked::after{opacity:1}
+.lg-check input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.lg-check:hover{color:var(--text)}
+.lg-oubli{margin-top:14px;text-align:center;font-size:12.5px}
+.lg-oubli summary{display:inline-block;cursor:pointer;color:var(--orange-l);font-weight:600;list-style:none}
+.lg-oubli summary::-webkit-details-marker{display:none}
+.lg-oubli summary:hover{text-decoration:underline}
+.lg-oubli[open] summary{margin-bottom:10px}
+.lg-oubli p,.lg-oubli ul{text-align:left;color:var(--muted);line-height:1.55;font-size:12px}
+.lg-oubli ul{margin:6px 0;padding-left:18px}
+.lg-oubli p+p{margin-top:7px}
+.lg-oubli li{margin:3px 0}.lg-oubli li b{color:var(--text)}
+.lg-oubli[open]{padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+
+/* Nom du produit à côté du logo, dans la vitrine. */
+.lg-nom{display:flex;flex-direction:column;font-family:Syne,Inter,sans-serif;font-weight:800;font-size:19px;line-height:1.1;color:#fff;letter-spacing:-.01em}
+.lg-nom small{font-family:Inter,sans-serif;font-weight:700;font-size:9px;letter-spacing:2.5px;color:var(--orange);margin-top:4px}
+.lg-top .lg-badge{margin-left:auto}
+
+/* Le résumé « auth-mini » double les chiffres de la vitrine : il ne sert qu'au mobile. */
+.lg-card .auth-mini{display:none}
+
+/* Entrée en scène : chaque bloc arrive à son tour. */
+.lg-top,.lg-title,.lg-domaines,.lg-textes,.lg-stats,.lg-atouts,.lg-signature,.lg-card{animation:lgMonte .7s var(--ease) both}
+.lg-title{animation-delay:.08s}.lg-domaines{animation-delay:.14s}.lg-textes{animation-delay:.2s}.lg-stats{animation-delay:.26s}
+.lg-atouts{animation-delay:.34s}.lg-signature{animation-delay:.42s}.lg-card{animation-delay:.1s}
+@keyframes lgMonte{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* Écrans intermédiaires : les atouts passent en 2 × 2. */
+@media(max-width:1400px) and (min-width:1081px){
+  .lg-forces{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lg-force{flex-direction:row;align-items:flex-start}
+  .lg-stat{flex-direction:column;align-items:flex-start;gap:4px}
+}
+/* Écrans bas : on retire le texte secondaire plutôt que de faire défiler. */
+@media(max-height:940px) and (min-width:1081px){
+  .lg-sub-s{display:none}
+}
+@media(max-height:760px) and (min-width:1081px){
+  .lg-force-txt{display:none}
+  .lg-forces{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .lg-force{flex-direction:column}
+  .lg-inner{gap:10px}
+  .lg-ruban{padding:6px 0 8px;gap:6px}
+  .lg-ruban-rangs{gap:6px}
+  .lg-pk{padding:3px 10px 3px 5px}
+  .lg-signature{padding-top:8px}
+  .lg-card{padding:22px 28px 18px}
+  .lg-card .auth-brand{margin-bottom:14px}
+  .lg-card .auth-divider{margin:16px 0 12px}
+  .lg-card .auth-foot{margin-top:14px}
+}
+@media(max-width:1080px){
+  .lg-hero{display:none}
+  .lg-card .auth-mini{display:flex}
+  .lg-card{margin:0 auto;padding:28px 22px 22px}
+}
+@media(max-width:480px){
+  .lg-card{border:0;background:none;box-shadow:none;backdrop-filter:none;padding:10px 0}
+}
+/* Réduire les animations : tout s'arrête SAUF le ruban des packs, ralenti.
+   Windows désactive les « effets d'animation » par défaut sur de nombreux
+   postes ; le ruban figé y passait pour une page cassée. Un défilement lent,
+   horizontal et suspendu au survol reste acceptable. */
+@media(prefers-reduced-motion:reduce){
+  .lg-hero *:not(.lg-ruban-piste),.lg-hero *::before,.lg-hero *::after,.lg-card,.lg-card *,.lg-card *::after{animation:none!important;transition:none!important}
+  .lg-ruban-piste{animation-duration:calc(var(--d,90s) * 1.6)!important;animation-iteration-count:infinite!important}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1.875.1 — RAFFINEMENTS VISUELS
+   Ajustements transverses, sans changer aucune structure d'écran :
+   titre de page aligné à gauche, bandeau d'accueil lisible sur téléphone,
+   tableaux plus faciles à parcourir, en-têtes de colonnes numériques dans la
+   police du texte, sélecteur de mode lisible, sélection et états cohérents.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Titre de page : il flottait au milieu de la barre (espacement réparti entre
+   trois éléments). Il s'aligne à gauche, près du bouton de repli, et se tronque
+   proprement plutôt que de pousser les actions. */
+.topbar .page-title{flex:1 1 auto;min-width:0;margin:0 16px 0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+
+/* Tableaux : lignes alternées très légères, survol plus net, en-têtes
+   numériques dans la police du texte (le monospace reste réservé aux montants). */
+.table tbody tr:nth-child(even){background:rgba(255,255,255,.014)}
+.table tbody tr:hover{background:rgba(61,111,224,.07)}
+.table th.num{font-family:inherit}
+.table td.empty,.table .empty{color:var(--muted);text-align:center;padding:26px 18px;font-style:normal}
+.table tfoot td,.table tfoot th{border-top:1px solid var(--line2);background:rgba(255,255,255,.02);font-weight:700}
+
+/* Cartes : titres homogènes. */
+.card-head h2{font-size:15px;line-height:1.3;margin:0}
+.card-head h2 + .muted,.card-head h2 + span.muted{font-size:12.5px}
+
+/* Alertes : un filet d'accent à gauche qui dit la nature d'un coup d'œil. */
+.alert{border-left-width:3px}
+
+/* Boutons : retour tactile discret. */
+.btn:active{transform:translateY(1px)}
+
+/* Sélection de texte aux couleurs de la charte. */
+::selection{background:rgba(61,111,224,.38);color:#fff}
+
+/* Champs en lecture seule : on voit qu'on ne peut pas les modifier. */
+input[readonly],textarea[readonly]{background:rgba(255,255,255,.03);border-style:dashed;color:var(--muted)}
+
+@media(max-width:640px){
+  /* Bandeau d'accueil : le texte prend toute la largeur, les deux actions
+     passent dessous (le texte était écrasé dans une colonne de 80 px). */
+  .onb-invite{flex-wrap:wrap;align-items:flex-start}
+  .onb-invite-txt{flex:1 1 calc(100% - 40px)}
+  .onb-invite > .btn,.onb-invite > form{margin-left:33px}
+  /* Base nulle : le titre ne prend que la place qui reste, le sélecteur de
+     mode et la déconnexion gardent la leur (aucun débordement horizontal). */
+  .topbar .page-title{margin:0 8px;flex:1 1 0}
+}
+
+/* ═══ Centre d'aide 1.876.4 : héros, nouveautés, vidéos, support ═══ */
+.ah-hero{position:relative;display:grid;grid-template-columns:1.25fr 1fr;gap:26px;align-items:center;padding:30px;margin-bottom:20px;border:1px solid var(--line2);border-radius:20px;overflow:hidden;background:radial-gradient(700px 320px at 0% 0%,rgba(76,123,236,.22),transparent 60%),radial-gradient(600px 300px at 100% 100%,rgba(243,154,18,.16),transparent 60%),var(--panel);animation:fkc-fade .4s var(--ease) both}
+.ah-hero-sm{grid-template-columns:1fr;padding:26px 30px}
+.ah-hero h1{font-size:30px;line-height:1.15;margin:8px 0 10px;letter-spacing:-.02em}
+.ah-hero p{color:var(--muted);margin:0 0 16px;max-width:620px}
+.ah-kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.ah-kicker::before{content:"";width:20px;height:2px;background:currentColor;border-radius:2px}
+.ah-grad{background:linear-gradient(90deg,var(--accent),#FBBF24 45%,#22D3EE);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ah-search{margin:0;max-width:none}
+.ah-quick{justify-content:flex-start}
+.ah-chip-video{border-color:rgba(243,154,18,.5);color:var(--text)}
+.ah-hero-video{position:relative;display:block;border-radius:16px;overflow:hidden;border:1px solid var(--line2);box-shadow:0 24px 60px -24px rgba(0,0,0,.7);aspect-ratio:16/9;background:#050913;transition:transform .3s var(--ease),box-shadow .3s}
+.ah-hero-video:hover{transform:translateY(-3px);box-shadow:0 30px 70px -24px rgba(243,154,18,.45)}
+.ah-hero-video img{width:100%;height:100%;object-fit:cover;opacity:.9}
+.ah-hero-video-l{position:absolute;left:0;right:0;bottom:0;padding:26px 16px 12px;background:linear-gradient(180deg,transparent,rgba(5,9,19,.92));display:flex;flex-direction:column;color:#fff}
+.ah-hero-video-l small{color:var(--muted)}
+.ah-play{position:absolute;left:50%;top:44%;width:68px;height:68px;margin:-34px 0 0 -34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#FFB547);box-shadow:0 0 0 0 rgba(243,154,18,.6);animation:ah-pouls 2.2s infinite}
+.ah-play::after{content:"";position:absolute;left:27px;top:20px;border-left:20px solid #1B1203;border-top:14px solid transparent;border-bottom:14px solid transparent}
+.ah-play.sm{width:48px;height:48px;margin:-24px 0 0 -24px;top:50%}.ah-play.sm::after{left:19px;top:14px;border-left-width:14px;border-top-width:10px;border-bottom-width:10px}
+@keyframes ah-pouls{70%{box-shadow:0 0 0 18px rgba(243,154,18,0)}100%{box-shadow:0 0 0 0 rgba(243,154,18,0)}}
+.ah-new{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:22px}
+.ah-new-item{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);text-decoration:none;font-size:13.5px;transition:border-color .2s,transform .2s}
+.ah-new-item:hover{border-color:var(--accent);transform:translateY(-2px)}
+.ah-new-ico{font-size:22px;width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:12px;background:var(--panel2)}
+.ah-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#1B1203;background:var(--accent);border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}
+.ah-sec-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px}
+.ah-videos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-bottom:22px}
+.ah-video{display:flex;flex-direction:column;gap:6px;padding:10px 10px 14px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);text-decoration:none;transition:border-color .2s,transform .2s,box-shadow .2s}
+.ah-video:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:0 20px 40px -24px rgba(76,123,236,.6)}
+.ah-video-img{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:#050913}
+.ah-video-img img{width:100%;height:100%;object-fit:cover}
+.ah-duree{position:absolute;right:8px;bottom:8px;background:rgba(5,9,19,.85);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px}
+.ah-video-t{font-weight:700;font-size:14px;padding:0 4px}
+.ah-video-r{font-size:12.5px;color:var(--muted);padding:0 4px}
+.ah-vlist{display:flex;flex-direction:column;gap:18px;margin-bottom:18px}
+.ah-vcard{display:grid;grid-template-columns:1.35fr 1fr;gap:22px;align-items:start;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--panel);scroll-margin-top:90px}
+.ah-vcard.ah-cible{border-color:var(--accent);box-shadow:0 0 0 3px rgba(243,154,18,.15)}
+.ah-vplayer{border-radius:12px;overflow:hidden;background:#050913;aspect-ratio:16/9}
+.ah-vplayer video{width:100%;height:100%;display:block}
+.ah-vinfo{position:relative;padding:6px 4px}
+.ah-vnum{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--grad-blue,#3D6FE0);color:#fff;font-weight:800;margin-bottom:8px}
+.ah-vinfo h2{font-size:19px;margin:0 0 6px;line-height:1.25}.ah-vinfo h2 small{font-size:12px;color:var(--accent);font-weight:800;margin-left:6px}
+.ah-chap{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.ah-chap button{display:inline-flex;gap:7px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;color:var(--text);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:border-color .2s}
+.ah-chap button span{color:var(--accent);font-variant-numeric:tabular-nums;font-weight:800}
+.ah-chap button:hover{border-color:var(--accent)}
+.ah-support{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin:22px 0 8px;padding:20px 22px;border:1px solid var(--line2);border-radius:18px;background:linear-gradient(135deg,rgba(243,154,18,.12),rgba(76,123,236,.10)),var(--panel)}
+.ah-support h2{font-size:18px;margin:0 0 4px}.ah-support p{margin:0;max-width:560px}
+.ah-support-btns{display:flex;flex-wrap:wrap;gap:8px}
+.ah-btn-wa{background:#1FAF5A;border-color:#1FAF5A;color:#fff}
+.aide-cat{transition:transform .2s var(--ease),border-color .2s,box-shadow .2s}
+.aide-cat:hover{transform:translateY(-3px);border-color:var(--line2);box-shadow:0 18px 36px -22px rgba(76,123,236,.55)}
+@media(max-width:980px){.ah-hero,.ah-vcard{grid-template-columns:1fr}.ah-hero{padding:22px}.ah-hero h1{font-size:25px}}
+@media(prefers-reduced-motion:reduce){.ah-play{animation:none}.ah-hero{animation:none}}

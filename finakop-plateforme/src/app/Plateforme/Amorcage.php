@@ -154,6 +154,7 @@ class FKC_Plateforme_Amorcage {
 		define( 'FKC_ADMIN_EMAIL', (string) FKC_Config::get( 'admin_email', '' ) );
 		define( 'FKC_SSE', (bool) FKC_Config::get( 'temps_reel.sse', false ) );
 		define( 'FKC_2FA_ADMIN_OBLIGATOIRE', (bool) FKC_Config::get( 'securite.2fa_admin_obligatoire', true ) );
+		define( 'FKC_2FA_EMAIL', (bool) FKC_Config::get( 'securite.2fa_email', false ) );
 		define( 'FKC_MASQUER_VERSION', (bool) FKC_Config::get( 'securite.masquer_version', true ) );
 		define( 'FKC_CRON_EXTERNE', true );
 		define( 'FKC_CRON_INTERVALLE', (int) FKC_Config::get( 'cron.intervalle', 300 ) );

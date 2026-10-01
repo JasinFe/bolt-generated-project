@@ -67,9 +67,24 @@ class FKC_DeuxFacteurs {
 
 	/** Politique : la 2FA est-elle exigée pour ce compte et encore absente ? */
 	public static function aConfigurer( $user ) {
+		if ( ! is_array( $user ) ) { return false; }
+		$m = self::methode( (int) $user['id'] );
+		// 1.876.4 : un compte en « e-mail » qui n'y a plus droit passe à l'application.
+		if ( 'email' === $m && ! self::emailPermis( $user ) ) { return true; }
 		if ( ! defined( 'FKC_2FA_ADMIN_OBLIGATOIRE' ) || ! FKC_2FA_ADMIN_OBLIGATOIRE ) { return false; }
-		if ( ! is_array( $user ) || 'admin' !== ( $user['role'] ?? '' ) ) { return false; }
-		return ! self::actif( (int) $user['id'] );
+		if ( 'admin' !== ( $user['role'] ?? '' ) ) { return false; }
+		return null === $m;
+	}
+
+	/**
+	 * Le code par e-mail est-il proposé à ce compte ? (1.876.4)
+	 * L'application est la méthode de référence : l'e-mail n'est permis que si la
+	 * plateforme l'autorise (securite.2fa_email), et jamais aux administrateurs.
+	 * Hors plateforme (FKC_2FA_EMAIL non défini) : permis, sauf aux administrateurs.
+	 */
+	public static function emailPermis( $user ) {
+		if ( 'admin' === ( $user['role'] ?? '' ) ) { return false; }
+		return ! defined( 'FKC_2FA_EMAIL' ) || FKC_2FA_EMAIL;
 	}
 
 	/* ── Secret, URI, vérification ── */

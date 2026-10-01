@@ -3,7 +3,7 @@
  * Plugin Name:  FinaKop ERP Core
  * Plugin URI:   https://kophisgroup.com/finakop-erp-core
  * Description:  ERP modulaire mono-produit (SYSCOHADA) à éditions sous licence — Starter, Business, Pro, Enterprise, Creative. Multi-sociétés (base SQLite isolée par société). Installable sur n'importe quel site WordPress : l'application se sert par chemin (/finakop) ou par sous-domaine, avec validation de licence et autorisation des accès API par le service KOPHI'S GROUP.
- * Version:      1.876.3
+ * Version:      1.876.4
  * Author:       KOPHI'S GROUP SAS
  * Author URI:   https://kophisgroup.com
  * Text Domain:  finakop-erp-core
@@ -28,7 +28,7 @@ if ( version_compare( PHP_VERSION, FKC_MIN_PHP, '<' ) ) {
 }
 
 /* ── Constantes ──────────────────────────────────────────────────────────── */
-define( 'FKC_VERSION', '1.876.3' );
+define( 'FKC_VERSION', '1.876.4' );
 define( 'FKC_PLUGIN_FILE', __FILE__ );
 define( 'FKC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'FKC_APP_DIR', FKC_PLUGIN_DIR . 'app/' );

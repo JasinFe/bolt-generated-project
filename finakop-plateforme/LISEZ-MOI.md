@@ -1,4 +1,4 @@
-# FinaKop Plateforme 1.876.3
+# FinaKop Plateforme 1.876.4
 
 FinaKop ERP en **application PHP autonome**, sans WordPress, multi-entreprises par sous-domaine :
 
@@ -44,8 +44,8 @@ finakop-plateforme/
 
 ```bash
 # sur le serveur, en SSH, archive déposée dans le dossier personnel
-unzip -q finakop-plateforme-1.876.3.zip -d ~/finakop-installation
-bash ~/finakop-installation/finakop-plateforme/scripts/installer.sh ~/finakop-plateforme-1.876.3.zip \
+unzip -q finakop-plateforme-1.876.4.zip -d ~/finakop-installation
+bash ~/finakop-installation/finakop-plateforme/scripts/installer.sh ~/finakop-plateforme-1.876.4.zip \
      --web=$HOME/domains/finakoperp.com/public_html/finakop-app
 nano ~/finakop/config.php                                       # SMTP, admin_email, Cloudflare
 php ~/finakop/current/bin/finakop plateforme:verifier

@@ -6,7 +6,7 @@
  *
  * @var array $user @var bool $actif @var bool $impose @var string|null $error @var string|null $ok
  * @var array|null $codes @var int $restants @var string $secret @var string $qr
- * @var string|null $methode @var string $email (masqué) @var bool $email_envoye @var string|null $info
+ * @var string|null $methode @var string $email (masqué) @var bool $email_envoye @var string|null $info @var bool $email_permis
  */
 defined( 'FKC_ROOT' ) || die( 'Accès direct interdit.' );
 $logo = fkc_asset( 'img/logo.png' );
@@ -31,10 +31,10 @@ $logo = fkc_asset( 'img/logo.png' );
 		<div class="hero-logos"><img src="<?= e( $logo ) ?>" alt="FinaKop ERP Core"></div>
 		<div class="hero-eyebrow">Sécurité du compte</div>
 		<h1 class="hero-title">Double<br><span class="accent">authentification</span></h1>
-		<p class="hero-sub">Même si votre mot de passe était volé, personne ne pourrait se connecter sans le second code : celui de votre application, ou celui reçu par e-mail.</p>
+		<p class="hero-sub">Même si votre mot de passe était volé, personne ne pourrait se connecter sans le code affiché par votre téléphone.</p>
 		<div class="hero-cards">
 			<div class="hero-card full"><span class="hc-ico">📱</span><div><div class="hc-label">Application (recommandé)</div><div class="hc-value">Google Authenticator, Microsoft Authenticator, Authy, 2FAS… Fonctionne même sans réseau.</div></div></div>
-			<div class="hero-card full"><span class="hc-ico">✉️</span><div><div class="hc-label">Code par e-mail</div><div class="hc-value">Un code à 6 chiffres envoyé à chaque connexion à l'adresse de votre compte.</div></div></div>
+			<div class="hero-card full"><span class="hc-ico">⏱️</span><div><div class="hc-label">Deux minutes suffisent</div><div class="hc-value">Installez l'application, scannez le QR code, tapez le code affiché : c'est fait.</div></div></div>
 			<div class="hero-card full"><span class="hc-ico">🛟</span><div><div class="hc-label">Codes de secours</div><div class="hc-value">10 codes à usage unique, à conserver en lieu sûr.</div></div></div>
 		</div>
 	</section>
@@ -66,7 +66,9 @@ $logo = fkc_asset( 'img/logo.png' );
 			<p><a class="btn btn-primary btn-login" href="<?= e( url( '' ) ) ?>">Retour à l'espace →</a></p>
 		<?php endif; ?>
 		<?php if ( empty( $codes ) && ( ! $actif || 'email' === $methode ) ) : ?>
-			<?php if ( $actif ) : ?><div class="auth-divider"></div><h3 class="auth-h" style="font-size:17px">Passer à l'application (plus sûr)</h3><?php else : ?>
+			<?php if ( $actif && empty( $email_permis ) ) : ?><div class="alert alert-warn">Le code par e-mail n'est plus proposé pour votre compte. Passez à l'application d'authentification : c'est plus sûr, et cela fonctionne même sans réseau.</div><?php endif; ?>
+			<?php if ( $actif ) : ?><div class="auth-divider"></div><h3 class="auth-h" style="font-size:17px">Passer à l'application (plus sûr)</h3><?php elseif ( empty( $email_permis ) ) : ?>
+			<h3 class="auth-h" style="font-size:17px">📱 Application d'authentification</h3><?php else : ?>
 			<h3 class="auth-h" style="font-size:17px">📱 Option 1 — Application d'authentification <small style="font-weight:600;color:#16a34a">recommandé</small></h3><?php endif; ?>
 			<p class="auth-desc">Scannez ce QR code avec votre application :</p>
 			<div class="qr2fa"><?= $qr /* SVG généré localement */ ?></div>
@@ -78,7 +80,7 @@ $logo = fkc_asset( 'img/logo.png' );
 				</label>
 				<button class="btn btn-primary btn-login" type="submit">Activer avec l'application →</button>
 			</form>
-			<?php if ( ! $actif ) : ?>
+			<?php if ( ! $actif && ! empty( $email_permis ) ) : ?>
 			<div class="auth-divider"></div>
 			<h3 class="auth-h" style="font-size:17px">✉️ Option 2 — Code par e-mail</h3>
 			<?php if ( '' === $email ) : ?>

@@ -75,6 +75,7 @@ class FKC_Config {
 			// Sécurité (1.876.2)
 			'securite'      => array(
 				'2fa_admin_obligatoire' => true,          // double authentification imposée aux administrateurs
+				'2fa_email'             => false,         // 1.876.4 : code par e-mail proposé aux non-administrateurs (application sinon)
 				'masquer_version'       => true,          // aucun numéro de version sur les pages publiques
 				'bloquer_robots'        => true,          // moteurs, robots d'IA, aperçus de liens : 403
 			),

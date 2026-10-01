@@ -656,6 +656,7 @@ require FKC_ROOT . 'Modules/Securite/Controllers/RolesController.php';
 
 /* ── Aide & documentation utilisateur ──────────────────────────────────────── */
 require FKC_ROOT . 'Modules/Aide/Models/Aide.php';
+require FKC_ROOT . 'Modules/Aide/Models/AidePlateforme.php';
 require FKC_ROOT . 'Modules/Aide/Controllers/AideController.php';
 
 /* ── Console API (écran du module API) ─────────────────────────────────────── */
@@ -2248,6 +2249,7 @@ $router->get(  'securite/roles/perimetre/{type}', 'FKC_RolesController@perimetre
 $aide = array( 'auth' => true, 'societe' => true );
 $router->get( 'aide',                  'FKC_AideController@index', $aide );
 $router->get( 'aide/tutoriels',        'FKC_AideController@tutoriels', $aide );
+$router->get( 'aide/videos',           'FKC_AideController@videos', $aide );
 $router->get( 'aide/guide',            'FKC_AideController@guide', $aide );
 /* Packs métier : sommaire par famille, puis fiche pratique générée du manifeste. */
 $router->get( 'aide/packs',            'FKC_AideController@packs', $aide );

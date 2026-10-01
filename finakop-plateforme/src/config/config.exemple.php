@@ -71,6 +71,7 @@ return array(
 	/* ── Sécurité ──────────────────────────────────────────────────────────── */
 	'securite' => array(
 		'2fa_admin_obligatoire' => true,   // double authentification imposée aux administrateurs
+		'2fa_email'             => false,  // code par e-mail permis (hors administrateurs) ; false = application seulement
 		'masquer_version'       => true,   // aucun numéro de version sur les pages publiques
 		'bloquer_robots'        => true,   // moteurs de recherche, robots d'IA, aperçus de liens : refusés (403)
 	),

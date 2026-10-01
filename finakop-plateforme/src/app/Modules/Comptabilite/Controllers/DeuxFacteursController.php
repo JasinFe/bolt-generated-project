@@ -48,6 +48,7 @@ class FKC_DeuxFacteursController {
 		$data = array(
 			'user' => $u, 'actif' => $actif, 'impose' => FKC_DeuxFacteurs::aConfigurer( $u ),
 			'methode' => FKC_DeuxFacteurs::methode( (int) $u['id'] ), 'email' => '' !== $email ? FKC_DeuxFacteurs::masquer( $email ) : '',
+			'email_permis' => FKC_DeuxFacteurs::emailPermis( $u ),
 			'email_envoye' => ! empty( $_SESSION['__2fa_email_etat']['h'] ), 'info' => $_SESSION['__2fa_info'] ?? null,
 			'error' => $_SESSION['__2fa_err'] ?? null, 'ok' => $_SESSION['__2fa_ok'] ?? null,
 			'codes' => $_SESSION['__2fa_codes'] ?? null, 'restants' => $actif ? FKC_DeuxFacteurs::secoursRestants( (int) $u['id'] ) : 0,
@@ -81,6 +82,11 @@ class FKC_DeuxFacteursController {
 	/** Activation par courriel, étape 1 : envoi du code à l'adresse du compte (1.876.3). */
 	public function emailEnvoyer() {
 		$u = FKC_Auth::user();
+		// Permis pour activer (si la méthode est autorisée), ou pour désactiver un compte déjà en « e-mail ».
+		if ( ! FKC_DeuxFacteurs::emailPermis( $u ) && 'email' !== FKC_DeuxFacteurs::methode( (int) $u['id'] ) ) {
+			$_SESSION['__2fa_err'] = 'Le code par e-mail n\'est pas proposé pour ce compte : utilisez l\'application.';
+			redirect( 'securite/deux-facteurs' );
+		}
 		$etat = $_SESSION['__2fa_email_etat'] ?? array();
 		list( $ok, $msg ) = FKC_DeuxFacteurs::envoyerCodeEmail( (int) $u['id'], $etat, 'activation' );
 		$_SESSION['__2fa_email_etat'] = $etat;
@@ -91,6 +97,10 @@ class FKC_DeuxFacteursController {
 	/** Activation par courriel, étape 2 : vérification du code reçu. */
 	public function emailActiver() {
 		$u = FKC_Auth::user();
+		if ( ! FKC_DeuxFacteurs::emailPermis( $u ) ) {
+			$_SESSION['__2fa_err'] = 'Le code par e-mail n\'est pas proposé pour ce compte : utilisez l\'application.';
+			redirect( 'securite/deux-facteurs' );
+		}
 		$etat = $_SESSION['__2fa_email_etat'] ?? null;
 		if ( ! is_array( $etat ) || empty( $etat['h'] ) ) { redirect( 'securite/deux-facteurs' ); }
 		$_SESSION['__2fa_email_etat']['essais'] = (int) ( $etat['essais'] ?? 0 ) + 1;
