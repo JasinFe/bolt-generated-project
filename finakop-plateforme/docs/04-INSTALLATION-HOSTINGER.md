@@ -139,7 +139,22 @@ hPanel → Avancé → *Tâches cron* → Personnalisé, **toutes les 5 minutes*
 - **Chemin de PHP** : la version de PHP des tâches cron peut différer de celle du site. En SSH, `command -v php` et `php -v` donnent le bon binaire. S'il n'est pas en 8.4, utilisez le chemin complet du PHP 8.4 indiqué par Hostinger (souvent de la forme `/opt/alt/php84/usr/bin/php`). Vérifiez-le dans votre compte.
 - **Ce que fait la tâche** : un sous-processus par client actif, avec un délai maximal par client (180 s) et un budget par passage (240 s). Un verrou empêche deux passages simultanés. Elle traite la file différée et le balayage, purge les sessions et lance la **sauvegarde quotidienne** de chaque client et de la plateforme.
 - **Contrôle** : `tail ~/finakop-data/plateforme/logs/cron.log`.
-- **Si `proc_open` est désactivé** chez votre hébergeur : remplacez la commande par `sh /home/uXXXXXXXX/finakop/current/cron/worker.sh`, qui traite les clients l'un après l'autre.
+- **Si `proc_open` est désactivé** (c'est le cas constaté chez Hostinger Business) : utilisez `worker.sh`, qui traite les clients l'un après l'autre avec un délai maximal par client. Créez un petit lanceur qui fixe le PHP 8.4 :
+
+```bash
+cat > ~/finakop-cron.sh <<'EOF2'
+#!/bin/sh
+export PHP=/opt/alt/php84/usr/bin/php
+sh /home/uXXXXXXXX/finakop/current/cron/worker.sh >> /home/uXXXXXXXX/finakop-data/plateforme/logs/cron-shell.log 2>&1
+EOF2
+chmod 700 ~/finakop-cron.sh
+sh ~/finakop-cron.sh && tail ~/finakop-data/plateforme/logs/cron.log
+```
+
+  Puis, dans hPanel, déclarez **deux** tâches cron :
+  - toutes les 5 minutes : `/bin/sh /home/uXXXXXXXX/finakop-cron.sh` ;
+  - une fois par jour, par exemple à 2 h 30 : `/opt/alt/php84/usr/bin/php /home/uXXXXXXXX/finakop/current/bin/finakop plateforme:sauvegarder`. Dans ce mode, la sauvegarde de la plateforme ne passe pas par `worker.php`.
+- **PHP de la ligne de commande** : chez Hostinger, `php` peut être une autre version que celle du site (8.5 constaté). Utilisez explicitement `/opt/alt/php84/usr/bin/php`. Pour la console : `alias fk='/opt/alt/php84/usr/bin/php ~/finakop/current/bin/finakop'` dans `~/.bashrc`.
 
 ## 8. Créer un client
 
