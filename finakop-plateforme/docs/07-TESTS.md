@@ -68,7 +68,7 @@ Points saillants :
 
 ## 3. Non-régression de FinaKop : suite complète
 
-`php tools/run-tests.php` sur le code final 1.876.0 : **407 harnais, 407 réussis, 0 échec** (1 403 s). Pour comparaison, 1.875.5 : 402/402.
+`php tools/run-tests.php` sur le code final 1.876.0 : **408 harnais, 408 réussis, 0 échec** (dernier passage, après la licence obligatoire). Pour comparaison, 1.875.5 : 402/402.
 
 Les nouveaux harnais échouent tous sur 1.875.5, ce qui prouve qu'ils détectent le défaut corrigé :
 

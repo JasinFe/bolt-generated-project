@@ -267,3 +267,33 @@ TEST 8b — Téléversements dangereux
   [RÉUSSI] « x.html » refusé (aucun fichier enregistré)
   [RÉUSSI] PDF valide contenant du code PHP : accepté comme PDF, rangé .pdf hors web, droits 0640
   [RÉUSSI] … servi comme application/pdf avec nosniff, jamais exécuté (octets identiques)
+
+
+TEST 21 — Licence obligatoire : aucun module avant l'installation de la licence
+  [RÉUSSI] 1re connexion : changement du mot de passe imposé d'abord
+  [RÉUSSI] sans licence : « / » renvoie vers l'écran Licence
+  [RÉUSSI] sans licence : « /comptabilite/ecritures » renvoie vers l'écran Licence
+  [RÉUSSI] sans licence : « /facturation/clients » renvoie vers l'écran Licence
+  [RÉUSSI] sans licence : « /societes » renvoie vers l'écran Licence
+  [RÉUSSI] sans licence : « /utilisateurs » renvoie vers l'écran Licence
+  [RÉUSSI] sans licence : « /ged » renvoie vers l'écran Licence
+  [RÉUSSI] écran Licence accessible, message « Licence requise »
+  [RÉUSSI] changement de mot de passe toujours accessible
+  [RÉUSSI] API sans licence → 402 licence_requise
+  [RÉUSSI] écran Licence sans message PHP
+  [RÉUSSI] jeton d'un AUTRE domaine collé : toujours verrouillé
+  [RÉUSSI] licence de l'espace installée depuis l'écran Licence : accès ouvert
+  [RÉUSSI] … modules de l'édition accessibles (facturation)
+  [RÉUSSI] espaces déjà licenciés non affectés (New Loock, Pro)
+  [RÉUSSI] licence expirée : l'espace se reverrouille vers l'écran Licence
+  [RÉUSSI] licence renouvelée : accès rouvert, données intactes
+  [RÉUSSI] non-administrateur : écran Licence sans formulaire d'installation
+  [RÉUSSI] non-administrateur : installation de licence refusée (403), licence Pro intacte
+  [RÉUSSI] administrateur : formulaire d'installation présent
+
+TEST 22 — Reprise WordPress dans un espace déjà créé (tenant:importer --remplacer)
+  [RÉUSSI] sans --remplacer : refus explicite, rien n'est modifié
+  [RÉUSSI] export altéré : refusé, espace intact et toujours actif
+  [RÉUSSI] --remplacer : import conforme, ancien contenu conservé à part
+  [RÉUSSI] secret chiffré de l'ancien site relu dans kophisgroup
+  [RÉUSSI] connexion avec les identifiants de l'ancien site
