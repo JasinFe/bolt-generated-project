@@ -172,7 +172,7 @@ Voir **04-INSTALLATION-HOSTINGER.md**.
 
 Voir **07-TESTS.md** :
 - **212 vérifications de plateforme, 0 échec** (21 tests, dont injection de panne et restaurations réelles) ;
-- suite de non-régression FinaKop : **410 harnais sur 410** (1.876.3) ;
+- suite de non-régression FinaKop : **411 harnais sur 411** (1.876.4) ;
 - parcours authentifié de 588 routes sur deux clients : aucune erreur 500, aucun message PHP.
 
 ## M. Problèmes restants et limites (honnêtement)
