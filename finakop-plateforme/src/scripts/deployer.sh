@@ -40,7 +40,15 @@ publier_web() {   # $1 = dossier réel de la version
   sed -e "s#__FINAKOP_RACINE__#$V#" -e "s#__FINAKOP_CONFIG__#$R/config.php#" "$V/public/index.php" > "$WEB/index.php.nouveau"
   "$PHP" -l "$WEB/index.php.nouveau" >/dev/null
   mv "$WEB/index.php.nouveau" "$WEB/index.php"
-  chmod 0644 "$WEB/index.php" "$WEB/.htaccess"
+  # Dossier web : lisible par le serveur web (LiteSpeed/Apache), quel que soit le
+  # umask de la session (installer.sh pose 027 pour les DONNÉES). Il ne contient
+  # que le point d'entrée et des fichiers statiques publics ; les fichiers que
+  # l'hébergeur dépose à la création d'un sous-domaine (default.php) sont retirés.
+  rm -f "$WEB/default.php" "$WEB/default.php.old.php"
+  chmod 0755 "$WEB"
+  find "$WEB/_fkc" -type d -exec chmod 0755 {} +
+  find "$WEB/_fkc" -type f -exec chmod 0644 {} +
+  chmod 0644 "$WEB/index.php" "$WEB/.htaccess" "$WEB/robots.txt"
 }
 
 if [ "$RETOUR" = 1 ]; then
