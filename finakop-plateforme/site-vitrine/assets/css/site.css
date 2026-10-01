@@ -56,10 +56,12 @@ h2{font-size:clamp(30px,4.4vw,48px);margin:14px 0 16px}
 .titre p{color:var(--mut);font-size:18px;margin:0}
 
 /* Apparition au défilement */
-.rv{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
-.rv.vu{opacity:1;transform:none}
-.rv-g{transform:translateX(-40px)}.rv-d{transform:translateX(40px)}.rv-z{transform:scale(.92)}
-.rv-g.vu,.rv-d.vu,.rv-z.vu{transform:none}
+/* Apparition au défilement : seulement si le script tourne (classe .js posée par site.js) ;
+   sans script, ou si site.js ne se charge pas, tout le contenu reste visible. */
+.js .rv{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+.js .rv.vu{opacity:1;transform:none}
+.js .rv-g{transform:translateX(-40px)}.js .rv-d{transform:translateX(40px)}.js .rv-z{transform:scale(.92)}
+.js .rv-g.vu,.js .rv-d.vu,.js .rv-z.vu{transform:none}
 
 /* Héros */
 .heros{padding:70px 0 90px;overflow:hidden;isolation:isolate}
@@ -585,5 +587,5 @@ table.niv{width:100%;border-collapse:collapse;font-size:14px;min-width:460px}
   *:not(.defile),*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
   .defile{animation-duration:90s!important}
   .pack.entre,.edp.actif,.edp.actif li{animation:none!important}
-  .rv{opacity:1;transform:none}
+  .js .rv{opacity:1;transform:none}
 }

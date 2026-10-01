@@ -35,7 +35,13 @@ SetEnvIfNoCase Host "^(www\.)?finakoperp\.com(:[0-9]+)?$" FK_VITRINE=1
     Header always set Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'" env=FK_VITRINE
     Header always set Strict-Transport-Security "max-age=31536000" env=FK_VITRINE
     Header always unset X-Powered-By
+    # Fichiers de assets/ : adresses à empreinte (?v=…, empreintes.py) — un
+    # fichier modifié change d'adresse, il peut donc rester longtemps en cache.
     <FilesMatch "\.(css|js|png|jpe?g|webp|svg|mp4|ico)$">
-        Header set Cache-Control "public, max-age=604800" env=FK_VITRINE
+        Header set Cache-Control "public, max-age=2592000" env=FK_VITRINE
+    </FilesMatch>
+    # Pages : toujours revalidées, pour qu'elles pointent vers les fichiers du jour.
+    <FilesMatch "\.html$">
+        Header set Cache-Control "no-cache" env=FK_VITRINE
     </FilesMatch>
 </IfModule>

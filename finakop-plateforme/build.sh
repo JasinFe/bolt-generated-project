@@ -49,6 +49,8 @@ cp "$ICI/outils-export/maintenance-wp.php" "$ICI/outils-export/LISEZ-MOI.md" "$X
 if [ -d "$ICI/site-vitrine" ]; then
   VV="$(tr -d ' \n' < "$ICI/site-vitrine-studio/VERSION-VITRINE" 2>/dev/null || echo "$V")"
   rm -f "$OUT"/finakop-site-vitrine-*.zip
+  # Empreintes de cache (?v=…) recalculées : jamais de HTML neuf avec un CSS/JS ancien.
+  python3 "$ICI/site-vitrine-studio/empreintes.py" >/dev/null
   (cd "$ICI/site-vitrine" && zip -qr -X "$OUT/finakop-site-vitrine-$VV.zip" .)
 fi
 
