@@ -211,7 +211,7 @@ SECTION_TARIFS = """<!-- ═══════════ TARIFS ════�
       <div class="trf-gammes" role="group" aria-label="Gamme"><button type="button" class="actif" data-gamme="core" aria-pressed="true">FinaKop</button><button type="button" data-gamme="creative" aria-pressed="false">Creative Suite</button></div>
     </div>
     <div class="trfs rv" id="trfs" data-periode="m" data-gamme="core">%(core)s%(crea)s</div>
-    <p class="trf-note">Creative Suite : toute la gestion FinaKop, plus le module Royalties &amp; droits, pour les artistes, labels, studios, médias et l'événementiel. Quotas identiques à l'offre FinaKop de même rang.</p>
+    <p class="trf-note">Creative Suite : toute la gestion FinaKop, plus le module Royalties &amp; droits, pour les artistes, labels, studios, médias et l'événementiel. Quotas identiques à l'offre FinaKop de même rang ; le module Royalties ajoute 25 %% au prix.</p>
     <div class="trf-bas rv">
       <div><h3>Services de mise en route</h3><div class="tab-w"><table class="niv trf-frais"><tbody>%(frais)s</tbody></table></div><p class="mention" style="text-align:left">Payés une fois. Activation offerte avec l'abonnement annuel.</p></div>
       <div><h3>Bon à savoir</h3><ul class="trf-pts">

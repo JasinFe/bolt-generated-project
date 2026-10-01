@@ -1,5 +1,5 @@
 {
- "_source": "Grille tarifaire validée par KOPHI'S GROUP SAS (octobre 2026). Prix nets en F CFA, TVA non applicable (régime TEE). Annuel = 10 mois.",
+ "_source": "Grille tarifaire validée par KOPHI'S GROUP SAS (octobre 2026). Prix nets en F CFA, TVA non applicable (régime TEE). Annuel = 10 mois. Creative = offre FinaKop de même rang + 25 % (module Royalties), arrondi à …900.",
  "core": [
   {
    "nom": "START",
@@ -118,8 +118,8 @@
  "creative": [
   {
    "nom": "Creative STARTER",
-   "mensuel": 7900,
-   "annuel": 79000,
+   "mensuel": 12900,
+   "annuel": 129000,
    "cible": "Créateur",
    "points": [
     "Gestion FinaKop ESSENTIEL",
@@ -135,8 +135,8 @@
   },
   {
    "nom": "Creative BUSINESS",
-   "mensuel": 14900,
-   "annuel": 149000,
+   "mensuel": 24900,
+   "annuel": 249000,
    "cible": "Professionnel créatif",
    "points": [
     "Gestion FinaKop BUSINESS",
@@ -153,8 +153,8 @@
   },
   {
    "nom": "Creative PRO",
-   "mensuel": 29900,
-   "annuel": 299000,
+   "mensuel": 43900,
+   "annuel": 439000,
    "cible": "Studio, label, agence",
    "badge": "Studios et labels",
    "points": [
@@ -171,8 +171,8 @@
   },
   {
    "nom": "Creative ENTERPRISE STANDARD",
-   "mensuel": 49900,
-   "annuel": 499000,
+   "mensuel": 74900,
+   "annuel": 749000,
    "cible": "PME créative",
    "points": [
     "Gestion FinaKop ENTREPRISE (paie)",
@@ -188,8 +188,8 @@
   },
   {
    "nom": "Creative ENTERPRISE AVANCÉE",
-   "mensuel": 79900,
-   "annuel": 799000,
+   "mensuel": 124900,
+   "annuel": 1249000,
    "cible": "Groupe créatif",
    "points": [
     "Tout STANDARD",
@@ -205,8 +205,8 @@
   },
   {
    "nom": "Creative ENTERPRISE PREMIUM",
-   "mensuel": 129900,
-   "annuel": 1299000,
+   "mensuel": 159900,
+   "annuel": 1599000,
    "des": true,
    "cible": "Grand compte",
    "points": [
@@ -257,7 +257,7 @@
   ]
  ],
  "lancement": [
-  "-25 % pour les 20 premiers clients",
+  "-25 % la première année pour les 20 premiers clients",
   "30 jours d'essai gratuit, sur votre propre espace",
   "Activation offerte avec l'abonnement annuel",
   "Configuration initiale offerte ou fortement réduite"
