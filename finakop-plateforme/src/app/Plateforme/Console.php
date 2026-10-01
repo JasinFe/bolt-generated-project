@@ -203,6 +203,21 @@ class FKC_Plateforme_Console {
 				printf( "Jeton %s — statut : %s (%s)\n", $ok ? 'installé' : 'REFUSÉ', $s['status'], $s['message'] ?? '' );
 				return $ok && ! empty( $s['valid'] ) ? 0 : 3;
 
+			case '2fa:desactiver':
+				list( $login ) = self::args( 1, '--tenant=<id> 2fa:desactiver <identifiant>   (téléphone perdu, sans code de secours)' );
+				$uid = (int) FKC_Master::q( 'SELECT id FROM cabinet_users WHERE login=?', array( $login ) )->fetchColumn();
+				if ( ! $uid ) { self::fin( 1, "Compte inconnu : {$login}" ); }
+				FKC_DeuxFacteurs::desactiver( $uid, 'console plateforme' );
+				FKC_Plateforme_Registre::journaliser( '2fa_desactivee', $login, (int) $t['id'] );
+				echo "Double authentification désactivée pour {$login}. Elle sera redemandée à la prochaine connexion s'il est administrateur.\n";
+				return 0;
+
+			case '2fa:etat':
+				foreach ( FKC_Master::q( 'SELECT id, login, role FROM cabinet_users WHERE actif=1 ORDER BY login' )->fetchAll() as $u ) {
+					printf( "%-24s %-8s %s\n", $u['login'], $u['role'], FKC_DeuxFacteurs::actif( (int) $u['id'] ) ? '2FA active' : '— sans 2FA' );
+				}
+				return 0;
+
 			case 'comptes-compromis':
 				foreach ( FKC_Master::comptesCompromis() as $u ) { printf( "%-20s %s\n", $u['login'], $u['nom_complet'] ); }
 				return 0;
@@ -465,6 +480,7 @@ FinaKop Plateforme — commandes
   Un client (--tenant=<id>)
     bpe | balayage | licence | licence:installer <jeton> | verifier
     comptes-compromis | reemettre-mdp <login> | mail:test <adresse>
+    2fa:etat | 2fa:desactiver <login>   (double authentification)
 
 TXT;
 		return 0;

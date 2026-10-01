@@ -68,6 +68,13 @@ return array(
 	// mutualisé ; flux SSE (true) sur VPS, où les processus ne sont pas rationnés.
 	'temps_reel' => array( 'sse' => false ),
 
+	/* ── Sécurité ──────────────────────────────────────────────────────────── */
+	'securite' => array(
+		'2fa_admin_obligatoire' => true,   // double authentification imposée aux administrateurs
+		'masquer_version'       => true,   // aucun numéro de version sur les pages publiques
+		'bloquer_robots'        => true,   // moteurs de recherche, robots d'IA, aperçus de liens : refusés (403)
+	),
+
 	/* ── Tâches planifiées ────────────────────────────────────────────────── */
 	'cron' => array(
 		'intervalle'   => 300,                    // doit correspondre à la fréquence du cron hPanel

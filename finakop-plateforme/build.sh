@@ -45,5 +45,11 @@ cp "$SRC/scripts/migration-donnees.php" "$SRC/scripts/diagnostic-hebergement.php
 cp "$ICI/outils-export/maintenance-wp.php" "$ICI/outils-export/LISEZ-MOI.md" "$X/"
 (cd "$TMP" && zip -qr -X "$OUT/finakop-export-$V.zip" finakop-export)
 
+# 4. Site vitrine finakoperp.com (contenu à extraire DANS public_html)
+if [ -d "$ICI/site-vitrine" ]; then
+  rm -f "$OUT/finakop-site-vitrine-$V.zip"
+  (cd "$ICI/site-vitrine" && zip -qr -X "$OUT/finakop-site-vitrine-$V.zip" .)
+fi
+
 ( cd "$OUT" && sha256sum finakop-*-"$V".zip > SHA256SUMS-"$V".txt )
 ls -la "$OUT"

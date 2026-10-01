@@ -117,7 +117,9 @@ Règles personnalisées (1 ou 2 sur les 5 autorisées) :
 | 1 | `Machines autorisées` | `starts_with(http.request.uri.path, "/api/") or starts_with(http.request.uri.path, "/webhook") or starts_with(http.request.uri.path, "/recu/") or starts_with(http.request.uri.path, "/verifier") or starts_with(http.request.uri.path, "/portail-scolarite") or starts_with(http.request.uri.path, "/scan") or starts_with(http.request.uri.path, "/terminal")` | **Skip** → *Security Level* et *Browser Integrity Check*. Ces adresses sont appelées par des programmes, des terminaux ou des QR codes : un défi navigateur les casserait. Elles restent protégées par jeton ou signature et limitées par FinaKop |
 | 2 | `Sondes WordPress` (facultatif, si le site institutionnel n'est pas un WordPress) | `http.request.uri.path contains "/wp-login.php" or http.request.uri.path contains "/xmlrpc.php" or http.request.uri.path contains "/wp-admin"` | Block |
 
-Une règle sur les noms d'hôte est inutile : Cloudflare ne transmet que les noms de la zone, et FinaKop refuse lui-même tout hôte qui n'est pas `finakoperp.com` ou l'un de ses sous-domaines (test 13).
+Règle 3, **`Plateforme invisible`** (1.876.2) : bloque les robots sur les sous-domaines de la plateforme, sans toucher au site vitrine. Expression et explications : **10-SECURITE-ET-VITRINE.md §4**. Laissez *Block AI bots* désactivé : il agirait aussi sur la vitrine.
+
+Une autre règle sur les noms d'hôte est inutile : Cloudflare ne transmet que les noms de la zone, et FinaKop refuse lui-même tout hôte qui n'est pas `finakoperp.com` ou l'un de ses sous-domaines (test 13).
 
 ### Limitation de débit (1 règle en Free)
 

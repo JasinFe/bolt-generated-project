@@ -14,7 +14,9 @@ class FKC_DashboardController {
 	public function login() {
 		$login = isset( $_POST['login'] ) ? trim( $_POST['login'] ) : '';
 		$pass  = isset( $_POST['password'] ) ? (string) $_POST['password'] : '';
-		if ( FKC_Auth::attempt( $login, $pass ) ) {
+		$res = FKC_Auth::attempt( $login, $pass );
+		if ( 'deux_facteurs' === $res ) { redirect( 'verification' ); }
+		if ( $res ) {
 			// Case « Modifier mon mot de passe après la connexion » de l'écran
 			// de connexion : on conduit directement à l'écran dédié.
 			redirect( empty( $_POST['changer_mdp'] ) ? '' : 'mot-de-passe' );

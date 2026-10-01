@@ -113,7 +113,9 @@ plateforme.db                          clients, domaines, journal des opération
 | Fichiers sensibles | Configuration, bases, clés et sauvegardes hors de `public_html` | Tests 1, 13 |
 | Exports CSV | Neutralisation des formules (**corrigé**) | Harnais dédié |
 | SSRF | Notifications push : services connus, IP publiques, sans redirection | Audit |
-| En-têtes HTTP | CSP, HSTS, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `X-Robots-Tag: noindex, nofollow, noarchive`, `Cache-Control: no-store` | Test 12 |
+| En-têtes HTTP | CSP, HSTS, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noai, noimageai`, `Cache-Control: no-store` | Tests 12, 23 |
+| Double authentification (1.876.2) | TOTP (RFC 6238), obligatoire pour les administrateurs, secret chiffré, anti-rejeu, 10 codes de secours hachés, levée par la console | Test 24 |
+| Invisibilité (1.876.2) | Robots et IA refusés (403), `robots.txt` nominatif, portail sans oracle, version masquée, cookie `__Host-`, dossier web inaccessible par le domaine principal | Test 23 ; voir 10-SECURITE-ET-VITRINE.md |
 
 Aucune application n'est « 100 % sécurisée ». La section M liste ce qui reste.
 
@@ -188,3 +190,4 @@ Voir **07-TESTS.md** :
 | 9 | Le super administrateur (accès SSH) peut techniquement lire les fichiers des clients | Inhérent à l'hébergement ; toute action de la console est journalisée ; chiffrement par clé du client hors V1 |
 | 10 | Les 63 packs ont été vérifiés par la suite de non-régression et le parcours des routes, pas par un essai fonctionnel manuel de chacun | Recette métier recommandée sur la recette (staging) avant la bascule de chaque client |
 | 11 | Clés privées de l'outil LICENCES présentes dans l'archive transmise au départ | Ne jamais les déposer sur le serveur ; envisager leur rotation si l'archive a circulé |
+| 12 | Invisibilité : `robots.txt` et en-têtes sont des demandes ; un robot déguisé en navigateur n'est pas reconnu (il ne voit que la page de connexion) ; les noms de sous-domaine figurent dans les registres publics de certificats | Règle Cloudflare de 10 §4 ; certificat joker pour ne plus publier chaque nom |

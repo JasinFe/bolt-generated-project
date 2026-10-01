@@ -1,0 +1,32 @@
+# Site vitrine finakoperp.com : public et indexable.
+#
+# ATTENTION : ce fichier est dans public_html, donc AU-DESSUS de finakop-app/
+# (le dossier web de la plateforme). Le serveur applique aussi les .htaccess
+# des dossiers parents. Toutes les règles ci-dessous sont donc limitées à
+# l'adresse principale (finakoperp.com / www) : la plateforme garde ses propres
+# en-têtes (CSP, no-store, noindex) et ses réécritures.
+Options -Indexes -MultiViews
+ServerSignature Off
+SetEnvIfNoCase Host "^(www\.)?finakoperp\.com(:[0-9]+)?$" FK_VITRINE=1
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # www → domaine principal (une seule adresse pour les moteurs)
+    RewriteCond %{HTTP_HOST} ^www\.(finakoperp\.com)$ [NC]
+    RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+    # Fichiers cachés, sauvegardes et fichiers techniques : jamais servis
+    RewriteCond %{HTTP_HOST} ^finakoperp\.com$ [NC]
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+    RewriteCond %{HTTP_HOST} ^finakoperp\.com$ [NC]
+    RewriteRule \.(bak|old|orig|sql|sqlite|db|log|zip|tar|gz|env|ini|sh|md|php)$ - [F,L,NC]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff" env=FK_VITRINE
+    Header always set X-Frame-Options "DENY" env=FK_VITRINE
+    Header always set Referrer-Policy "strict-origin-when-cross-origin" env=FK_VITRINE
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()" env=FK_VITRINE
+    Header always set Content-Security-Policy "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" env=FK_VITRINE
+    Header always set Strict-Transport-Security "max-age=31536000" env=FK_VITRINE
+    Header always unset X-Powered-By
+</IfModule>

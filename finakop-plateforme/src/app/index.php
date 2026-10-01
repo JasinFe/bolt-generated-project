@@ -195,6 +195,7 @@ require FKC_ROOT . 'Core/PosMobile.php';      // Caisse : prise de commande mobi
 require FKC_ROOT . 'Core/PosDroits.php';      // Caisse : droits (rôles de caisse) et code superviseur (1.835.0)
 require FKC_ROOT . 'Core/Storage.php';
 require FKC_ROOT . 'Core/Auth.php';
+require FKC_ROOT . 'Core/DeuxFacteurs.php';
 require FKC_ROOT . 'Core/Tenant.php';
 require FKC_ROOT . 'Core/Csrf.php';
 require FKC_ROOT . 'Core/View.php';
@@ -406,6 +407,7 @@ require FKC_ROOT . 'Modules/Comptabilite/Controllers/FaitEcoController.php';
 require FKC_ROOT . 'Modules/Comptabilite/Controllers/MigrationController.php';
 require FKC_ROOT . 'Modules/Comptabilite/Controllers/RapportController.php';
 require FKC_ROOT . 'Modules/Comptabilite/Controllers/DashboardController.php';
+require FKC_ROOT . 'Modules/Comptabilite/Controllers/DeuxFacteursController.php';
 require FKC_ROOT . 'Modules/Comptabilite/Controllers/TresorerieController.php';
 require FKC_ROOT . 'Modules/Comptabilite/Controllers/ClientCptaController.php';
 require FKC_ROOT . 'Modules/Comptabilite/Controllers/FournisseurController.php';
@@ -766,13 +768,19 @@ $router = new FKC_Router();
 // Authentification.
 $router->get( 'login',  'FKC_DashboardController@showLogin' );
 $router->post( 'login', 'FKC_DashboardController@login' );
-$router->post( 'logout','FKC_DashboardController@logout', array( 'auth' => true, 'sans_mdp' => true, 'sans_licence' => true ) );
+// Double authentification (1.876.2) : second facteur, puis gestion par l'utilisateur.
+$router->get(  'verification', 'FKC_DeuxFacteursController@showVerification' );
+$router->post( 'verification', 'FKC_DeuxFacteursController@verifier' );
+$router->get(  'securite/deux-facteurs',            'FKC_DeuxFacteursController@show',       array( 'auth' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
+$router->post( 'securite/deux-facteurs/activer',    'FKC_DeuxFacteursController@activer',    array( 'auth' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
+$router->post( 'securite/deux-facteurs/desactiver', 'FKC_DeuxFacteursController@desactiver', array( 'auth' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
+$router->post( 'logout','FKC_DashboardController@logout', array( 'auth' => true, 'sans_mdp' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
 
 // Mot de passe du compte. « sans_mdp » : ces deux routes restent servies quand
 // le changement de mot de passe est imposé — ce sont les seules, sinon le
 // verrou serait inéchappable.
-$router->get(  'mot-de-passe', 'FKC_DashboardController@showMotDePasse', array( 'auth' => true, 'sans_mdp' => true, 'sans_licence' => true ) );
-$router->post( 'mot-de-passe', 'FKC_DashboardController@changerMotDePasse', array( 'auth' => true, 'sans_mdp' => true, 'sans_licence' => true ) );
+$router->get(  'mot-de-passe', 'FKC_DashboardController@showMotDePasse', array( 'auth' => true, 'sans_mdp' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
+$router->post( 'mot-de-passe', 'FKC_DashboardController@changerMotDePasse', array( 'auth' => true, 'sans_mdp' => true, 'sans_licence' => true, 'sans_2fa' => true ) );
 
 // Accueil + licence.
 $router->get( '',        'FKC_DashboardController@home', array( 'auth' => true, 'societe' => true ) );

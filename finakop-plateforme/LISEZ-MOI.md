@@ -1,4 +1,4 @@
-# FinaKop Plateforme 1.876.0
+# FinaKop Plateforme 1.876.2
 
 FinaKop ERP en **application PHP autonome**, sans WordPress, multi-entreprises par sous-domaine :
 
@@ -37,13 +37,14 @@ finakop-plateforme/
 | [docs/07-TESTS.md](docs/07-TESTS.md) | Résultats des tests (plateforme et non-régression) |
 | [docs/08-RAPPORT-FINAL.md](docs/08-RAPPORT-FINAL.md) | Rapport de migration et problèmes restants |
 | [docs/09-MIGRATION-KOPHISGROUP.md](docs/09-MIGRATION-KOPHISGROUP.md) | Reprise de l'ancien site WordPress de KOPHI'S GROUP dans l'espace existant |
+| [docs/10-SECURITE-ET-VITRINE.md](docs/10-SECURITE-ET-VITRINE.md) | **1.876.2** : double authentification, plateforme invisible aux moteurs et aux IA, site vitrine, mise à jour |
 
 ## Installation en bref
 
 ```bash
 # sur le serveur, en SSH, archive déposée dans le dossier personnel
-unzip -q finakop-plateforme-1.876.0.zip -d ~/finakop-installation
-bash ~/finakop-installation/finakop-plateforme/scripts/installer.sh ~/finakop-plateforme-1.876.0.zip \
+unzip -q finakop-plateforme-1.876.2.zip -d ~/finakop-installation
+bash ~/finakop-installation/finakop-plateforme/scripts/installer.sh ~/finakop-plateforme-1.876.2.zip \
      --web=$HOME/domains/finakoperp.com/public_html/finakop-app
 nano ~/finakop/config.php                                       # SMTP, admin_email, Cloudflare
 php ~/finakop/current/bin/finakop plateforme:verifier

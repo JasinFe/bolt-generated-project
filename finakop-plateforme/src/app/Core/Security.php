@@ -43,7 +43,7 @@ class FKC_Security {
 		if ( headers_sent() ) { return; }
 		@header_remove( 'X-Powered-By' );
 		// Invisibilité : aucun moteur ne doit indexer, suivre, archiver ou afficher d'extrait.
-		header( 'X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate', true );
+		header( 'X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate, noai, noimageai', true );
 		// Anti-clickjacking / sniffing / fuite de référent.
 		header( 'X-Frame-Options: SAMEORIGIN' );
 		header( 'X-Content-Type-Options: nosniff' );

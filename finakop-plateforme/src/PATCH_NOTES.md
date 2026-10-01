@@ -1,3 +1,18 @@
+# Patch 1.876.2 — Double authentification, invisibilité, durcissements
+
+Base : 1.876.1.
+
+- Nouveau `app/Core/DeuxFacteurs.php` (`FKC_DeuxFacteurs`) : TOTP RFC 6238 (SHA-1, 6 chiffres, 30 s, fenêtre ±1), secret de 160 bits chiffré par `FKC_Crypto` dans `auth_deux_facteurs` (registre), anti-rejeu (`dernier_pas`), 10 codes de secours hachés à usage unique, QR code par le générateur interne (`FKC_Barcode::qr`).
+- `FKC_Auth::attempt()` : si la 2FA est active, la session n'est PAS ouverte (`fkc_2fa_attente`, 5 min, 5 essais, échecs comptés par le limiteur de connexion) ; `finaliserDeuxFacteurs()` l'ouvre ; `ouvrirSession()` factorisé.
+- Nouveau `DeuxFacteursController` + vues `verification.php`, `deux_facteurs.php` ; routes `verification`, `securite/deux-facteurs[/activer|/desactiver]` ; routeur : renvoi vers `verification` quand le second facteur est attendu, et vers l'activation quand `FKC_2FA_ADMIN_OBLIGATOIRE` l'impose (option de route `sans_2fa`).
+- Console : `--tenant=<id> 2fa:etat`, `2fa:desactiver <login>`.
+- Plateforme : `securite.bloquer_robots` (`FKC_Plateforme_Amorcage::estRobot()` : moteurs, robots d'IA, aperçus de liens → 403 ; `/api` et `/webhook` exemptés), `securite.masquer_version` (`fkc_version_publique()`), `securite.2fa_admin_obligatoire` ; cookie de session `__Host-` en mode sous-domaine ; portail sans consultation du registre (pas d'énumération).
+- `public/.htaccess` : X-Robots-Tag `noindex … noai, noimageai` sur toutes les réponses, `X-Permitted-Cross-Domain-Policies: none`, 404 si le dossier est atteint par l'adresse principale (`__DOSSIER_WEB__` inscrit par `deployer.sh`) ; `robots.txt` nommant les robots d'IA.
+
+Tests : `tests/securite_2fa_invisibilite_1876_2.php`.
+
+---
+
 # Patch 1.876.1 — Licence obligatoire, reprise dans un espace existant, mutualisé
 
 Base : 1.876.0 (retours du premier déploiement chez Hostinger).

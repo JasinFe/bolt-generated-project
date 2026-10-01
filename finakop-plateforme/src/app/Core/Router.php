@@ -90,7 +90,8 @@ class FKC_Router {
 
 			// Middleware : authentification.
 			if ( ! empty( $r['opt']['auth'] ) && ! FKC_Auth::check() ) {
-				redirect( 'login' );
+				// Mot de passe vérifié, second facteur attendu : écran du code.
+				redirect( FKC_Auth::deuxFacteursEnAttente() ? 'verification' : 'login' );
 			}
 			/*
 			 * Middleware : changement de mot de passe imposé.
@@ -104,6 +105,13 @@ class FKC_Router {
 			 */
 			if ( ! empty( $r['opt']['auth'] ) && empty( $r['opt']['sans_mdp'] ) && FKC_Auth::doitChangerMotDePasse() ) {
 				redirect( 'mot-de-passe' );
+			}
+			/*
+			 * Middleware : double authentification exigée (administrateurs, si la
+			 * plateforme l'impose) et pas encore activée : écran d'activation.
+			 */
+			if ( ! empty( $r['opt']['auth'] ) && empty( $r['opt']['sans_2fa'] ) && class_exists( 'FKC_DeuxFacteurs' ) && FKC_DeuxFacteurs::aConfigurer( FKC_Auth::user() ) ) {
+				redirect( 'securite/deux-facteurs' );
 			}
 			/*
 			 * Middleware : licence obligatoire (plateforme, 1.876.0). Tant que

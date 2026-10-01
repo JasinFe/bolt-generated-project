@@ -72,6 +72,12 @@ class FKC_Config {
 			// Flux SSE (afficheur client, scanner) : false sur mutualisé (un processus
 			// occupé par écran ouvert) ; true sur VPS. Les écrans interrogent alors le serveur.
 			'temps_reel'    => array( 'sse' => false ),
+			// Sécurité (1.876.2)
+			'securite'      => array(
+				'2fa_admin_obligatoire' => true,          // double authentification imposée aux administrateurs
+				'masquer_version'       => true,          // aucun numéro de version sur les pages publiques
+				'bloquer_robots'        => true,          // moteurs, robots d'IA, aperçus de liens : 403
+			),
 		);
 	}
 

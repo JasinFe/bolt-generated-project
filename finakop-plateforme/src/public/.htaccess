@@ -10,6 +10,12 @@ ServerSignature Off
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Ce dossier vit sous la racine du site public : atteint par l'adresse
+    # principale (finakoperp.com/finakop-app/…), il n'existe pas (404). Le
+    # nom réel est inscrit par scripts/deployer.sh.
+    RewriteCond %{REQUEST_URI} ^/__DOSSIER_WEB__(/|$)
+    RewriteRule ^ - [R=404,L]
+
     # Fichiers et dossiers cachés : refusés (sauf la validation des certificats SSL).
     RewriteRule (^|/)\.(?!well-known/) - [F,L]
 
@@ -28,6 +34,11 @@ ServerSignature Off
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
     Header always unset X-Powered-By
+    # Invisibilité (1.876.2) : TOUTES les réponses, fichiers statiques compris,
+    # demandent aux moteurs et aux IA de ne rien indexer ni réutiliser.
+    Header always set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate, noai, noimageai"
+    Header always set X-Permitted-Cross-Domain-Policies "none"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
 # Fichiers statiques : cache long (leurs adresses portent la version : ?v=1.876.0).

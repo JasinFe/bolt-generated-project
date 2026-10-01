@@ -2,7 +2,7 @@
 Contributors: kophisgroup
 Requires at least: 5.9
 Requires PHP: 8.1
-Stable tag: 1.876.1
+Stable tag: 1.876.2
 License: Proprietary
 
 ERP modulaire mono-produit (SYSCOHADA), application plein écran servie sur le sous-domaine finakopcore.*. Éditions sous licence Starter→Creative. Indépendant de l'extension FinaKop ERP (km-compta).
@@ -31,6 +31,11 @@ replis UTF-8, mais l'extension est plus rapide.
    Son changement est impose a la premiere connexion.
 
 == Changelog ==
+= 1.876.2 =
+* DOUBLE AUTHENTIFICATION (2FA) : code à 6 chiffres d'une application (Google/Microsoft Authenticator, Authy…) en plus du mot de passe ; 10 codes de secours à usage unique ; anti-rejeu ; obligatoire pour les administrateurs sur la plateforme ; écran « Double authentification » accessible depuis le changement de mot de passe
+* INVISIBILITÉ (plateforme) : robots de moteurs de recherche, d'IA (GPTBot, ClaudeBot, PerplexityBot, CCBot…) et d'aperçus de liens refusés (403) ; X-Robots-Tag noindex/noarchive/noai sur toutes les réponses, fichiers statiques compris ; robots.txt nommant les robots d'IA
+* SÉCURITÉ : cookie de session « __Host- » (lié à l'hôte, inviolable depuis un autre sous-domaine) ; portail sans énumération des espaces ; numéro de version masqué sur les pages publiques ; dossier de l'application inaccessible par l'adresse principale du site
+
 = 1.876.1 =
 * LICENCE OBLIGATOIRE (plateforme) : un espace sans licence active ne donne accès qu'à l'écran Licence ; l'administrateur y installe la clé de sa société, tout s'ouvre aussitôt
 * SÉCURITÉ — seul l'administrateur peut installer ou remplacer la licence (avant : tout utilisateur connecté)

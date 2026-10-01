@@ -83,6 +83,10 @@ class FKC_Plateforme_Amorcage {
 				self::journalWeb( 'origine_refusee', (string) ( $_SERVER['HTTP_HOST'] ?? '' ) );
 				return FKC_Plateforme_Pages::origineRefusee();
 			}
+			if ( FKC_Config::get( 'securite.bloquer_robots', true ) && self::estRobot( $_SERVER ) ) {
+				self::journalWeb( 'robot_refuse', substr( (string) ( $_SERVER['HTTP_USER_AGENT'] ?? '' ), 0, 120 ) );
+				return FKC_Plateforme_Pages::robot();
+			}
 			$r = FKC_TenantResolver::resoudre( $_SERVER['HTTP_HOST'] ?? '', $_SERVER['REQUEST_URI'] ?? '/' );
 			if ( FKC_TenantResolver::HOTE_REFUSE === $r['type'] ) { return FKC_Plateforme_Pages::hoteRefuse(); }
 
@@ -149,6 +153,8 @@ class FKC_Plateforme_Amorcage {
 		if ( '' !== (string) FKC_Config::get( 'connect.push_hotes', '' ) ) { define( 'FKC_PUSH_HOTES', (string) FKC_Config::get( 'connect.push_hotes' ) ); }
 		define( 'FKC_ADMIN_EMAIL', (string) FKC_Config::get( 'admin_email', '' ) );
 		define( 'FKC_SSE', (bool) FKC_Config::get( 'temps_reel.sse', false ) );
+		define( 'FKC_2FA_ADMIN_OBLIGATOIRE', (bool) FKC_Config::get( 'securite.2fa_admin_obligatoire', true ) );
+		define( 'FKC_MASQUER_VERSION', (bool) FKC_Config::get( 'securite.masquer_version', true ) );
 		define( 'FKC_CRON_EXTERNE', true );
 		define( 'FKC_CRON_INTERVALLE', (int) FKC_Config::get( 'cron.intervalle', 300 ) );
 
@@ -165,7 +171,11 @@ class FKC_Plateforme_Amorcage {
 		// client présentée à un autre n'y existe tout simplement pas.
 		$sess = FKC_Plateforme_Registre::dossierSessions( $t );
 		if ( ! is_dir( $sess ) ) { @mkdir( $sess, 0700, true ); }
-		define( 'FKC_SESSION_NAME', 'FKC_' . strtoupper( substr( hash( 'sha256', 'finakop-session:' . $t['slug'] ), 0, 12 ) ) );
+		// Préfixe « __Host- » (1.876.2) : le navigateur n'accepte ce cookie que
+		// posé par CET hôte, en HTTPS, sur « / », sans domaine. Un autre
+		// sous-domaine ne peut donc ni le lire, ni l'écraser (« cookie tossing »).
+		$prefixe = ( '' === (string) $basePath && 'https' === $schema ) ? '__Host-' : '';
+		define( 'FKC_SESSION_NAME', $prefixe . 'FKC_' . strtoupper( substr( hash( 'sha256', 'finakop-session:' . $t['slug'] ), 0, 12 ) ) );
 		@ini_set( 'session.save_path', rtrim( $sess, '/' ) );
 		@ini_set( 'session.gc_probability', '0' );   // nettoyage par le cron (voir cron/worker.php)
 		@ini_set( 'session.gc_maxlifetime', '28800' );
@@ -190,6 +200,25 @@ class FKC_Plateforme_Amorcage {
 	/** Schéma des adresses produites : https en production ; http seulement si la configuration l'autorise (recette locale). */
 	public static function schema() {
 		return ( FKC_Config::get( 'https', true ) || FKC_Plateforme_Proxy::estHttps( $_SERVER ) ) ? 'https' : 'http';
+	}
+
+	/**
+	 * Robots d'indexation, d'IA et d'aperçu de liens (1.876.2). robots.txt et
+	 * « noindex » ne sont que des demandes polies : les robots connus sont
+	 * REFUSÉS. Les appels machine légitimes (API, webhooks de paiement,
+	 * terminaux) ne sont pas concernés : ils n'utilisent ni GET de page, ni ces
+	 * signatures.
+	 */
+	public static function estRobot( array $s ) {
+		$ua = strtolower( (string) ( $s['HTTP_USER_AGENT'] ?? '' ) );
+		$uri = (string) ( $s['REQUEST_URI'] ?? '/' );
+		if ( preg_match( '#^/(api|webhook)#', $uri ) ) { return false; }
+		if ( '' === $ua ) { return false; }
+		return (bool) preg_match( '#(googlebot|google-extended|googleother|google-inspectiontool|adsbot|mediapartners|bingbot|bingpreview|msnbot|slurp|duckduck|baiduspider|yandex|sogou|exabot|seznam|qwant|petalbot|applebot|amazonbot'
+			. '|gptbot|chatgpt|oai-searchbot|openai|claudebot|claude-|anthropic|perplexity|ccbot|cohere|diffbot|youbot|bytespider|meta-external|facebookexternalhit|facebot|mistral|ai2bot|omgili|timpibot|imagesift|kangaroo'
+			. '|semrush|ahrefs|mj12bot|dotbot|rogerbot|screaming frog|serpstat|dataforseo|blexbot|ia_archiver|archive\.org|heritrix|scrapy|python-scrapy|crawler|spider|scraper'
+			. '|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|skypeuripreview|pinterest|redditbot|embedly|quora link|vkshare|w3c_validator'
+			. '|headlesschrome|phantomjs|[a-z0-9_.-]*bot[/;)])#', $ua ) && false === strpos( $ua, 'cubot' );
 	}
 
 	/** Journal de la plateforme (hors client), avec rotation. */

@@ -297,3 +297,48 @@ TEST 22 — Reprise WordPress dans un espace déjà créé (tenant:importer --re
   [RÉUSSI] --remplacer : import conforme, ancien contenu conservé à part
   [RÉUSSI] secret chiffré de l'ancien site relu dans kophisgroup
   [RÉUSSI] connexion avec les identifiants de l'ancien site
+
+TEST 23 — Invisibilité : moteurs de recherche, robots d'IA, aperçus de liens
+  [RÉUSSI] robot refusé (403) : Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.c
+  [RÉUSSI] robot refusé (403) : Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatibl
+  [RÉUSSI] robot refusé (403) : Mozilla/5.0 (compatible; ClaudeBot/1.0)
+  [RÉUSSI] robot refusé (403) : Mozilla/5.0 (compatible; PerplexityBot/1.0)
+  [RÉUSSI] robot refusé (403) : facebookexternalhit/1.1
+  [RÉUSSI] robot refusé (403) : WhatsApp/2.23.20.0
+  [RÉUSSI] navigateur normal : page de connexion (200)
+  [RÉUSSI] fichier statique : en-tête X-Robots-Tag noindex/noai
+  [RÉUSSI] page de connexion : noindex, noarchive, noai
+  [RÉUSSI] portail : redirige sans révéler si l'espace existe
+  [RÉUSSI] aucun numéro de version sur la page de connexion
+  [RÉUSSI] cookie de session préfixé __Host- (lié à l'hôte, Secure, HttpOnly)
+  [RÉUSSI] robots.txt : refus général + robots d'IA nommés (GPTBot, ClaudeBot, CCBot…)
+  [RÉUSSI] dossier de l'application inaccessible par l'adresse principale (404)
+  [RÉUSSI] … mais servi normalement sur le sous-domaine (200)
+
+TEST 24 — Double authentification (2FA)
+  [RÉUSSI] vecteur de test RFC 6238 (T=59 s → 287082)
+  [RÉUSSI] administrateur sans 2FA : activation imposée avant toute page
+  [RÉUSSI] … aucune page métier accessible avant activation
+  [RÉUSSI] écran d'activation : QR code (SVG local) et clé affichés
+  [RÉUSSI] activation avec un code faux : refusée
+  [RÉUSSI] activation réussie : 10 codes de secours affichés une fois
+  [RÉUSSI] … codes non réaffichés ensuite
+  [RÉUSSI] secret stocké chiffré dans le registre (pas en clair)
+  [RÉUSSI] connexion : mot de passe juste → écran du code, pas de session
+  [RÉUSSI] … aucune page accessible sans le code
+  [RÉUSSI] code faux : refusé
+  [RÉUSSI] anti-rejeu : le même code ne sert pas deux fois
+  [RÉUSSI] code de secours à usage unique (refusé la 2e fois)
+  [RÉUSSI] non-administrateur : 2FA facultative, pas imposée
+  [RÉUSSI] console 2fa:desactiver effective : l'administrateur doit réactiver la 2FA
+  [RÉUSSI] après activation : connecté, sélecteur de sociétés affiché (200)
+  [RÉUSSI] connexion avec le code juste : session ouverte (sélecteur de sociétés, 200)
+  [RÉUSSI] code de secours : session ouverte (302 vers le sélecteur de sociétés, constaté au passage précédent)
+
+TEST 25 — Site vitrine dans public_html, au-dessus du dossier de la plateforme
+  [RÉUSSI] https://finakoperp.com : 200, CSP stricte de la vitrine, robots d'IA admis (200)
+  [RÉUSSI] www.finakoperp.com/x?a=1 → 301 https://finakoperp.com/x?a=1
+  [RÉUSSI] /.htaccess de la vitrine : 403
+  [RÉUSSI] finakoperp.com/finakop-app/ et /finakop-app/index.php : 404
+  [RÉUSSI] app. et newloock. : CSP, no-store et X-Robots-Tag de la plateforme, intacts malgré le .htaccess parent
+  [RÉUSSI] robot sur la plateforme : 403 ; connexion d'un espace : 200

@@ -45,8 +45,16 @@ publier_web() {   # $1 = dossier réel de la version
   find "$WEB/_fkc.nouveau" -name '*.php' -delete
   [ -d "$WEB/_fkc" ] && mv "$WEB/_fkc" "$WEB/_fkc.ancien"
   mv "$WEB/_fkc.nouveau" "$WEB/_fkc"; rm -rf "$WEB/_fkc.ancien"
-  cp "$V/public/.htaccess" "$WEB/.htaccess.nouveau" && mv "$WEB/.htaccess.nouveau" "$WEB/.htaccess"
-  printf 'User-agent: *\nDisallow: /\n' > "$WEB/robots.txt"
+  sed -e "s#__DOSSIER_WEB__#$(basename "$WEB")#" "$V/public/.htaccess" > "$WEB/.htaccess.nouveau" && mv "$WEB/.htaccess.nouveau" "$WEB/.htaccess"
+  # robots.txt : refus général, et refus NOMMÉ des robots d'IA (certains
+  # n'honorent que leur propre nom). Ce n'est qu'une demande : la plateforme
+  # refuse en plus activement ces robots (403).
+  {
+    for b in GPTBot ChatGPT-User OAI-SearchBot ClaudeBot Claude-Web Claude-SearchBot Claude-User anthropic-ai PerplexityBot Perplexity-User \
+             CCBot Google-Extended GoogleOther Applebot-Extended Amazonbot Bytespider meta-externalagent FacebookBot cohere-ai Diffbot \
+             YouBot MistralAI-User AI2Bot Omgilibot Timpibot ImagesiftBot; do printf 'User-agent: %s\nDisallow: /\n\n' "$b"; done
+    printf 'User-agent: *\nDisallow: /\n'
+  } > "$WEB/robots.txt"
   # index.php pointe vers le chemin RÉEL de la version (pas le lien « current ») :
   # chaque déploiement change ses chemins, OPcache ne peut pas servir l'ancien code.
   sed -e "s#__FINAKOP_RACINE__#$V#" -e "s#__FINAKOP_CONFIG__#$R/config.php#" "$V/public/index.php" > "$WEB/index.php.nouveau"
@@ -80,6 +88,16 @@ unzip -q "$ARCHIVE" -d "$TMP"
 SRC="$(dirname "$(find "$TMP" -maxdepth 3 -name VERSION -path '*/VERSION' | head -1)")"
 [ -f "$SRC/app/Plateforme/Amorcage.php" ] && [ -f "$SRC/app/index.php" ] || { echo "Archive inattendue (app/Plateforme absent)."; exit 1; }
 VERSION="$(tr -d ' \n' < "$SRC/VERSION")"
+
+# C'est la NOUVELLE version qui sait publier son dossier web (règles, robots.txt…) :
+# si ce script est celui de la version installée, on passe la main à celui de
+# l'archive (une seule fois).
+if [ -z "${FINAKOP_DEPLOYER_RELAIS:-}" ] && [ -f "$SRC/scripts/deployer.sh" ] && ! cmp -s "$0" "$SRC/scripts/deployer.sh"; then
+  cp "$SRC/scripts/deployer.sh" "$TMP/deployer-nouveau.sh"
+  echo "==> Déploiement confié au script de la version $VERSION"
+  FINAKOP_DEPLOYER_RELAIS=1 PHP="$PHP" bash "$TMP/deployer-nouveau.sh" "$@"
+  exit $?
+fi
 
 # Garde-fous : jamais de clé privée dans le code servi ; clé publique de licence présente.
 if find "$SRC" -name '*private*.pem' | grep -q .; then echo "REFUS : clé PRIVÉE trouvée dans l'archive."; exit 1; fi

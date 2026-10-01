@@ -533,6 +533,16 @@ function fkc_log( $msg, $level = 'INFO' ) {
 }
 
 /**
+ * Numéro de version affiché sur les pages PUBLIQUES (connexion…), 1.876.2.
+ * Sur la plateforme (FKC_MASQUER_VERSION), il n'est pas affiché : il indiquerait
+ * à un attaquant quelles failles connues essayer.
+ */
+function fkc_version_publique() {
+	if ( defined( 'FKC_MASQUER_VERSION' ) && FKC_MASQUER_VERSION ) { return ''; }
+	return ' v' . htmlspecialchars( (string) FKC_VERSION, ENT_QUOTES, 'UTF-8' );
+}
+
+/**
  * Flux temps réel (SSE) autorisés ? (1.876.0)
  *
  * Un flux SSE (afficheur client, scanner) garde un processus PHP occupé en

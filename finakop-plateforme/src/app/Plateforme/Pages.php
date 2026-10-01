@@ -19,7 +19,7 @@ class FKC_Plateforme_Pages {
 		http_response_code( $code );
 		header( 'Content-Type: text/html; charset=utf-8' );
 		header( 'Cache-Control: no-store' );
-		header( 'X-Robots-Tag: noindex, nofollow' );
+		header( 'X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, noai, noimageai' );
 		header( 'X-Frame-Options: DENY' );
 		header( 'X-Content-Type-Options: nosniff' );
 		header( 'Referrer-Policy: no-referrer' );
@@ -63,6 +63,9 @@ class FKC_Plateforme_Pages {
 	public static function hoteRefuse() {
 		self::message( 400, 'Adresse non reconnue', 'Cette adresse n\'est pas servie par FinaKop.' );
 	}
+	public static function robot() {
+		self::message( 403, 'Accès refusé', 'Contenu privé.', array( 'X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, noai, noimageai' ) );
+	}
 	public static function origineRefusee() {
 		self::message( 403, 'Accès refusé', 'Accès direct non autorisé.' );
 	}
@@ -74,17 +77,18 @@ class FKC_Plateforme_Pages {
 		if ( '' !== $saisi ) {
 			// Tolère une adresse collée entière (https://newloock.finakoperp.com/…).
 			if ( preg_match( '#^(?:https?://)?([a-z0-9-]+)\.' . preg_quote( (string) FKC_Config::get( 'domaine_base' ), '#' ) . '#', $saisi, $m ) ) { $saisi = $m[1]; }
-			$t = FKC_Plateforme_Registre::slugValide( $saisi ) ? FKC_Plateforme_Registre::parSlug( $saisi ) : null;
-			if ( $t && 'actif' === $t['statut'] ) {
+			// 1.876.2 : redirection SANS consulter le registre. Le portail ne doit
+			// pas servir à vérifier quels espaces existent (énumération).
+			if ( FKC_Plateforme_Registre::slugValide( $saisi ) ) {
 				$mode = (string) FKC_Config::get( 'mode_tenant', 'sous-domaine' );
 				$url = 'chemin' === $mode
-					? FKC_Plateforme_Amorcage::schema() . '://' . FKC_Config::get( 'hote_portail' ) . '/' . $t['slug'] . '/'
-					: FKC_Plateforme_Amorcage::schema() . '://' . $t['slug'] . '.' . FKC_Config::get( 'domaine_base' ) . '/';
+					? FKC_Plateforme_Amorcage::schema() . '://' . FKC_Config::get( 'hote_portail' ) . '/' . $saisi . '/'
+					: FKC_Plateforme_Amorcage::schema() . '://' . $saisi . '.' . FKC_Config::get( 'domaine_base' ) . '/';
 				header( 'Location: ' . $url, true, 303 );
 				header( 'Cache-Control: no-store' );
 				return;
 			}
-			$erreur = 'Aucun espace actif ne porte cet identifiant.';
+			$erreur = 'Identifiant invalide : lettres minuscules, chiffres et tirets.';
 		}
 		self::entetes( '' !== $erreur ? 404 : 200 );
 		$suffixe = '.' . FKC_Config::get( 'domaine_base' );
