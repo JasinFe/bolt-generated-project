@@ -51,7 +51,14 @@ const CACHE_MS = 10 * 60 * 1000;
 async function call(pathname, fetchImpl = fetch) {
   const hit = cache.get(pathname);
   if (hit && hit.until > Date.now()) return hit.data;
-  const res = await fetchImpl(base() + pathname, { headers: { 'api-key': process.env.API_BIBLE_KEY || '', accept: 'application/json' } });
+  let res;
+  try {
+    res = await fetchImpl(base() + pathname, { headers: { 'api-key': process.env.API_BIBLE_KEY || '', accept: 'application/json' }, signal: AbortSignal.timeout(15000) });
+  } catch (err) {
+    const e = new Error(`API.Bible injoignable (${err.name === 'TimeoutError' ? 'délai dépassé' : 'pas de connexion'})`);
+    e.status = 502;
+    throw e;
+  }
   if (!res.ok) {
     const detail = typeof res.text === 'function' ? await res.text().catch(() => '') : '';
     const blocked = /allowlist|proxy|egress/i.test(detail);
@@ -108,7 +115,7 @@ async function init(fetchImpl = fetch, reserved = []) {
   if (!process.env.API_BIBLE_KEY) return [];
   const taken = new Set(reserved);
   const list = await discover(fetchImpl, taken);
-  for (const v of list) {
+  const loadOne = async v => {
     try {
       const [info, books] = await Promise.all([
         v.info ? v.info : call(`/bibles/${v.bibleId}`, fetchImpl),
@@ -119,7 +126,7 @@ async function init(fetchImpl = fetch, reserved = []) {
         const osis = USFM_TO_OSIS[b.id];
         if (osis) counts[osis] = (b.chapters || []).filter(c => /^\d+$/.test(c.number)).length;
       }
-      if (!Object.keys(counts).length) continue;
+      if (!Object.keys(counts).length) return;
       remote.set(v.id, {
         id: v.id, name: v.name || info.nameLocal || info.name, short: v.short, lang: v.lang, dir: info.dir === 'rtl' ? 'rtl' : 'ltr', year: null,
         remote: true, bibleId: v.bibleId,
@@ -130,7 +137,14 @@ async function init(fetchImpl = fetch, reserved = []) {
     } catch (e) {
       console.warn(`API.Bible : impossible de charger ${v.short} (${e.message})`);
     }
-  }
+  };
+  // Chargement par lots de 6 pour aller vite sans surcharger l'API
+  for (let i = 0; i < list.length; i += 6) await Promise.all(list.slice(i, i + 6).map(loadOne));
+  // Ordre stable : celui de la découverte
+  const order = list.map(v => v.id);
+  const sorted = [...remote.entries()].sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]));
+  remote.clear();
+  for (const [k, v] of sorted) remote.set(k, v);
   return [...remote.values()];
 }
 

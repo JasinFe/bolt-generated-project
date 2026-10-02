@@ -60,3 +60,16 @@ test('API : livres, personnages, état de l’assistant', async () => {
   assert.strictEqual(typeof st.body.enabled, 'boolean');
   assert.strictEqual(st.body.model, 'claude-opus-5-5');
 });
+
+test('fichiers versionnés : jamais d’ancienne version mélangée après une mise à jour', async () => {
+  const html = await (await fetch(base + '/')).text();
+  const m = html.match(/\/a\/([^/"]+)\/js\/app\.js/);
+  assert.ok(m, 'index.html doit référencer les fichiers versionnés');
+  assert.ok(!html.includes('__ASSETS__'));
+  const js = await fetch(base + `/a/${m[1]}/js/app.js`);
+  assert.strictEqual(js.status, 200);
+  assert.match(js.headers.get('cache-control'), /immutable/);
+  const page = await fetch(base + '/');
+  assert.match(page.headers.get('cache-control'), /no-store/);
+  assert.strictEqual((await fetch(base + `/a/${m[1]}/js/absent.js`)).status, 404);
+});

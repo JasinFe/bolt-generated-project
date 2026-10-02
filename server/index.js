@@ -28,7 +28,7 @@ const MIME = {
 
 // Chargement des versions API.Bible (lancé au démarrage) : les routes l'attendent quelques secondes au plus.
 let abReady = Promise.resolve();
-const waitAB = () => Promise.race([abReady, new Promise(r => setTimeout(r, 8000))]);
+const waitAB = () => Promise.race([abReady, new Promise(r => setTimeout(r, 3000))]);
 
 const versionParam = q => {
   const v = q.get('v') || B.DEFAULT_VERSION;
@@ -162,7 +162,7 @@ const routes = {
     return { ...p, passages: resolveRefs(p.refs, versionParam(q), 8) };
   },
   'GET /api/assistant/status': () => ({ enabled: ASSISTANT.enabled(), model: ASSISTANT.MODEL, modes: Object.keys(ASSISTANT.MODES) }),
-  'GET /api/health': () => ({ ok: true, versions: B.VERSIONS.length + AB.list().length, remote: AB.list().length, books: BOOKS.length }),
+  'GET /api/health': () => ({ ok: true, app: ASSET_VERSION, versions: B.VERSIONS.length + AB.list().length, remote: AB.list().length, books: BOOKS.length }),
 };
 
 function send(res, status, body, type = 'application/json; charset=utf-8', extra = {}) {
@@ -178,16 +178,44 @@ function readBody(req) {
   });
 }
 
+/**
+ * Version des fichiers de l'application : change à chaque mise à jour (version + date des fichiers).
+ * Les fichiers JS/CSS sont servis sous /a/<version>/… : un navigateur ne peut donc jamais
+ * mélanger les fichiers d'une ancienne et d'une nouvelle version.
+ */
+function computeAssetVersion() {
+  let latest = 0;
+  const walk = dir => {
+    for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, f.name);
+      if (f.isDirectory()) walk(p); else latest = Math.max(latest, fs.statSync(p).mtimeMs);
+    }
+  };
+  walk(PUBLIC);
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+  return `${pkg.version}-${Math.round(latest).toString(36)}`;
+}
+const ASSET_VERSION = computeAssetVersion();
+
 function serveStatic(req, res, pathname) {
   let decoded;
   try { decoded = decodeURIComponent(pathname); } catch { return send(res, 400, 'URL invalide', 'text/plain; charset=utf-8'); }
+  // Fichiers versionnés : /a/<version>/js/app.js -> public/js/app.js (cache long, la version change l'adresse)
+  const versioned = decoded.match(/^\/a\/[^/]+(\/.*)$/);
+  if (versioned) decoded = versioned[1];
   let file = path.normalize(path.join(PUBLIC, decoded));
   if (file !== PUBLIC && !file.startsWith(PUBLIC + path.sep)) return send(res, 403, 'Interdit', 'text/plain; charset=utf-8');
-  if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(PUBLIC, 'index.html');
+  if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) {
+    if (versioned || /\.(js|css|json|png|svg|ico|webmanifest)$/.test(decoded)) return send(res, 404, 'Introuvable', 'text/plain; charset=utf-8');
+    file = path.join(PUBLIC, 'index.html');
+  }
   const type = MIME[path.extname(file)] || 'application/octet-stream';
   fs.readFile(file, (err, buf) => {
     if (err) return send(res, 500, 'Erreur', 'text/plain');
-    send(res, 200, buf, type, { 'Cache-Control': /\.(png|svg|ico)$/.test(file) ? 'public, max-age=86400' : 'no-cache' });
+    if (file.endsWith('index.html')) buf = Buffer.from(buf.toString('utf8').replace(/__ASSETS__/g, `/a/${ASSET_VERSION}`));
+    const cache = versioned ? 'public, max-age=31536000, immutable'
+      : /\.(png|svg|ico)$/.test(file) ? 'public, max-age=86400' : 'no-cache, no-store, must-revalidate';
+    send(res, 200, buf, type, { 'Cache-Control': cache });
   });
 }
 
@@ -264,7 +292,8 @@ if (require.main === module) {
 function openBrowser(url) {
   if (process.env.MP_NO_OPEN === '1' || process.env.NODE_ENV === 'production' || process.env.CI) return;
   const { spawn } = require('child_process');
-  const [cmd, args] = process.platform === 'win32' ? ['cmd', ['/c', 'start', '""', url]]
+  // Windows : rundll32 ouvre l'adresse dans le navigateur par défaut, sans problème de guillemets ni de fenêtre cmd.
+  const [cmd, args] = process.platform === 'win32' ? ['rundll32', ['url.dll,FileProtocolHandler', url]]
     : process.platform === 'darwin' ? ['open', [url]] : ['xdg-open', [url]];
   try {
     const child = spawn(cmd, args, { stdio: 'ignore', detached: true, windowsHide: true });
