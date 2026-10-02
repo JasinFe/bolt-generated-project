@@ -164,7 +164,7 @@ textarea { width: 100%; resize: vertical; min-height: 84px; line-height: 1.55; }
 .tag.gold { background: var(--gold-soft); color: var(--gold-ink); }
 .tag.dc { background: #efe3c8; color: #6b4e12; }
 .tag.ap { background: #e8dcef; color: #553068; }
-.seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+.seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
 .seg button { border: 0; background: none; padding: 5px 12px; border-radius: 999px; cursor: pointer; font-size: .85rem; font-weight: 500; color: var(--muted); }
 .seg button.on { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
 
@@ -386,3 +386,16 @@ details summary { cursor: pointer; }
   .hero { display: none; }
   textarea { border: none; }
 }
+
+/* ---------- Projection ---------- */
+.stage { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; cursor: none; user-select: none; }
+.stage .slide { width: 86vw; text-align: center; transition: opacity .25s; }
+.stage .slide-text { font-family: var(--serif); font-size: var(--size); line-height: 1.45; text-wrap: balance; text-shadow: 0 2px 18px rgba(0,0,0,.25); }
+.stage .slide-text sup { font-size: .45em; color: var(--accent); font-family: var(--sans); }
+.stage .slide-ref { margin-top: 4vmin; font: 600 calc(var(--size) * .45) var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.stage .slide-count { position: absolute; right: 2vmin; bottom: 1.5vmin; font: 500 1.6vmin var(--sans); opacity: .45; }
+.hide-word { color: var(--gold-ink); background: var(--gold-soft); border-radius: 4px; padding: 0 3px; cursor: pointer; letter-spacing: .08em; }
+.answer .md h2, .answer .md h3, .answer .md h4 { margin: 16px 0 6px; }
+.answer .md p, .answer .md li { line-height: 1.65; }
+.answer .md blockquote { margin: 8px 0; padding: 8px 14px; border-left: 3px solid var(--gold); background: var(--surface-2); border-radius: 0 8px 8px 0; font-family: var(--serif); }
+.reading-verse.speaking, .verse.speaking { background: color-mix(in srgb, var(--gold) 24%, transparent); }

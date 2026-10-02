@@ -15,6 +15,13 @@ const VIEWS = {
   chant: () => import('./views/song.js'),
   evangelisation: () => import('./views/evangel.js'),
   apropos: () => import('./views/about.js'),
+  assistant: () => import('./views/assistant.js'),
+  livres: () => import('./views/livres.js'),
+  personnages: () => import('./views/personnages.js'),
+  plans: () => import('./views/plans.js'),
+  projection: () => import('./views/projection.js'),
+  image: () => import('./views/image.js'),
+  memoriser: () => import('./views/memoriser.js'),
 };
 
 function parseHash() {
@@ -97,7 +104,9 @@ async function init() {
     openStrong(w.dataset.s.split(',')[0]);
   }, true);
 
-  window.addEventListener('hashchange', route);
+  window.addEventListener('hashchange', () => { if (window.speechSynthesis) speechSynthesis.cancel(); route(); });
+  // Mode hors ligne : mise en cache de l'application et des textes déjà consultés
+  if ('serviceWorker' in navigator && location.hostname !== '') navigator.serviceWorker.register('/sw.js').catch(() => {});
   route();
 }
 

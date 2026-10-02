@@ -1,6 +1,6 @@
 {
   "name": "mister-preacher",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Mister Preacher (MP) — plateforme d'étude biblique : recherche, références croisées, mots originaux, sermons, chants et évangélisation.",
   "main": "server/index.js",
   "private": true,
@@ -14,5 +14,8 @@
     "data": "node scripts/build-data.js",
     "test": "node --test test/*.test.js",
     "apibible": "node scripts/apibible-check.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0"
   }
 }

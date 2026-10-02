@@ -45,3 +45,18 @@ test('API : thèmes, évangélisation, palette', async () => {
   const pal = await fetch(base + '/api/palette', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refs: ['Psaumes 23'] }) });
   assert.ok((await pal.json()).some(w => w.word === 'berger'));
 });
+
+test('API : livres, personnages, état de l’assistant', async () => {
+  const livres = await get('/api/livres');
+  assert.strictEqual(livres.body.length, 66);
+  const rom = await get('/api/livre?id=Rom&v=LSG');
+  assert.ok(rom.body.plan.length >= 3);
+  assert.ok(rom.body.cleText.verses.length >= 1);
+  const pers = await get('/api/personnages');
+  assert.ok(pers.body.length >= 40);
+  const paul = await get('/api/personnage?id=paul&v=LSG');
+  assert.ok(paul.body.passages.every(p => p.verses.length));
+  const st = await get('/api/assistant/status');
+  assert.strictEqual(typeof st.body.enabled, 'boolean');
+  assert.strictEqual(st.body.model, 'claude-opus-5-5');
+});

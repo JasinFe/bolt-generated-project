@@ -2,15 +2,22 @@ import { api, esc, plain, version, versionInfo, store, versions, icon, versionsB
 import { openLookup } from '../app.js';
 
 const TOOLS = [
-  ['#/lire', 'book', 'Lire la Bible', '31 versions en 16 langues, jusqu’à 4 en parallèle, avec titres, notes et mots originaux.'],
+  ['#/lire', 'book', 'Lire la Bible', '31 versions en 16 langues, en parallèle, avec lecture audio et mots originaux.'],
   ['#/recherche', 'search', 'Rechercher', 'Mots, expressions exactes, préfixes, exclusions — par livre ou par testament.'],
+  ['#/assistant', 'spark', 'Assistant IA', 'Expliquer un passage, bâtir un plan de prédication, préparer une étude de groupe.'],
   ['#/lexique', 'alef', 'Mots originaux', 'Hébreu et grec : sens, origine et toutes les traductions de chaque mot.'],
-  ['#/comparer', 'compare', 'Comparer', 'Un passage dans toutes les versions et toutes les langues, côte à côte.'],
-  ['#/themes', 'star', 'Thèmes', 'Salut, foi, guérison, louange… les versets clés classés par sujet.'],
-  ['#/paralleles', 'columns', 'Passages parallèles', 'Évangiles synoptiques, Rois et Chroniques, prophéties accomplies.'],
-  ['#/sermon', 'mic', 'Préparer un sermon', 'Cinq modèles de plan, versets insérés automatiquement, export et impression.'],
-  ['#/chant', 'music', 'Chants & textes', 'Versets d’inspiration, palette de mots bibliques et dictionnaire de rimes.'],
-  ['#/evangelisation', 'globe', 'Évangélisation', 'Parcours prêts à l’emploi et réponses bibliques aux objections.'],
+  ['#/livres', 'book', 'Les 66 livres', 'Auteur, date, thème, verset clé et plan de chaque livre.'],
+  ['#/personnages', 'user', 'Personnages', '42 figures bibliques : histoire, passages clés et leçons.'],
+  ['#/plans', 'calendar', 'Plans de lecture', 'La Bible en un an, le NT en 90 jours… avec votre progression.'],
+  ['#/comparer', 'compare', 'Comparer', 'Un passage dans toutes les versions et toutes les langues.'],
+  ['#/themes', 'star', 'Thèmes', 'Salut, foi, guérison, louange… les versets clés par sujet.'],
+  ['#/sermon', 'mic', 'Préparer un sermon', 'Cinq modèles de plan, versets insérés automatiquement.'],
+  ['#/chant', 'music', 'Chants & textes', 'Versets d’inspiration, palette de mots et rimes bibliques.'],
+  ['#/projection', 'screen', 'Projection', 'Versets et paroles en plein écran pour le culte.'],
+  ['#/image', 'image', 'Image de verset', 'Une belle image à partager sur les réseaux et WhatsApp.'],
+  ['#/memoriser', 'brain', 'Mémoriser', 'Apprenez les versets par cœur, mot après mot.'],
+  ['#/evangelisation', 'globe', 'Évangélisation', 'Parcours prêts à l’emploi et réponses aux objections.'],
+  ['#/paralleles', 'columns', 'Passages parallèles', 'Évangiles synoptiques, Rois et Chroniques, prophéties.'],
 ];
 
 const QUICK = ['Jean 3:16', 'Psaumes 23', 'Romains 8', '1 Corinthiens 13', 'Ésaïe 53', '« Je suis »', 'grâce*'];

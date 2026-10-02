@@ -205,6 +205,12 @@ export async function openVerseTools(key, raw, onChange) {
       <button class="btn sm" id="vCopy">Copier</button>
       <a class="btn sm" href="#/paralleles?ref=${encodeURIComponent(label)}">${icon('columns')} Parallèles</a>
     </section>
+    <section class="row">
+      <a class="btn sm" href="#/assistant?ref=${encodeURIComponent(label)}&mode=expliquer&go=1">${icon('spark')} Expliquer (IA)</a>
+      <a class="btn sm" href="#/image?ref=${encodeURIComponent(label)}">${icon('image')} Image</a>
+      <a class="btn sm" href="#/memoriser?add=${encodeURIComponent(label)}">${icon('brain')} Mémoriser</a>
+      <a class="btn sm" href="#/projection?ref=${encodeURIComponent(label)}">${icon('screen')} Projeter</a>
+    </section>
     <section id="vWords"></section>
     <section><h4>Références croisées</h4><div id="vXref" class="loading">Chargement…</div></section>`);
 
@@ -288,4 +294,30 @@ export function remember(entry) {
   const s = store.get();
   s.history = [entry, ...s.history.filter(h => h.href !== entry.href)].slice(0, 12);
   store.save();
+}
+
+/** Markdown simple et sûr (titres, gras, italique, listes, citations) — texte échappé d'abord. */
+export function md(text) {
+  const lines = esc(text).split('\n');
+  const out = [];
+  let list = null;
+  const inline = s => s
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g, '$1<i>$2</i>')
+    .replace(/(^|\W)_(?!\s)(.+?)_(?=\W|$)/g, '$1<i>$2</i>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>');
+  const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    let m;
+    if ((m = line.match(/^(#{1,4})\s+(.*)$/))) { close(); const n = Math.min(4, m[1].length + 1); out.push(`<h${n}>${inline(m[2])}</h${n}>`); }
+    else if ((m = line.match(/^\s*[-*•]\s+(.*)$/))) { if (list !== 'ul') { close(); out.push('<ul>'); list = 'ul'; } out.push(`<li>${inline(m[1])}</li>`); }
+    else if ((m = line.match(/^\s*\d+[.)]\s+(.*)$/))) { if (list !== 'ol') { close(); out.push('<ol>'); list = 'ol'; } out.push(`<li>${inline(m[1])}</li>`); }
+    else if ((m = line.match(/^&gt;\s?(.*)$/))) { close(); out.push(`<blockquote>${inline(m[1])}</blockquote>`); }
+    else if (/^-{3,}$/.test(line)) { close(); out.push('<hr>'); }
+    else if (!line.trim()) { close(); }
+    else { close(); out.push(`<p>${inline(line)}</p>`); }
+  }
+  close();
+  return out.join('\n');
 }

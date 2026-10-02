@@ -32,7 +32,7 @@ Le positionnement « **de l'étude à la chaire, au studio et à la rue** » est
 4. **La numérotation des versets** varie (Joël 3 FR = Joël 2:28 EN ; Psaumes en numérotation grecque dans la Septante/Vulgate).
    Une table de correspondance (« versification mapping ») est prévue en phase 2.
 
-## 2. Ce qui est livré (version 1.1)
+## 2. Ce qui est livré (version 1.3)
 
 Une application web complète, **sans aucune dépendance externe** (Node.js seul), qui fonctionne hors ligne une fois installée.
 
@@ -59,6 +59,23 @@ Une application web complète, **sans aucune dépendance externe** (Node.js seul
   **dictionnaire de rimes** tiré du vocabulaire biblique, recherche d'images bibliques (« aigle », « rocher »…).
 - **Évangélisation** : 4 parcours (Chemin des Romains, le Pont, Témoignage, 7 signes de Jean) et 8 objections fréquentes avec réponses bibliques.
 - **Verset du jour**, historique de lecture, application installable (manifest PWA), responsive mobile, impression propre.
+
+### Nouveautés de la version 1.3
+
+- **Ouverture automatique** du navigateur au démarrage et lanceur Windows à double-cliquer (`Demarrer Mister Preacher.bat`).
+- **Assistant d'étude IA** (Claude Opus 5.5, facultatif) : 8 modes (expliquer, plan de prédication, étude de groupe,
+  illustrations, chant, évangélisation, personnages, question libre). Le modèle reçoit le passage dans la version choisie,
+  la Darby littérale, les principales références croisées et les fiches Strong : il cite l'Écriture fournie au lieu
+  d'inventer. Réponses en continu, questions de suivi, enregistrement en étude ou en sermon. En cas de refus par les filtres
+  de sécurité, l'API relance automatiquement la demande sur un autre modèle (paramètre `fallbacks`).
+- **Les 66 livres** : auteur, date (avec les débats signalés), thème, verset clé, plan — aussi accessible depuis le lecteur.
+- **42 personnages bibliques** : résumé, passages clés, leçons.
+- **5 plans de lecture** avec calendrier, progression et rattrapage.
+- **Projection** plein écran (versets, chants, texte libre), 5 ambiances, clavier ou clic, écran noir.
+- **Image de verset** (canvas) : 7 fonds, 3 formats, 3 polices, téléchargement ou partage.
+- **Mémorisation** : 5 niveaux de masquage progressif, écoute du verset.
+- **Lecture audio** des chapitres (synthèse vocale du navigateur) avec suivi du verset lu.
+- **Mode hors ligne** (service worker) : l'application et les chapitres déjà consultés restent disponibles.
 
 ### Versions incluses (31, toutes libres de droits ou sous licence libre)
 
@@ -143,7 +160,7 @@ automatiquement Joël 2:28-32 → 3:1-5, Joël 3 → 4 et Malachie 4 → 3:19-24
 - Mode présentation (projeter versets et paroles pendant le culte).
 - Export Word / PDF / diaporama.
 
-**Phase 4 — Assistant intelligent**
+**Phase 4 — Assistant intelligent** (✅ première version livrée en 1.3)
 - Assistant IA (ex. Claude d'Anthropic) **ancré dans les textes** : « résume le contexte de Romains 8 », « propose trois
   illustrations pour ce point », « trouve des versets sur la persévérance » — en citant toujours les références réelles de MP.
 - Application mobile (l'interface actuelle est déjà installable comme PWA).

@@ -38,7 +38,7 @@ async function renderEditor(el, id) {
   const x = s.songs.find(y => y.id === id);
   if (!x) { el.innerHTML = '<div class="empty">Texte introuvable. <a href="#/chant">Retour</a></div>'; return; }
   el.innerHTML = `<div class="page wide"><div class="toolbar"><a class="btn sm" href="#/chant">← Mes textes</a><span class="grow muted small">Enregistrement automatique</span>
-      <button class="btn sm" id="exp">Exporter</button><button class="btn sm" onclick="print()">Imprimer</button></div>
+      <a class="btn sm" href="#/projection?song=${x.id}">${icon('screen')} Projeter</a><a class="btn sm" href="#/assistant?mode=chant&ref=${encodeURIComponent((x.refs || '').split(';')[0].trim())}">${icon('spark')} Aide IA</a><button class="btn sm" id="exp">Exporter</button><button class="btn sm" onclick="print()">Imprimer</button></div>
     <div class="two-col">
       <div>
         <div class="card">

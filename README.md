@@ -6,12 +6,14 @@ mots originaux (hébreu / grec), comparaison des versions, études annotées, pr
 
 ## Démarrage rapide
 
-Il faut [Node.js](https://nodejs.org) 18 ou plus récent. Aucune autre installation n'est nécessaire (aucune dépendance npm).
+Il faut [Node.js](https://nodejs.org) 18 ou plus récent.
 
-```bash
-npm start
-# puis ouvrir http://localhost:3000
-```
+- **Windows** : double-cliquez sur **`Demarrer Mister Preacher.bat`**.
+- **macOS / Linux** : lancez `demarrer-mister-preacher.command`.
+- **Ou en ligne de commande** : `npm start`.
+
+Le navigateur s'ouvre automatiquement sur http://localhost:3000 (désactivable avec `MP_NO_OPEN=1` dans `.env`).
+Si l'application tourne déjà, relancer le fichier ouvre simplement la page.
 
 Tests : `npm test` · Mode développement (rechargement auto) : `npm run dev`
 
@@ -29,6 +31,13 @@ Tests : `npm test` · Mode développement (rechargement auto) : `npm run dev`
 - **Sermons** : 5 modèles de plan avec insertion automatique des versets.
 - **Chants & textes** : versets d'inspiration, palette de mots, rimes bibliques.
 - **Évangélisation** : parcours prêts à l'emploi et réponses aux objections.
+- **Assistant IA** (Claude, facultatif) : expliquer un passage, plan de prédication, étude de groupe, illustrations, aide à
+  l'écriture de chants — à partir du texte réel, des références croisées et des mots originaux.
+- **Les 66 livres** : auteur, date, thème, verset clé et plan de chaque livre ; **42 personnages bibliques**.
+- **Plans de lecture** (Bible en un an, NT en 90 jours, Évangiles en 40 jours, Psaumes et Proverbes en un mois) avec suivi.
+- **Projection** plein écran (versets, paroles de chants, annonces) pour le culte.
+- **Images de versets** à partager (carré, story, paysage), **mémorisation** des versets, **lecture audio** des chapitres.
+- **Hors ligne** : l'application et les chapitres déjà consultés restent disponibles sans connexion.
 
 L'analyse complète du projet (avis, architecture, licences, feuille de route) se trouve dans [docs/ANALYSE.md](docs/ANALYSE.md).
 
@@ -41,6 +50,12 @@ de `scripts/build-data.js` (formats acceptés : scrollmapper, Beblia XML, corpus
 npm run data            # toutes les versions + références croisées + Strong
 node scripts/build-data.js LSG   # une seule version
 ```
+
+## Assistant IA (facultatif)
+
+Créez une clé sur [console.anthropic.com](https://console.anthropic.com), ajoutez `ANTHROPIC_API_KEY=votre-cle` dans `.env`
+et relancez. L'assistant utilise le modèle `claude-opus-5-5` (modifiable avec `ANTHROPIC_MODEL`). Chaque réponse est facturée par
+Anthropic selon l'usage.
 
 ## Versions sous licence (API.Bible)
 

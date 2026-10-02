@@ -105,6 +105,9 @@ export async function render(el, { args, params }) {
       <button class="btn icon" id="rPrev" title="Chapitre précédent" aria-label="Chapitre précédent">${icon('left')}</button>
       <button class="btn icon" id="rNext" title="Chapitre suivant" aria-label="Chapitre suivant">${icon('right')}</button>
       <span class="grow"></span>
+      <button class="btn sm" id="rIntro" title="Introduction au livre">${icon('info')} Intro</button>
+      <button class="btn sm" id="rListen" title="Écouter le chapitre">${icon('volume')} Écouter</button>
+      <a class="btn sm" href="#/projection?ref=${encodeURIComponent(bookMeta.fr + ' ' + chapter)}" title="Projeter ce chapitre">${icon('screen')}</a>
       <button class="btn sm" id="rPar">${icon('columns')} Parallèle${parallel.length ? ` (${parallel.length})` : ''}</button>
       <span class="chip ${strong ? 'on' : ''}" id="rStrong" title="Cliquer sur les mots pour voir l’hébreu ou le grec (Darby, KJV, BSB, Grec)">${icon('alef')} Strong</span>
       <span class="seg" aria-label="Taille du texte"><button id="rSmaller" title="Texte plus petit">A−</button><button id="rBigger" title="Texte plus grand">A+</button></span>
@@ -165,6 +168,36 @@ export async function render(el, { args, params }) {
   $('#rNext2', el).onclick = e => { e.preventDefault(); goTo(next); };
   $('#rPick', el).onclick = () => pickBook(book, (b, c) => go(`#/lire/${b}/${c}`));
   $('#rPar', el).onclick = () => pickParallel(main, parallel, list => { store.setting('parallel', list); go(location.hash); });
+  $('#rIntro', el).onclick = async () => {
+    try {
+      const b = await api('livre', { id: book, v: version() });
+      const { introHTML } = await import('./livres.js');
+      modal.open(b.fr, introHTML(b, true));
+    } catch (e) { toast(e.message); }
+  };
+  // Lecture audio (synthèse vocale du navigateur), verset par verset avec surlignage
+  $('#rListen', el).onclick = () => {
+    const btn = $('#rListen', el);
+    if (!window.speechSynthesis) return toast('Lecture audio non disponible dans ce navigateur');
+    if (speechSynthesis.speaking) { speechSynthesis.cancel(); btn.innerHTML = `${icon('volume')} Écouter`; $$('.speaking', body).forEach(x => x.classList.remove('speaking')); return; }
+    const info = versionInfo(ids[0]);
+    const lang = { fr: 'fr-FR', en: 'en-US', es: 'es-ES', de: 'de-DE', it: 'it-IT', ru: 'ru-RU', ar: 'ar-SA', he: 'he-IL', la: 'it-IT', ht: 'fr-HT' }[info.lang] || 'fr-FR';
+    const voice = speechSynthesis.getVoices().find(v => v.lang === lang) || speechSynthesis.getVoices().find(v => v.lang.startsWith(lang.slice(0, 2)));
+    const verses = (chapters[0] ? chapters[0].verses : []);
+    btn.innerHTML = `${icon('stop')} Arrêter`;
+    verses.forEach((v, i) => {
+      const u = new SpeechSynthesisUtterance(plain(v.text));
+      u.lang = lang;
+      if (voice) u.voice = voice;
+      u.onstart = () => {
+        $$('.speaking', body).forEach(x => x.classList.remove('speaking'));
+        const span = $(`.verse[data-key="${v.key}"]`, body);
+        if (span) { span.classList.add('speaking'); span.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+      };
+      if (i === verses.length - 1) u.onend = () => { btn.innerHTML = `${icon('volume')} Écouter`; $$('.speaking', body).forEach(x => x.classList.remove('speaking')); };
+      speechSynthesis.speak(u);
+    });
+  };
   $('#rStrong', el).onclick = () => { store.setting('strong', !strong); go(location.hash); };
   const resize = d => {
     const cur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scripture-size')) || 1.1;
@@ -203,6 +236,8 @@ export async function renderPassage(el, { params }) {
     <div class="toolbar">
       <b class="grow">${esc(data.passages.map(p => p.ref).join(' ; '))} <span class="muted small">· ${esc(info.short)}</span></b>
       <a class="btn sm" href="#/comparer?ref=${encodeURIComponent(ref)}">${icon('compare')} Comparer</a>
+      <a class="btn sm" href="#/assistant?ref=${encodeURIComponent(ref)}&mode=expliquer&go=1">${icon('spark')} Expliquer</a>
+      <a class="btn sm" href="#/projection?ref=${encodeURIComponent(ref)}">${icon('screen')} Projeter</a>
       <button class="btn sm" id="pStudy">${icon('plus')} Étude</button>
       <button class="btn sm" id="pCopy">Copier</button>
     </div>
