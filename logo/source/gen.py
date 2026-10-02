@@ -204,7 +204,7 @@ def text_path(text, fontfile, size, x, y, tracking=0):
     return " ".join(out), cx - x - tracking
 
 
-FONT = "Mont800.ttf"
+FONT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Mont800.ttf")  # Montserrat ExtraBold (OFL)
 
 
 def wordmark(x, y, size, mono=None):
