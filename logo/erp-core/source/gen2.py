@@ -119,18 +119,47 @@ def layer_sat(i, mono=None):
     return s
 
 
+def round_path(pts):
+    """Closed path through (x, y, radius) vertices, each corner softened by a quadratic curve."""
+    n = len(pts)
+    d = ""
+    for i in range(n):
+        (x0, y0, _), (x1, y1, r), (x2, y2, _) = pts[i - 1], pts[i], pts[(i + 1) % n]
+        l0, l2 = math.hypot(x0 - x1, y0 - y1), math.hypot(x2 - x1, y2 - y1)
+        r = min(r, l0 / 2, l2 / 2)
+        a = (x1 + (x0 - x1) * r / l0, y1 + (y0 - y1) * r / l0)
+        b = (x1 + (x2 - x1) * r / l2, y1 + (y2 - y1) * r / l2)
+        d += ("M" if i == 0 else "L") + f"{a[0]:.2f},{a[1]:.2f} Q{x1},{y1} {b[0]:.2f},{b[1]:.2f} "
+    return d + "Z"
+
+
+# Calligraphic F (after the original model): one continuous shape, large rounded
+# top-left shoulder, slanted bar ends, diagonal cut at the foot of the stem.
+F_SHAPE = round_path([
+    (-74, -96, 46),   # top-left shoulder
+    (94, -96, 8),     # top bar, right end
+    (80, -54, 8),
+    (-16, -54, 12),   # inner corner (fillet)
+    (-18, -14, 10),
+    (62, -14, 7),     # middle bar, right end
+    (50, 22, 7),
+    (-22, 22, 10),    # inner corner (fillet)
+    (-28, 84, 6),     # stem foot, cut on the diagonal
+    (-92, 112, 8),
+])
+F_WEDGE = "M-13,32 H50 L-13,96 Z"            # orange wedge tucked under the middle bar
+F_WEDGE_HI = "M-13,32 H50 L6,56 Z"           # lighter facet
+
+
 def layer_monogram(mono=None):
     w = "url(#gF)" if not mono else ("#0B1F5E" if mono == WHITE else WHITE)
-    a = "url(#gAcc)" if not mono else w
-    # upright F, then sheared; rounded leading corner on the top bar
-    stem = "M-66,-92 H-20 V92 H-66 Z"
-    top = "M-20,-92 H78 L66,-50 H-20 Z"
-    mid = "M-20,-14 H52 L41,24 H-20 Z"
-    acc = "M-20,30 H46 L-20,84 Z"   # orange fold under the middle bar
-    g = f'<g transform="translate({C - 4},{C + 2}) skewX(-13)">'
+    g = f'<g transform="translate({C - 2},{C - 6}) scale(1.12) skewX(-10)">'
     if not mono:
-        g += f'<path d="{stem} {top} {mid}" fill="#06143F" opacity="0.35" transform="translate(5,6)"/>'
-    g += f'<path d="{stem} {top} {mid}" fill="{w}"/><path d="{acc}" fill="{a}"/>'
+        g += f'<path d="{F_SHAPE}" fill="#06143F" opacity="0.35" transform="translate(6,7)"/>'
+        g += f'<path d="{F_SHAPE}" fill="{w}"/>'
+        g += f'<path d="{F_WEDGE}" fill="url(#gAcc)"/><path d="{F_WEDGE_HI}" fill="#FFD25A" opacity="0.55"/>'
+    else:
+        g += f'<path d="{F_SHAPE}" fill="{w}"/><path d="{F_WEDGE}" fill="{w}"/>'
     return g + "</g>"
 
 
