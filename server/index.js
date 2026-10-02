@@ -3,6 +3,7 @@
  * Mister Preacher — serveur HTTP (aucune dépendance externe).
  * Sert l'interface (public/) et l'API JSON (/api/...).
  */
+require('./lib/env').loadEnv();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -21,6 +22,10 @@ const MIME = {
   '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon',
   '.webmanifest': 'application/manifest+json',
 };
+
+// Chargement des versions API.Bible (lancé au démarrage) : les routes l'attendent quelques secondes au plus.
+let abReady = Promise.resolve();
+const waitAB = () => Promise.race([abReady, new Promise(r => setTimeout(r, 8000))]);
 
 const versionParam = q => {
   const v = q.get('v') || B.DEFAULT_VERSION;
@@ -54,7 +59,7 @@ function verseOfTheDay(v, date = new Date()) {
 }
 
 const routes = {
-  'GET /api/versions': () => [...B.VERSIONS, ...AB.list()],
+  'GET /api/versions': async () => { await waitAB(); return [...B.VERSIONS, ...AB.list()]; },
   'GET /api/canon': () => BOOKS.map(b => ({ id: b.id, fr: b.fr, en: b.en, cat: b.cat })),
   'GET /api/books': q => {
     const v = versionParam(q);
@@ -189,12 +194,18 @@ function createServer() {
 
 if (require.main === module) {
   const port = process.env.PORT || 3000;
-  AB.init().catch(e => console.warn(e.message));
+  if (process.env.API_BIBLE_KEY) {
+    abReady = AB.init(fetch, B.VERSIONS.map(v => v.id))
+      .then(list => console.log(list.length
+        ? `API.Bible : ${list.length} version(s) ajoutée(s) — ${list.map(v => v.short).join(', ')}`
+        : 'API.Bible : aucune Bible accessible avec cette clé pour les langues demandées (lancez « npm run apibible »).'))
+      .catch(e => console.warn(`API.Bible indisponible : ${e.message}`));
+  }
   createServer().listen(port, () => {
     console.log(`Mister Preacher prêt sur http://localhost:${port}`);
     // Préchargement de la version par défaut pour des premières réponses rapides
     setImmediate(() => { try { B.search(B.DEFAULT_VERSION, 'Dieu'); B.strongEntry('G26'); } catch (e) { console.error(e); } });
-    if (!process.env.API_BIBLE_KEY) console.log('API.Bible désactivée (définissez API_BIBLE_KEY pour les versions sous licence).');
+    if (!process.env.API_BIBLE_KEY) console.log('API.Bible désactivée (ajoutez API_BIBLE_KEY dans le fichier .env pour les versions sous licence).');
   });
 }
 

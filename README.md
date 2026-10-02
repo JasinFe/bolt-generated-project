@@ -42,8 +42,13 @@ npm run data            # toutes les versions + références croisées + Strong
 node scripts/build-data.js LSG   # une seule version
 ```
 
-Les versions modernes protégées (Segond 21, NEG, Semeur, NBS…) passent par API.Bible : variables `API_BIBLE_KEY` et
-`API_BIBLE_VERSIONS` (voir [docs/ANALYSE.md](docs/ANALYSE.md#7-analyse-des-sources-proposées-version-11)).
+## Versions sous licence (API.Bible)
+
+Les versions modernes protégées (Segond 21, Semeur, NBS…) passent par [API.Bible](https://scripture.api.bible) :
+
+1. copiez `.env.example` en `.env` et renseignez `API_BIBLE_KEY` (ce fichier reste sur votre ordinateur) ;
+2. `npm run apibible` pour vérifier la clé et voir les Bibles accessibles ;
+3. `npm start` : elles sont ajoutées automatiquement avec le symbole ☁.
 
 ## Déploiement
 

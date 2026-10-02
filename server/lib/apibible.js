@@ -5,17 +5,24 @@
  * Il permet d'afficher des traductions protégées (Segond 21, Semeur, NBS, Parole de Vie…)
  * pour lesquelles l'éditeur a donné son accord à API.Bible — sans jamais stocker leur texte.
  *
- * Configuration (variables d'environnement) :
- *   API_BIBLE_KEY=<votre clé>
- *   API_BIBLE_VERSIONS="S21=<bibleId>|Segond 21|Bible Segond 21|fr; PDV=<bibleId>|Parole de Vie|Parole de Vie 2017|fr"
- * Les identifiants <bibleId> se trouvent dans votre tableau de bord API.Bible.
+ * Configuration (variables d'environnement ou fichier .env à la racine du projet) :
+ *   API_BIBLE_KEY=<votre clé>                      (obligatoire)
+ *   API_BIBLE_URL=https://rest.api.bible           (point de terminaison, par défaut)
+ *   API_BIBLE_LANGS=fra                            (langues découvertes automatiquement, ex. "fra,eng")
+ *   API_BIBLE_VERSIONS="S21=<bibleId>|Segond 21|Bible Segond 21|fr"   (facultatif : liste explicite)
+ * Sans API_BIBLE_VERSIONS, toutes les Bibles des langues choisies auxquelles la clé donne accès sont ajoutées.
  *
  * Conditions d'API.Bible : afficher le copyright de chaque passage, ne pas mettre le texte
  * en cache durablement, et intégrer leur script de suivi (FUMS) côté client.
  */
 const { BOOKS } = require('./refs');
 
-const BASE = process.env.API_BIBLE_URL || 'https://api.scripture.api.bible/v1';
+/** Point de terminaison : https://rest.api.bible -> https://rest.api.bible/v1 */
+function base() {
+  const url = (process.env.API_BIBLE_URL || 'https://rest.api.bible').replace(/\/+$/, '');
+  return /\/v\d+$/.test(url) ? url : url + '/v1';
+}
+const LANG2 = { fra: 'fr', eng: 'en', spa: 'es', deu: 'de', ita: 'it', por: 'pt', rus: 'ru', arb: 'ar', ara: 'ar', lin: 'ln', hat: 'ht', ewe: 'ee', hau: 'ha', ibo: 'ig', swh: 'sw', heb: 'he', grc: 'grc', lat: 'la' };
 const OSIS_TO_USFM = {
   Gen: 'GEN', Exod: 'EXO', Lev: 'LEV', Num: 'NUM', Deut: 'DEU', Josh: 'JOS', Judg: 'JDG', Ruth: 'RUT', '1Sam': '1SA', '2Sam': '2SA',
   '1Kgs': '1KI', '2Kgs': '2KI', '1Chr': '1CH', '2Chr': '2CH', Ezra: 'EZR', Neh: 'NEH', Esth: 'EST', Job: 'JOB', Ps: 'PSA', Prov: 'PRO',
@@ -37,7 +44,6 @@ function parseConfig(str = process.env.API_BIBLE_VERSIONS || '') {
   }).filter(v => v.id && v.bibleId);
 }
 
-const configured = process.env.API_BIBLE_KEY ? parseConfig() : [];
 const remote = new Map(); // id -> métadonnées de version (même forme que versions.json)
 const cache = new Map();
 const CACHE_MS = 10 * 60 * 1000;
@@ -45,10 +51,16 @@ const CACHE_MS = 10 * 60 * 1000;
 async function call(pathname, fetchImpl = fetch) {
   const hit = cache.get(pathname);
   if (hit && hit.until > Date.now()) return hit.data;
-  const res = await fetchImpl(BASE + pathname, { headers: { 'api-key': process.env.API_BIBLE_KEY || '' } });
+  const res = await fetchImpl(base() + pathname, { headers: { 'api-key': process.env.API_BIBLE_KEY || '', accept: 'application/json' } });
   if (!res.ok) {
-    const e = new Error(`API.Bible : erreur ${res.status}`);
+    const detail = typeof res.text === 'function' ? await res.text().catch(() => '') : '';
+    const blocked = /allowlist|proxy|egress/i.test(detail);
+    const why = blocked ? `accès réseau bloqué (${detail.slice(0, 120)})`
+      : res.status === 401 || res.status === 403 ? 'clé refusée ou accès non autorisé à cette Bible'
+        : res.status === 429 ? 'quota dépassé' : `erreur ${res.status}`;
+    const e = new Error(`API.Bible : ${why}`);
     e.status = res.status === 404 ? 404 : 502;
+    e.httpStatus = res.status;
     throw e;
   }
   const data = (await res.json()).data;
@@ -57,24 +69,66 @@ async function call(pathname, fetchImpl = fetch) {
   return data;
 }
 
-/** Récupère la liste des livres de chaque version configurée (au démarrage). */
-async function init(fetchImpl = fetch) {
-  for (const v of configured) {
+/** Identifiant court et unique pour une Bible distante (ex. « S21 »). */
+function makeId(abbr, taken) {
+  const baseId = String(abbr || 'AB').toUpperCase().normalize('NFD').replace(/[^A-Z0-9]/g, '').slice(0, 10) || 'AB';
+  let id = taken.has(baseId) ? baseId + '-AB' : baseId;
+  for (let i = 2; taken.has(id); i++) id = `${baseId}-AB${i}`;
+  taken.add(id);
+  return id;
+}
+
+/** Liste des Bibles à charger : explicite (API_BIBLE_VERSIONS) ou découverte par langue. */
+async function discover(fetchImpl, taken) {
+  const explicit = parseConfig();
+  if (explicit.length) return explicit.map(v => ({ ...v, id: makeId(v.id, taken), info: null }));
+  const langs = (process.env.API_BIBLE_LANGS || 'fra').split(/[,\s]+/).filter(Boolean);
+  const max = +process.env.API_BIBLE_MAX || 40;
+  const out = [];
+  for (const lang of langs) {
+    const bibles = await call(`/bibles?language=${encodeURIComponent(lang)}`, fetchImpl);
+    for (const b of bibles || []) {
+      if (out.length >= max) break;
+      const short = b.abbreviationLocal || b.abbreviation || b.id;
+      out.push({
+        id: makeId(short, taken), bibleId: b.id, short, name: b.nameLocal || b.name,
+        lang: LANG2[(b.language && b.language.id) || lang] || lang, info: b,
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Charge les Bibles accessibles avec la clé (au démarrage).
+ * reserved : identifiants déjà utilisés par les versions locales (pour éviter les doublons).
+ */
+async function init(fetchImpl = fetch, reserved = []) {
+  remote.clear();
+  if (!process.env.API_BIBLE_KEY) return [];
+  const taken = new Set(reserved);
+  const list = await discover(fetchImpl, taken);
+  for (const v of list) {
     try {
-      const [info, books] = await Promise.all([call(`/bibles/${v.bibleId}`, fetchImpl), call(`/bibles/${v.bibleId}/books?include-chapters=true`, fetchImpl)]);
+      const [info, books] = await Promise.all([
+        v.info ? v.info : call(`/bibles/${v.bibleId}`, fetchImpl),
+        call(`/bibles/${v.bibleId}/books?include-chapters=true`, fetchImpl),
+      ]);
       const counts = {};
       for (const b of books) {
         const osis = USFM_TO_OSIS[b.id];
         if (osis) counts[osis] = (b.chapters || []).filter(c => /^\d+$/.test(c.number)).length;
       }
+      if (!Object.keys(counts).length) continue;
       remote.set(v.id, {
-        id: v.id, name: v.name || info.name, short: v.short, lang: v.lang, dir: 'ltr', year: null, remote: true, bibleId: v.bibleId,
-        license: (info.copyright || 'Texte protégé — affiché via API.Bible').replace(/<[^>]*>/g, ''),
-        description: `${info.nameLocal || info.name} — servi en direct par API.Bible (lecture et comparaison).`,
+        id: v.id, name: v.name || info.nameLocal || info.name, short: v.short, lang: v.lang, dir: info.dir === 'rtl' ? 'rtl' : 'ltr', year: null,
+        remote: true, bibleId: v.bibleId,
+        license: (info.copyright || 'Texte protégé — affiché via API.Bible').replace(/<[^>]*>/g, '').trim(),
+        description: `${info.descriptionLocal || info.description || info.nameLocal || info.name || ''} — servie en direct par API.Bible.`.replace(/^ — /, ''),
         strong: false, stats: { books: Object.keys(counts).length, verses: null }, source: 'https://scripture.api.bible', books: counts,
       });
     } catch (e) {
-      console.warn(`API.Bible : impossible de charger ${v.id} (${e.message})`);
+      console.warn(`API.Bible : impossible de charger ${v.short} (${e.message})`);
     }
   }
   return [...remote.values()];
@@ -148,4 +202,4 @@ async function search(id, q, opts = {}, fetchImpl = fetch) {
   return { version: id, query: q, total: data.total || verses.length, offset, limit, byBook: [], results: verses, remote: true };
 }
 
-module.exports = { init, isRemote, meta, list, chapter, rangeVerses, search, parseConfig, versesFromContent };
+module.exports = { init, base, makeId, isRemote, meta, list, chapter, rangeVerses, search, parseConfig, versesFromContent };

@@ -3,3 +3,4 @@ node_modules/
 .DS_Store
 mister-preacher*.zip
 .cache/
+.env

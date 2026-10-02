@@ -195,14 +195,19 @@ publiée sous licence libre CC BY-SA par eBible.org ont été retenues (vérific
 ### Activer API.Bible (versions sous licence)
 
 1. Créez un compte sur <https://scripture.api.bible> et une clé d'application.
-2. Dans le tableau de bord, notez l'identifiant (`bibleId`) des versions françaises auxquelles vous avez accès.
-3. Définissez sur le serveur :
+2. À la racine du projet, copiez `.env.example` en `.env` et indiquez la clé :
 
-```bash
+```
 API_BIBLE_KEY=votre-cle
-API_BIBLE_VERSIONS="S21=<bibleId>|Segond 21|Bible Segond 21|fr; PDV=<bibleId>|Parole de Vie|Parole de Vie 2017|fr"
+API_BIBLE_URL=https://rest.api.bible
+API_BIBLE_LANGS=fra
 ```
 
-Les versions apparaissent avec le symbole ☁ : lecture, passages, comparaison et recherche (via API.Bible). Leur texte n'est
-jamais stocké (cache mémoire de 10 minutes), et le copyright est affiché sous chaque chapitre. Pour un site public, ajoutez le
+3. Vérifiez l'accès : `npm run apibible` (liste les Bibles françaises accessibles et lit Jean 3:16).
+4. Relancez `npm start` : toutes les Bibles des langues choisies sont **ajoutées automatiquement**, avec le symbole ☁
+   (lecture, passages, comparaison et recherche via API.Bible). Pour n'en garder que certaines, utilisez
+   `API_BIBLE_VERSIONS="S21=<bibleId>|Segond 21|Bible Segond 21|fr"`.
+
+Le fichier `.env` n'est jamais envoyé sur GitHub (il est dans `.gitignore`). Le texte des versions protégées n'est jamais
+stocké (cache mémoire de 10 minutes) et le copyright est affiché sous chaque chapitre. Pour un site public, ajoutez le
 script de suivi FUMS demandé par API.Bible.
