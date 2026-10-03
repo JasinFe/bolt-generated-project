@@ -1,0 +1,5 @@
+data/etat.json
+data/connexions.json
+data/licence.json
+public/uploads/*
+!public/uploads/.gitkeep

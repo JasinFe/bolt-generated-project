@@ -1,0 +1,15 @@
+{
+  "name": "obs-overlay-licences",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gestionnaire de licences pour OBS Overlay Kit : génération de clés signées, tableau de bord, clients, offres, activation en ligne",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "start:public": "node server.mjs --public",
+    "licence": "node scripts/creer-licence.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

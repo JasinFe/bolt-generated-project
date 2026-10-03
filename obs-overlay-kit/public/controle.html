@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Régie overlays</title>
+	<link rel="stylesheet" href="controle.css">
+</head>
+<body>
+	<header class="topbar">
+		<div class="brand">
+			<span class="dot" id="statut"></span>
+			<strong>Régie</strong>
+			<span class="muted" id="statut-txt">connexion…</span>
+		</div>
+		<div class="emissions" id="emissions" data-fonction="emissions"></div>
+		<div class="actions">
+			<button class="ghost lic-btn" id="btn-licence" title="Licence d'utilisation"><span class="lic-dot"></span><span id="lic-resume">Licence</span></button>
+			<button class="ghost" data-fonction="telephone" id="btn-telephone" title="Piloter depuis un téléphone (QR code)">📱 Téléphone</button>
+			<button class="ghost" id="btn-apercu" title="Afficher / masquer l'aperçu">Aperçu</button>
+			<button class="danger" id="btn-tout-masquer" title="Masque tous les habillages (sauf le logo)">Tout masquer</button>
+		</div>
+	</header>
+
+	<section class="preview" id="preview">
+		<div class="preview-frame"><iframe id="apercu" src="overlay.html?apercu=1" title="Aperçu"></iframe></div>
+	</section>
+
+	<main class="grid">
+		<!-- Écrans -->
+		<article class="card wide">
+			<h2>Écran plein <small>début / pause / fin</small></h2>
+			<div class="row buttons">
+				<button data-ecran="debut">▶ Début + compte à rebours</button>
+				<button data-ecran="pause">❚❚ Pause</button>
+				<button data-ecran="fin">■ Fin</button>
+				<button data-ecran="aucun" class="ghost">Retirer l'écran</button>
+			</div>
+			<div class="fields cols-3">
+				<label>Titre « début »<input data-path="ecran.titreDebut"></label>
+				<label>Titre « pause »<input data-path="ecran.titrePause"></label>
+				<label>Titre « fin »<input data-path="ecran.titreFin"></label>
+				<label>Sous-titre<input data-path="ecran.sousTitre"></label>
+				<label>Compte à rebours (minutes)<input type="number" min="0" max="180" data-path="ecran.minutes"></label>
+			</div>
+		</article>
+
+		<!-- Bandeau nom -->
+		<article class="card" data-el="bandeauNom">
+			<h2>Bandeau nom <small>invité, présentateur</small><button class="toggle" data-toggle="bandeauNom"></button></h2>
+			<div class="fields">
+				<label>Nom<input data-path="bandeauNom.nom"></label>
+				<label>Fonction<input data-path="bandeauNom.fonction"></label>
+				<label>Masquer après (s, 0 = jamais)<input type="number" min="0" data-path="bandeauNom.autoMasquer"></label>
+			</div>
+			<div class="list-head">
+				<span>Invités enregistrés</span>
+				<button class="small" id="btn-ajout-invite">+ Enregistrer le nom actuel</button>
+			</div>
+			<ul class="list" id="liste-invites"></ul>
+		</article>
+
+		<!-- Sujet -->
+		<article class="card" data-el="sujet">
+			<h2>Sujet en cours <small>haut gauche</small><button class="toggle" data-toggle="sujet"></button></h2>
+			<div class="fields">
+				<label>Étiquette<input data-path="sujet.etiquette"></label>
+				<label>Texte<input data-path="sujet.texte"></label>
+			</div>
+		</article>
+
+		<!-- Défilant -->
+		<article class="card" data-el="defilant">
+			<h2>Bandeau défilant <small>bas de l'écran</small><button class="toggle" data-toggle="defilant"></button></h2>
+			<div class="fields">
+				<label>Étiquette<input data-path="defilant.etiquette"></label>
+				<label>Messages (un par ligne)<textarea rows="4" data-path="defilant.messages" data-type="lignes"></textarea></label>
+				<label>Vitesse (pixels / seconde) <span class="val"></span><input type="range" min="40" max="300" step="10" data-path="defilant.vitesse"></label>
+				<label>Position
+					<select data-path="defilant.position">
+						<option value="bas">En bas de l'écran</option>
+						<option value="haut">En haut de l'écran</option>
+					</select>
+				</label>
+			</div>
+		</article>
+
+		<!-- Titre en cours -->
+		<article class="card" data-el="titreEnCours">
+			<h2>Titre en cours <small>musique</small><button class="toggle" data-toggle="titreEnCours"></button></h2>
+			<div class="fields">
+				<label>Titre<input data-path="titreEnCours.titre"></label>
+				<label>Artiste<input data-path="titreEnCours.artiste"></label>
+				<label>Masquer après (s, 0 = jamais)<input type="number" min="0" data-path="titreEnCours.autoMasquer"></label>
+			</div>
+		</article>
+
+		<!-- Citation -->
+		<article class="card" data-el="citation">
+			<h2>Citation <small>phrase, question du jour</small><button class="toggle" data-toggle="citation"></button></h2>
+			<div class="fields">
+				<label>Texte<textarea rows="3" data-path="citation.texte"></textarea></label>
+				<label>Référence<input data-path="citation.reference"></label>
+				<label>Masquer après (s, 0 = jamais)<input type="number" min="0" data-path="citation.autoMasquer"></label>
+			</div>
+		</article>
+
+		<!-- Bible -->
+		<article class="card bible-card" data-el="bible" data-fonction="bible">
+			<h2>Bible <small id="bb-courant"></small><button class="toggle" data-toggle="bible"></button></h2>
+			<div class="fields cols-2">
+				<label>Version<select data-path="bible.version" class="bb-versions"></select></label>
+				<label>2e version (parallèle)<select data-path="bible.version2" class="bb-versions" data-vide="(aucune)"></select></label>
+			</div>
+			<form class="bb-search" id="bb-form">
+				<input id="bb-q" placeholder="Jean 3:16-18 · Ps 23 · 1 Co 13.4 · ou des mots : « lumière du monde »" autocomplete="off">
+				<button type="submit">Chercher</button>
+			</form>
+			<div class="bb-results" id="bb-resultats"></div>
+			<div class="bb-preview" id="bb-apercu"></div>
+			<div class="row buttons">
+				<button class="small" data-bible-nav="precedent" title="Passage précédent">◀ Précédent</button>
+				<button class="small" data-bible-nav="suivant" title="Passage suivant">Suivant ▶</button>
+			</div>
+			<div class="fields cols-2">
+				<label>Style
+					<select data-path="bible.style">
+						<option value="carte">Carte (bas de l'écran)</option>
+						<option value="plein-ecran">Grand texte (projection)</option>
+					</select>
+				</label>
+				<label>Masquer après (s, 0 = jamais)<input type="number" min="0" data-path="bible.autoMasquer"></label>
+			</div>
+		</article>
+
+		<!-- Chat en direct -->
+		<article class="card wide chat-card" data-fonction="chat">
+			<h2>Chat en direct <small>commentaires YouTube et Facebook</small></h2>
+			<div class="chat-connecteurs">
+				<div class="cx" data-pf="youtube">
+					<div class="cx-head"><span class="cx-dot"></span><b>YouTube</b><span class="cx-statut muted"></span></div>
+					<div class="cx-titre muted"></div>
+					<div class="fields">
+						<label>Adresse du direct (ou identifiant de la vidéo)<input class="cx-video" placeholder="https://www.youtube.com/watch?v=…"></label>
+						<label>Clé API YouTube<input class="cx-secret" type="password" autocomplete="off" placeholder="AIza…"></label>
+					</div>
+					<div class="row buttons">
+						<button class="small cx-connecter">Connecter</button>
+						<button class="small ghost cx-deconnecter">Déconnecter</button>
+						<button class="small ghost cx-oublier" title="Effacer la clé enregistrée sur ce PC">Oublier la clé</button>
+					</div>
+					<details class="cx-guide"><summary>Obtenir une clé API YouTube (gratuit, 5 minutes)</summary>
+						<ol>
+							<li>Allez sur <b>console.cloud.google.com</b> avec votre compte Google et créez un projet (ex. « Overlays »).</li>
+							<li>Menu <b>API et services › Bibliothèque</b> : cherchez <b>YouTube Data API v3</b> et cliquez sur <b>Activer</b>.</li>
+							<li>Menu <b>API et services › Identifiants › Créer des identifiants › Clé API</b>. Copiez la clé (elle commence par « AIza »).</li>
+							<li>Conseillé : cliquez sur la clé › <b>Restreindre la clé</b> › API : YouTube Data API v3.</li>
+							<li>Collez la clé ici avec l'adresse du direct (il doit être <b>en cours</b>, public ou non répertorié, chat activé), puis <b>Connecter</b>.</li>
+						</ol>
+						<p class="muted">Le quota gratuit (10 000 unités/jour) permet environ 5 à 6 heures de direct par jour avec une lecture toutes les 5 secondes.</p>
+					</details>
+				</div>
+				<div class="cx" data-pf="facebook">
+					<div class="cx-head"><span class="cx-dot"></span><b>Facebook</b><span class="cx-statut muted"></span></div>
+					<div class="cx-titre muted"></div>
+					<div class="fields">
+						<label>Adresse de la vidéo en direct (ou son identifiant)<input class="cx-video" placeholder="https://www.facebook.com/…/videos/123456789"></label>
+						<label>Jeton d'accès de la Page<input class="cx-secret" type="password" autocomplete="off" placeholder="EAA…"></label>
+					</div>
+					<div class="row buttons">
+						<button class="small cx-connecter">Connecter</button>
+						<button class="small ghost cx-deconnecter">Déconnecter</button>
+						<button class="small ghost cx-oublier" title="Effacer le jeton enregistré sur ce PC">Oublier le jeton</button>
+					</div>
+					<details class="cx-guide"><summary>Obtenir un jeton Facebook (direct publié depuis une Page)</summary>
+						<ol>
+							<li>Le direct doit être diffusé sur une <b>Page Facebook</b> dont vous êtes administrateur (les profils personnels ne sont pas accessibles par l'API).</li>
+							<li>Allez sur <b>developers.facebook.com</b> › <b>Mes applications</b> › <b>Créer une application</b> (type « Autre » › « Entreprise »).</li>
+							<li>Ouvrez l'<b>Explorateur de l'API Graph</b> (menu Outils). Choisissez votre application, puis dans « Utilisateur ou Page », <b>votre Page</b>.</li>
+							<li>Ajoutez les autorisations <b>pages_read_engagement</b> et <b>pages_read_user_content</b>, cliquez sur <b>Generate Access Token</b> et acceptez.</li>
+							<li>Copiez le jeton (il commence par « EAA ») et collez-le ici avec l'adresse de la vidéo en direct, puis <b>Connecter</b>.</li>
+						</ol>
+						<p class="muted">Ce jeton expire au bout de quelques heures. Pour un jeton durable, utilisez l'<b>Outil de débogage des jetons d'accès</b> › « Prolonger le jeton d'accès », puis régénérez le jeton de Page.</p>
+					</details>
+				</div>
+			</div>
+
+			<div class="fields cols-3 chat-options">
+				<label class="check"><input type="checkbox" data-path="chat.auto"> <span><b>Mode automatique</b> : chaque nouveau commentaire passe à l'antenne à tour de rôle</span></label>
+				<label>Durée d'affichage en automatique (s)<input type="number" min="3" max="60" data-path="chat.duree"></label>
+				<label class="check"><input type="checkbox" data-path="chat.masquerLiens"> Ignorer les messages contenant des liens</label>
+				<label>Mots interdits (séparés par des virgules)<input data-path="chat.motsInterdits" data-type="virgules" placeholder="insulte, spam, …"></label>
+			</div>
+
+			<div class="list-head">
+				<span id="chat-compteur">Aucun commentaire pour l'instant</span>
+				<button class="small ghost" id="btn-chat-vider">Vider la liste</button>
+			</div>
+			<ul class="chat-liste" id="chat-liste"></ul>
+		</article>
+
+		<!-- Message du public -->
+		<article class="card" data-el="message">
+			<h2>Message du public<button class="toggle" data-toggle="message"></button></h2>
+			<div class="fields">
+				<label>Auteur<input data-path="message.auteur"></label>
+				<label>Plateforme
+					<select data-path="message.plateforme">
+						<option>YouTube</option><option>Facebook</option><option>Instagram</option>
+						<option>TikTok</option><option>WhatsApp</option><option value="">(aucune)</option>
+					</select>
+				</label>
+				<label>Message<textarea rows="3" data-path="message.texte"></textarea></label>
+				<label>Masquer après (s, 0 = jamais)<input type="number" min="0" data-path="message.autoMasquer"></label>
+			</div>
+		</article>
+
+		<!-- Score -->
+		<article class="card" data-el="score" data-fonction="score">
+			<h2>Score <small>sport, jeu, quiz</small><button class="toggle" data-toggle="score"></button></h2>
+			<div class="fields cols-2">
+				<label>Équipe A<input data-path="score.equipeA"></label>
+				<label>Équipe B<input data-path="score.equipeB"></label>
+			</div>
+			<div class="score-ctrl">
+				<div><button class="small" data-score="scoreA:-1">−</button><b id="sa">0</b><button class="small" data-score="scoreA:1">+</button></div>
+				<div><button class="small" data-score="scoreB:-1">−</button><b id="sb">0</b><button class="small" data-score="scoreB:1">+</button></div>
+			</div>
+			<div class="fields cols-2">
+				<label>Période<input data-path="score.periode"></label>
+				<div class="row buttons chrono">
+					<button class="small" data-chrono="start">▶ Chrono</button>
+					<button class="small" data-chrono="pause">❚❚</button>
+					<button class="small ghost" data-chrono="reset">0:00</button>
+				</div>
+			</div>
+		</article>
+
+		<!-- Logo coin -->
+		<article class="card" data-el="logo">
+			<h2>Logo de chaîne <small>coin de l'écran</small><button class="toggle" data-toggle="logo"></button></h2>
+			<div class="fields cols-2">
+				<label>Style
+					<select data-path="logo.style">
+						<option value="carte">Carte</option>
+						<option value="simple">Logo seul</option>
+					</select>
+				</label>
+				<label>Disposition
+					<select data-path="logo.disposition">
+						<option value="verticale">Verticale</option>
+						<option value="logo-pivote">Pivotée 90°</option>
+						<option value="horizontale">Horizontale</option>
+					</select>
+				</label>
+				<label>Taille du logo <span class="val"></span><input type="range" min="40" max="260" step="5" data-path="logo.taille"></label>
+				<label>Bandeau<input data-path="logo.badge"></label>
+				<label>Opacité générale <span class="val"></span><input type="range" min="0.2" max="1" step="0.05" data-path="logo.opacite"></label>
+				<label>Couleur du fond<input type="color" data-path="logo.couleurCarte"></label>
+				<label>Opacité du fond <span class="val"></span><input type="range" min="0" max="1" step="0.05" data-path="logo.opaciteCarte"></label>
+				<label>Couleur du contour<input type="color" data-path="logo.couleurContour"></label>
+				<label>Opacité du contour <span class="val"></span><input type="range" min="0" max="1" step="0.05" data-path="logo.opaciteContour"></label>
+				<label>Épaisseur du contour <span class="val"></span><input type="range" min="0" max="10" step="0.5" data-path="logo.epaisseurContour"></label>
+				<label>Arrondi des angles <span class="val"></span><input type="range" min="0" max="50" step="1" data-path="logo.arrondi"></label>
+				<div class="sous-titre">Bandeau « EN DIRECT » et heure</div>
+				<label>Position
+					<select data-path="logo.infosPosition">
+						<option value="auto">Automatique</option>
+						<option value="dessous">Dessous</option>
+						<option value="dessus">Dessus</option>
+						<option value="droite">À droite</option>
+						<option value="gauche">À gauche</option>
+					</select>
+				</label>
+				<label>Disposition
+					<select data-path="logo.infosDisposition">
+						<option value="empilees">Empilés</option>
+						<option value="cote-a-cote">Côte à côte</option>
+					</select>
+				</label>
+				<label>Ordre
+					<select data-path="logo.infosOrdre">
+						<option value="bandeau-heure">Bandeau › heure</option>
+						<option value="heure-bandeau">Heure › bandeau</option>
+					</select>
+				</label>
+				<label>Taille (%) <span class="val"></span><input type="range" min="50" max="150" step="5" data-path="logo.infosTaille"></label>
+				<label class="check"><input type="checkbox" data-path="logo.afficherBadge"> Afficher le bandeau</label>
+				<label class="check"><input type="checkbox" data-path="logo.afficherHeure"> Afficher l'heure</label>
+			</div>
+		</article>
+
+		<!-- Émission active -->
+		<article class="card">
+			<h2>Émission active <small id="em-type"></small></h2>
+			<div class="fields cols-2">
+				<label>Nom<input data-path="emissions.@.nom"></label>
+				<label>Type<input data-path="emissions.@.type"></label>
+				<label>Couleur principale<input type="color" data-path="emissions.@.couleurs.primaire"></label>
+				<label>Couleur secondaire<input type="color" data-path="emissions.@.couleurs.secondaire"></label>
+				<label>Couleur sombre<input type="color" data-path="emissions.@.couleurs.sombre"></label>
+				<label>Couleur claire<input type="color" data-path="emissions.@.couleurs.clair"></label>
+				<label>Logo de l'émission (écrans pleins)<input data-path="emissions.@.logo"></label>
+				<label>Importer un logo<input type="file" accept="image/*" data-upload="emissions.@.logo"></label>
+			</div>
+			<div class="row buttons">
+				<button class="small" id="btn-nouvelle-emission" data-fonction="emissions">+ Nouvelle émission</button>
+				<button class="small danger" id="btn-suppr-emission">Supprimer cette émission</button>
+			</div>
+		</article>
+
+		<!-- Chaîne -->
+		<article class="card">
+			<h2>Chaîne</h2>
+			<div class="fields">
+				<label>Nom<input data-path="chaine.nom"></label>
+				<label>Logo (coin de l'écran)<input data-path="chaine.logo"></label>
+				<label>Importer un logo<input type="file" accept="image/*" data-upload="chaine.logo"></label>
+				<label>Réseaux sociaux (écrans pleins)<input data-path="chaine.reseaux"></label>
+			</div>
+		</article>
+
+		<!-- Liens OBS -->
+		<article class="card wide">
+			<h2>Liens pour OBS <small>Source « Navigateur », 1920 × 1080</small></h2>
+			<ul class="links" id="liens"></ul>
+			<div class="row buttons">
+				<button class="small danger ghost" id="btn-reset">Réinitialiser tous les réglages</button>
+			</div>
+		</article>
+	</main>
+
+	<dialog id="dlg-telephone">
+		<div class="dlg-head">
+			<h2>Piloter depuis un téléphone</h2>
+			<button class="ghost small" id="dlg-fermer">✕</button>
+		</div>
+		<div id="tel-contenu"></div>
+	</dialog>
+
+	<dialog id="dlg-licence" class="dlg-large">
+		<div class="dlg-head">
+			<h2>Licence d'utilisation</h2>
+			<button class="ghost small" data-fermer>✕</button>
+		</div>
+		<div class="lic-etat" id="lic-etat"></div>
+		<div class="lic-cols">
+			<div>
+				<h3>Fonctions</h3>
+				<ul class="lic-fonctions" id="lic-fonctions"></ul>
+			</div>
+			<div>
+				<h3>Code de ce poste</h3>
+				<p class="muted">À communiquer au vendeur si votre licence doit être liée à ce PC.</p>
+				<div class="row"><code class="lic-machine" id="lic-machine"></code><button class="small" id="lic-copier-machine">Copier</button></div>
+				<div id="lic-vendeur" class="lic-vendeur"></div>
+			</div>
+		</div>
+		<h3>Activer une clé</h3>
+		<textarea id="lic-cle" rows="4" spellcheck="false" placeholder="Collez ici votre clé de licence (elle commence par « OOK1- »)"></textarea>
+		<div class="row buttons">
+			<button id="lic-activer">Activer</button>
+			<label class="file-btn small">Importer un fichier .lic<input type="file" id="lic-fichier" accept=".lic,.txt,text/plain"></label>
+			<button class="small ghost" id="lic-verifier" title="Interroger le serveur d'activation">Vérifier en ligne</button>
+			<button class="small danger ghost" id="lic-desactiver" title="Libère ce poste (pour transférer la licence sur un autre PC)">Désactiver sur ce PC</button>
+		</div>
+		<p class="lic-msg" id="lic-msg" role="status"></p>
+	</dialog>
+
+	<dialog id="dlg-assistant" class="dlg-large">
+		<div class="dlg-head">
+			<h2>Bienvenue ! Personnalisons votre habillage</h2>
+			<button class="ghost small" data-fermer title="Plus tard">✕</button>
+		</div>
+		<p class="muted">Trois informations suffisent pour démarrer. Tout reste modifiable ensuite dans la régie.</p>
+		<div class="fields cols-2">
+			<label>Nom de votre chaîne<input id="as-nom" placeholder="Ex. : Radio Espoir TV"></label>
+			<label>Réseaux sociaux (affichés en fin d'émission)<input id="as-reseaux" placeholder="YouTube @… • Facebook … • Instagram @…"></label>
+			<label>Logo (PNG transparent conseillé)<input type="file" id="as-logo" accept="image/*"></label>
+			<div class="as-apercu"><img id="as-logo-img" alt=""></div>
+			<label>Couleur principale<input type="color" id="as-c1" value="#3d7bff"></label>
+			<label>Couleur secondaire<input type="color" id="as-c2" value="#00b8f0"></label>
+		</div>
+		<div class="row buttons as-actions">
+			<button id="as-terminer">Terminer</button>
+			<button class="ghost" id="as-plus-tard">Plus tard</button>
+			<button class="ghost" id="as-licence">J'ai une clé de licence</button>
+		</div>
+	</dialog>
+
+	<div id="toast" role="status" aria-live="polite"></div>
+
+	<script src="controle.js"></script>
+</body>
+</html>

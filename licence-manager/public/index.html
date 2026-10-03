@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Gestionnaire de licences</title>
+	<link rel="icon" href="icone.svg" type="image/svg+xml">
+	<link rel="stylesheet" href="app.css">
+</head>
+<body>
+	<div class="app" id="app">
+		<aside class="nav" id="nav" hidden>
+			<div class="nav-marque">
+				<img src="icone.svg" alt="" width="28" height="28">
+				<div><b id="nav-produit">OBS Overlay Kit</b><small>Licences</small></div>
+			</div>
+			<nav>
+				<a href="#/tableau" data-page="tableau"><span>▦</span>Tableau de bord</a>
+				<a href="#/licences" data-page="licences"><span>⚿</span>Licences</a>
+				<a href="#/nouvelle" data-page="nouvelle" class="nav-cta"><span>＋</span>Nouvelle licence</a>
+				<a href="#/clients" data-page="clients"><span>☺</span>Clients</a>
+				<a href="#/offres" data-page="offres"><span>◈</span>Offres et tarifs</a>
+				<a href="#/verifier" data-page="verifier"><span>✓</span>Vérifier une clé</a>
+				<a href="#/journal" data-page="journal"><span>☰</span>Journal</a>
+				<a href="#/parametres" data-page="parametres"><span>⚙</span>Paramètres</a>
+			</nav>
+			<div class="nav-bas">
+				<button class="lien" id="btn-theme" title="Thème clair / sombre">◐ Thème</button>
+				<button class="lien" id="btn-deconnexion">Déconnexion</button>
+			</div>
+		</aside>
+		<main class="vue" id="vue"><p class="chargement">Chargement…</p></main>
+	</div>
+	<dialog id="dlg"><form method="dialog" class="dlg-corps" id="dlg-corps"></form></dialog>
+	<div id="toast" role="status" aria-live="polite"></div>
+	<script type="module" src="app.js"></script>
+</body>
+</html>

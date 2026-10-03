@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<title>Overlay</title>
+	<link rel="stylesheet" href="overlay.css">
+</head>
+<body>
+	<div id="scene">
+		<!-- Écran plein (début / pause / fin) : placé en dessous des autres habillages -->
+		<section id="ecran" class="el">
+			<div class="ec-bg">
+				<div class="ec-blob b1"></div>
+				<div class="ec-blob b2"></div>
+				<div class="ec-blob b3"></div>
+				<div class="ec-grid"></div>
+			</div>
+			<div class="ec-content">
+				<img class="ec-logo" alt="">
+				<div class="ec-emission"></div>
+				<div class="ec-titre"></div>
+				<div class="ec-sous"></div>
+				<div class="ec-compte">
+					<div class="ec-compte-label">Début dans</div>
+					<div class="ec-compte-val">05:00</div>
+				</div>
+			</div>
+			<div class="ec-reseaux"></div>
+		</section>
+
+		<!-- Chaque élément est dans un « emplacement » (.slot) que la régie positionne librement -->
+		<div class="slot" data-slot="bible">
+			<section id="bible" class="el">
+				<div class="bb-head">
+					<svg class="bb-icon" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm5 4v3H8v2h3v7h2v-7h3V9h-3V6h-2z"/></svg>
+					<span class="bb-ref"></span>
+					<span class="bb-version"></span>
+				</div>
+				<div class="bb-texte"></div>
+				<div class="bb-second">
+					<div class="bb-version2"></div>
+					<div class="bb-texte2"></div>
+				</div>
+			</section>
+		</div>
+
+		<div class="slot" data-slot="citation">
+			<section id="citation" class="el">
+				<div class="ct-quote">“</div>
+				<div class="ct-texte"></div>
+				<div class="ct-ref"></div>
+			</section>
+		</div>
+
+		<div class="slot" data-slot="message">
+			<section id="message" class="el">
+				<div class="ms-head">
+					<div class="ms-avatar"></div>
+					<div class="ms-auteur"></div>
+					<div class="ms-montant"></div>
+					<div class="ms-plateforme"></div>
+				</div>
+				<div class="ms-texte"></div>
+			</section>
+		</div>
+
+		<div class="slot" data-slot="bandeauNom">
+			<section id="bandeauNom" class="el">
+				<div class="bn-accent"></div>
+				<div class="bn-body">
+					<div class="bn-nom"><span></span></div>
+					<div class="bn-fonction"><span></span></div>
+				</div>
+			</section>
+		</div>
+
+		<div class="slot" data-slot="titreEnCours">
+			<section id="titreEnCours" class="el">
+				<div class="te-label"><span class="te-eq"><i></i><i></i><i></i><i></i></span><span class="te-label-txt">EN ÉCOUTE</span></div>
+				<div class="te-pill">
+					<span class="te-titre"></span><span class="te-artiste"></span>
+				</div>
+			</section>
+		</div>
+
+		<div class="slot" data-slot="sujet">
+			<section id="sujet" class="el">
+				<div class="sj-tag"></div>
+				<div class="sj-txt"><span></span></div>
+			</section>
+		</div>
+
+		<div class="slot" data-slot="score">
+			<section id="score" class="el">
+				<div class="sc-team sc-a"></div>
+				<div class="sc-pts sc-pa">0</div>
+				<div class="sc-mid"><div class="sc-per"></div><div class="sc-time">00:00</div></div>
+				<div class="sc-pts sc-pb">0</div>
+				<div class="sc-team sc-b"></div>
+			</section>
+		</div>
+
+		<div class="slot" data-slot="logo">
+			<section id="logo" class="el st-carte d-verticale">
+				<div class="lg-card">
+					<div class="lg-bg"></div>
+					<div class="lg-inner">
+						<div class="lg-img">
+							<div class="lg-rot">
+								<img alt="">
+								<div class="lg-shine"><i></i></div>
+							</div>
+						</div>
+						<div class="lg-sep"></div>
+						<div class="lg-row">
+							<span class="lg-badge"><i></i><b></b></span>
+							<span class="lg-clock"></span>
+						</div>
+					</div>
+					<div class="lg-sweep"></div>
+					<svg class="lg-border"><rect class="lg-stroke"></rect><rect class="lg-light"></rect></svg>
+				</div>
+			</section>
+		</div>
+
+		<!-- Bandeau défilant : toute la largeur, en haut ou en bas -->
+		<div class="slot slot-defilant" data-slot="defilant">
+			<section id="defilant" class="el">
+				<div class="tk-label"><span></span></div>
+				<div class="tk-window"><div class="tk-track"></div></div>
+			</section>
+		</div>
+	</div>
+
+	<!-- Filigrane affiché tant que le kit n'est pas activé par une licence -->
+	<div id="filigrane"><b>OBS Overlay Kit</b><span></span></div>
+	<div id="hors-ligne">Serveur des overlays non joignable — lancez DEMARRER.bat</div>
+	<script src="overlay.js"></script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+{
+  "assistant": {
+    "termine": false
+  },
+  "chaine": {
+    "nom": "Ma Chaîne",
+    "logo": "assets/logos/ma-chaine.svg",
+    "reseaux": "YouTube @machaine  •  Facebook Ma Chaîne  •  Instagram @machaine"
+  },
+  "emissionActive": "musique",
+  "emissions": {
+    "musique": {
+      "nom": "Louange & Musique",
+      "type": "Musique & louange",
+      "logo": "",
+      "couleurs": {
+        "primaire": "#C40808",
+        "secondaire": "#F28C1B",
+        "sombre": "#121216",
+        "clair": "#FFFFFF"
+      }
+    },
+    "debat": {
+      "nom": "Le Grand Débat",
+      "type": "Talk-show / débat",
+      "logo": "",
+      "couleurs": {
+        "primaire": "#1E4FD8",
+        "secondaire": "#00B8F0",
+        "sombre": "#0D1224",
+        "clair": "#FFFFFF"
+      }
+    },
+    "info": {
+      "nom": "Le Journal",
+      "type": "Information",
+      "logo": "",
+      "couleurs": {
+        "primaire": "#D1001F",
+        "secondaire": "#0A2A6B",
+        "sombre": "#0B1530",
+        "clair": "#FFFFFF"
+      }
+    },
+    "culte": {
+      "nom": "Parole de Vie",
+      "type": "Culte / enseignement",
+      "logo": "",
+      "couleurs": {
+        "primaire": "#6B3FB8",
+        "secondaire": "#E8B64A",
+        "sombre": "#16101F",
+        "clair": "#FFFFFF"
+      }
+    },
+    "sport": {
+      "nom": "Sport Live",
+      "type": "Sport",
+      "logo": "",
+      "couleurs": {
+        "primaire": "#FF5A00",
+        "secondaire": "#FFC400",
+        "sombre": "#141414",
+        "clair": "#FFFFFF"
+      }
+    }
+  },
+  "logo": {
+    "visible": true,
+    "style": "carte",
+    "disposition": "verticale",
+    "taille": 100,
+    "badge": "EN DIRECT",
+    "afficherBadge": true,
+    "afficherHeure": true,
+    "infosPosition": "auto",
+    "infosDisposition": "empilees",
+    "infosOrdre": "bandeau-heure",
+    "infosTaille": 100,
+    "opacite": 1,
+    "couleurCarte": "#000000",
+    "opaciteCarte": 0.9,
+    "couleurContour": "#FFFFFF",
+    "epaisseurContour": 3,
+    "opaciteContour": 1,
+    "arrondi": 16,
+    "placement": {
+      "ancre": "haut-droite",
+      "x": 0,
+      "y": 0,
+      "echelle": 100
+    }
+  },
+  "bandeauNom": {
+    "visible": false,
+    "nom": "Abimelka",
+    "fonction": "Artiste • invité du jour",
+    "autoMasquer": 10,
+    "liste": [
+      {
+        "nom": "Abimelka",
+        "fonction": "Artiste • invité du jour"
+      },
+      {
+        "nom": "Pasteur Jean Dupont",
+        "fonction": "Invité • Église de la Grâce"
+      },
+      {
+        "nom": "Marie Kabongo",
+        "fonction": "Présentatrice"
+      }
+    ],
+    "placement": {
+      "ancre": "bas-gauche",
+      "x": 0,
+      "y": 0,
+      "echelle": 100
+    }
+  },
+  "sujet": {
+    "visible": false,
+    "etiquette": "EN CE MOMENT",
+    "texte": "La louange dans la vie de tous les jours",
+    "placement": {
+      "ancre": "haut-gauche",
+      "x": 0,
+      "y": 0,
+      "echelle": 100
+    }
+  },
+  "defilant": {
+    "visible": false,
+    "etiquette": "INFOS",
+    "messages": [
+      "Bienvenue dans l'émission ! Posez vos questions dans le chat",
+      "Abonnez-vous et activez la cloche pour ne rien manquer",
+      "Prochain direct : dimanche à 18 h"
+    ],
+    "vitesse": 110,
+    "position": "bas"
+  },
+  "titreEnCours": {
+    "visible": false,
+    "titre": "Balle Perdue",
+    "artiste": "Abimelka",
+    "autoMasquer": 12,
+    "placement": {
+      "ancre": "bas-droite",
+      "x": 0,
+      "y": 0,
+      "echelle": 100
+    }
+  },
+  "citation": {
+    "visible": false,
+    "texte": "La louange est la respiration de l'âme.",
+    "reference": "Ma Chaîne",
+    "autoMasquer": 0,
+    "placement": {
+      "ancre": "bas-centre",
+      "x": 0,
+      "y": 0,
+      "echelle": 100
+    }
+  },
+  "bible": {
+    "visible": false,
+    "version": "lsg",
+    "version2": "",
+    "livre": 42,
+    "chapitre": 3,
+    "debut": 16,
+    "fin": 16,
+    "style": "carte",
+    "autoMasquer": 0,
+    "placement": {
+      "ancre": "bas-centre",
+      "x": 0,
+      "y": 0,
+      "echelle": 100
+    }
+  },
+  "message": {
+    "visible": false,
+    "auteur": "Sarah M.",
+    "plateforme": "YouTube",
+    "texte": "Bénédictions à toute l'équipe, on vous suit depuis Kinshasa !",
+    "autoMasquer": 12,
+    "placement": {
+      "ancre": "milieu-gauche",
+      "x": 0,
+      "y": -100,
+      "echelle": 100
+    },
+    "avatar": "",
+    "montant": ""
+  },
+  "chat": {
+    "auto": false,
+    "duree": 10,
+    "motsInterdits": [],
+    "masquerLiens": true
+  },
+  "score": {
+    "visible": false,
+    "equipeA": "AS VITA",
+    "scoreA": 0,
+    "equipeB": "TP MAZEMBE",
+    "scoreB": 0,
+    "periode": "1re MT",
+    "chrono": {
+      "enMarche": false,
+      "depuis": 0,
+      "cumul": 0
+    },
+    "placement": {
+      "ancre": "haut-centre",
+      "x": 0,
+      "y": 0,
+      "echelle": 100
+    }
+  },
+  "ecran": {
+    "mode": "aucun",
+    "titreDebut": "L'émission commence bientôt",
+    "titrePause": "On revient tout de suite",
+    "titreFin": "Merci d'avoir suivi !",
+    "sousTitre": "Installez-vous, on arrive",
+    "minutes": 5,
+    "cible": 0
+  }
+}
