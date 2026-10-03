@@ -17,12 +17,12 @@ const BASE_VIDE = () => ({
 	config: {
 		produit: 'OBS Overlay Kit',
 		devise: 'EUR',
-		vendeur: {nom: '', email: '', site: '', adresse: ''},
+		vendeur: {nom: "KOPHI'S GROUP SAS", email: 'contact@kophisgroup.com', telephone: '+225 05 03 40 43 89', site: 'https://www.kophisgroup.com', adresse: ''},
 		serveurPublic: '',
 		activationEnLigneParDefaut: false,
 		alerteJours: 30,
 		modeleEmail:
-			'Bonjour {client},\n\nMerci pour votre achat de {produit} ({offre}).\n\nVotre clé de licence :\n\n{cle}\n\nPour l’activer : ouvrez la régie, bouton « Licence », collez la clé puis « Activer ».\nN° de licence : {id} — valable {validite}.\n\nCordialement,\n{vendeur}',
+			'Bonjour {client},\n\nMerci pour votre achat de {produit} ({offre}).\n\nVotre clé de licence :\n\n{cle}\n\nPour l’activer : ouvrez la régie, bouton « Licence », collez la clé puis « Activer ».\nN° de licence : {id} — valable {validite}.\n\nCordialement,\n{vendeur}\n{contact}',
 		motDePasse: null,
 	},
 	offres: OFFRES_PAR_DEFAUT,

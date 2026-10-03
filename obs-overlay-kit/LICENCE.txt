@@ -1,0 +1,35 @@
+OBS OVERLAY KIT — CONTRAT DE LICENCE D'UTILISATION
+
+Copyright (c) KOPHI'S GROUP SAS. Tous droits réservés.
+
+OBS Overlay Kit (le « Logiciel ») est la propriété exclusive de KOPHI'S GROUP SAS. Le Logiciel
+est concédé sous licence, il n'est pas vendu.
+
+1. Essai. Le Logiciel peut être utilisé gratuitement pendant 14 jours à des fins d'évaluation.
+   Passé ce délai, seules les fonctions de base restent disponibles, avec un filigrane.
+
+2. Licence. L'achat d'une licence donne le droit d'utiliser le Logiciel, sur le nombre de postes
+   et pendant la durée indiqués dans la licence, avec les fonctions de l'offre choisie. La
+   licence est personnelle au titulaire et ne peut être cédée, louée ou revendue sans l'accord
+   écrit de KOPHI'S GROUP SAS.
+
+3. Interdictions. Il est interdit de partager ou publier une clé de licence, de contourner ou de
+   désactiver le système de licence, de supprimer les mentions de propriété, de redistribuer ou
+   de revendre le Logiciel, modifié ou non, sans l'accord écrit de KOPHI'S GROUP SAS.
+
+4. Révocation. KOPHI'S GROUP SAS peut révoquer une licence en cas de non-paiement, de fraude ou
+   de non-respect du présent contrat.
+
+5. Contenus. Les textes, logos et vidéos diffusés avec le Logiciel restent sous la responsabilité
+   de l'utilisateur. Les Bibles fournies sont des traductions du domaine public. Les polices
+   Inter (SIL Open Font License) et le générateur de QR code (licence MIT) restent soumis à
+   leurs licences respectives.
+
+6. Garantie. Le Logiciel est fourni « en l'état ». Dans les limites permises par la loi,
+   KOPHI'S GROUP SAS ne saurait être tenue responsable des dommages indirects liés à son
+   utilisation, notamment l'interruption d'une diffusion en direct.
+
+Contact : KOPHI'S GROUP SAS
+E-mail : contact@kophisgroup.com
+Téléphone / WhatsApp : +225 05 03 40 43 89
+Site : www.kophisgroup.com

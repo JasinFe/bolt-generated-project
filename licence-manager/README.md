@@ -1,5 +1,8 @@
 # Gestionnaire de licences — OBS Overlay Kit
 
+> **Propriété de KOPHI'S GROUP SAS** — tous droits réservés (voir `LICENCE.txt`).
+> ✉ contact@kophisgroup.com · ☎ / WhatsApp +225 05 03 40 43 89 · 🌐 www.kophisgroup.com
+
 Générez et suivez les licences d'utilisation d'OBS Overlay Kit : clés signées, clients, offres
 et tarifs, tableau de bord avec graphiques, activation en ligne et révocation à distance.
 

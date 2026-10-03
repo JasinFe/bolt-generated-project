@@ -6,6 +6,16 @@
 // qu'avec la clé privée du vendeur. Toute modification du contenu (plan, date…) invalide la clé.
 import {createHash, createPrivateKey, createPublicKey, generateKeyPairSync, randomBytes, sign, verify} from 'node:crypto';
 
+// Propriétaire du logiciel OBS Overlay Kit et de son gestionnaire de licences
+export const PROPRIETAIRE = {
+	nom: "KOPHI'S GROUP SAS",
+	email: 'contact@kophisgroup.com',
+	telephone: '+225 05 03 40 43 89',
+	whatsapp: '+2250503404389',
+	site: 'https://www.kophisgroup.com',
+};
+export const MENTION = `OBS Overlay Kit est la propriété de ${PROPRIETAIRE.nom}. Tous droits réservés.`;
+
 export const PREFIXE = 'OOK1';
 export const VERSION_FORMAT = 1;
 
@@ -104,5 +114,8 @@ export const fichierLic = (cle, contenu, produit = 'OBS Overlay Kit') =>
 		`Postes        : ${contenu.m ? `ce poste uniquement (${contenu.m})` : contenu.a ? `${contenu.a} maximum` : 'illimité'}`,
 		'',
 		'Pour activer : ouvrez la régie > bouton « Licence » > collez la clé ou importez ce fichier.',
+		'',
+		MENTION,
+		`${PROPRIETAIRE.email} · Tél. / WhatsApp ${PROPRIETAIRE.telephone} · ${PROPRIETAIRE.site.replace('https://', '')}`,
 		'',
 	].join('\n');

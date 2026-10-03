@@ -1,5 +1,9 @@
 # OBS Overlay Kit 7 — habillage TV pour OBS Studio
 
+> **Propriété de KOPHI'S GROUP SAS** — tous droits réservés. Utilisation soumise à une licence
+> (voir `LICENCE.txt`).
+> ✉ contact@kophisgroup.com · ☎ / WhatsApp +225 05 03 40 43 89 · 🌐 www.kophisgroup.com
+
 Un pack complet pour habiller vos directs comme à la télévision. Vous pilotez tout en direct
 depuis une **régie** (un panneau de contrôle), et les changements apparaissent instantanément
 dans OBS, avec des animations d'entrée et de sortie.
@@ -330,3 +334,12 @@ Ces raccourcis nécessitent une licence incluant « Raccourcis Stream Deck / API
 | « Adresse déjà utilisée » au démarrage | Le serveur tourne déjà (autre fenêtre) ; sinon changez de port : `set PORT=4000` puis `node server.mjs`, et adaptez les URL |
 | L'overlay est trop grand ou trop petit | Largeur et hauteur de la source : 1920 × 1080, puis **Adapter à l'écran** |
 | Le défilant saccade | Dans OBS, **Paramètres**, **Vidéo** : 30 ou 60 i/s ; baissez un peu la vitesse |
+
+## Propriété et contact
+
+OBS Overlay Kit est un logiciel de **KOPHI'S GROUP SAS**. Licences, assistance, devis pour
+plusieurs postes ou personnalisation :
+
+- E-mail : **contact@kophisgroup.com**
+- Téléphone et WhatsApp : **+225 05 03 40 43 89**
+- Site : **www.kophisgroup.com**

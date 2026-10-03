@@ -10,5 +10,7 @@
   },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "author": "KOPHI'S GROUP SAS <contact@kophisgroup.com> (https://www.kophisgroup.com)",
+  "license": "SEE LICENSE IN LICENCE.txt"
 }

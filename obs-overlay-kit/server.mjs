@@ -1,3 +1,4 @@
+// OBS Overlay Kit — propriété de KOPHI'S GROUP SAS. Tous droits réservés.
 // Serveur local des overlays OBS — aucune dépendance, Node.js 18+ suffit.
 //   node server.mjs            -> http://localhost:3333 (accessible depuis ce PC uniquement)
 //   node server.mjs --lan      -> accessible aussi depuis un téléphone/tablette du même réseau
@@ -12,6 +13,7 @@ import {createRequire} from 'node:module';
 import {YouTubeChat, FacebookChat} from './chat.mjs';
 import {chargerBibles, listeVersions, lireReference, passage, rechercher} from './bible.mjs';
 import {Licence} from './licence.mjs';
+import {PROPRIETAIRE, MENTION} from './lib/licence.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 // Générateur de QR code (Kazuhiko Arase, licence MIT), embarqué pour fonctionner hors ligne
@@ -525,7 +527,9 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-	console.log(`\n  OBS Overlay Kit ${VERSION} prêt !\n`);
+	console.log(`\n  OBS Overlay Kit ${VERSION} prêt !`);
+	console.log(`  ${MENTION}`);
+	console.log(`  ${PROPRIETAIRE.email} · Tél. / WhatsApp ${PROPRIETAIRE.telephone} · ${PROPRIETAIRE.site}\n`);
 	console.log(`  Régie (panneau de contrôle) : http://localhost:${PORT}/controle.html`);
 	console.log(`  Overlay pour OBS            : http://localhost:${PORT}/overlay.html   (1920 x 1080)`);
 	const adresses = LAN ? adressesLocales() : [];

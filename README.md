@@ -1,5 +1,8 @@
 # OBS Overlay Kit + gestionnaire de licences
 
+**Propriété de KOPHI'S GROUP SAS** — tous droits réservés.
+✉ contact@kophisgroup.com · ☎ / WhatsApp +225 05 03 40 43 89 · 🌐 www.kophisgroup.com
+
 | Dossier | Contenu |
 |---------|---------|
 | [`obs-overlay-kit/`](obs-overlay-kit/README.md) | Le kit d'habillage TV pour OBS Studio (v7), avec licence d'utilisation : essai de 14 jours, mode gratuit limité avec filigrane, activation par clé signée |

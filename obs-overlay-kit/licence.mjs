@@ -12,7 +12,7 @@ import {writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {execSync} from 'node:child_process';
 import {hostname, platform, arch, cpus, totalmem, release} from 'node:os';
-import {FONCTIONS, lireLicence, joursRestants, aujourdhui} from './lib/licence.mjs';
+import {FONCTIONS, PROPRIETAIRE, lireLicence, joursRestants, aujourdhui} from './lib/licence.mjs';
 
 const JOUR = 86400000;
 const ESSAI_JOURS = 14;
@@ -84,7 +84,7 @@ export class Licence {
 			statut,
 			message,
 			fonctions: jEssai > 0 && statut === 'essai' ? toutes : [],
-			filigrane: statut === 'essai' ? `Version d'essai · ${jEssai} j` : 'Version non activée',
+			filigrane: statut === 'essai' ? `Version d'essai · ${jEssai} j` : `Version non activée · ${PROPRIETAIRE.site.replace('https://', '')}`,
 			...extra,
 		});
 		let e;
@@ -126,7 +126,7 @@ export class Licence {
 	// Ce que voient la régie et l'overlay (pas d'e-mail)
 	public() {
 		const {email, ...reste} = this.etat;
-		return {...reste, vendeur: this.vendeur};
+		return {...reste, vendeur: this.vendeur || PROPRIETAIRE, proprietaire: PROPRIETAIRE};
 	}
 
 	async activer(texte) {

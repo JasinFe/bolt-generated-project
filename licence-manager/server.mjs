@@ -1,4 +1,5 @@
-// Gestionnaire de licences OBS Overlay Kit — aucune dépendance, Node.js 18+ suffit.
+// Gestionnaire de licences OBS Overlay Kit — propriété de KOPHI'S GROUP SAS. Tous droits réservés.
+// Aucune dépendance, Node.js 18+ suffit.
 //   node server.mjs             -> http://localhost:4444 (ce PC uniquement)
 //   node server.mjs --public    -> écoute aussi le réseau : nécessaire pour l'activation en ligne
 //                                  (placez-le derrière un reverse proxy HTTPS : Caddy, Nginx…)
@@ -10,7 +11,7 @@ import {extname, join, normalize, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomBytes, scryptSync, timingSafeEqual, createHash} from 'node:crypto';
 import {Base, statutEffectif} from './lib/base.mjs';
-import {FONCTIONS, signerLicence, lireLicence, genererPaire, empreinteCle, nouvelId, aujourdhui, ajouterDuree, joursRestants, fichierLic} from './lib/licence.mjs';
+import {FONCTIONS, PROPRIETAIRE, MENTION, signerLicence, lireLicence, genererPaire, empreinteCle, nouvelId, aujourdhui, ajouterDuree, joursRestants, fichierLic} from './lib/licence.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const PUBLIC = join(ROOT, 'public');
@@ -191,6 +192,7 @@ const remplacerVariables = (modele, l) =>
 		id: l.id,
 		validite: l.expire ? `jusqu'au ${l.expire.split('-').reverse().join('/')}` : 'sans limite de durée',
 		vendeur: base.d.config.vendeur.nom || base.d.config.produit,
+		contact: [base.d.config.vendeur.email, base.d.config.vendeur.telephone && `Tél. / WhatsApp ${base.d.config.vendeur.telephone}`, base.d.config.vendeur.site].filter(Boolean).join(' · '),
 		postes: l.postes || 'illimité',
 	})[k] ?? m);
 
@@ -269,6 +271,7 @@ const donnees = () => {
 		licences: base.d.licences.map(versPublic),
 		journal: base.d.journal.slice(-1500),
 		cle: {publique: clePublique, empreinte: empreinteCle(clePublique)},
+		proprietaire: PROPRIETAIRE,
 		publique: PUBLIQUE,
 	};
 };
@@ -291,7 +294,7 @@ const server = createServer(async (req, res) => {
 		if (p === '/api/public/statut') return json(res, 200, {ok: true, produit: base.d.config.produit});
 
 		// --- Session ---
-		if (p === '/api/session') return json(res, 200, {configure: !!base.d.config.motDePasse, connecte: connecte(req)});
+		if (p === '/api/session') return json(res, 200, {configure: !!base.d.config.motDePasse, connecte: connecte(req), proprietaire: PROPRIETAIRE});
 		const ouvrirSession = () => {
 			const j = randomBytes(32).toString('hex');
 			sessions.set(j, Date.now() + SESSION_MS);
@@ -440,7 +443,7 @@ const server = createServer(async (req, res) => {
 			const c = base.d.config;
 			if (b.produit !== undefined) c.produit = nettoyer(b.produit, 60) || 'OBS Overlay Kit';
 			if (b.devise) c.devise = nettoyer(b.devise, 5).toUpperCase();
-			if (b.vendeur) for (const k of ['nom', 'email', 'site', 'adresse']) if (b.vendeur[k] !== undefined) c.vendeur[k] = nettoyer(b.vendeur[k], 300);
+			if (b.vendeur) for (const k of ['nom', 'email', 'telephone', 'site', 'adresse']) if (b.vendeur[k] !== undefined) c.vendeur[k] = nettoyer(b.vendeur[k], 300);
 			if (b.serveurPublic !== undefined) {
 				const s = nettoyer(b.serveurPublic, 200).replace(/\/+$/, '');
 				if (s && !/^https?:\/\/[^\s/]+/.test(s)) return json(res, 400, {erreur: 'Adresse du serveur invalide (ex. https://licences.mondomaine.com).'});
@@ -489,7 +492,7 @@ const server = createServer(async (req, res) => {
 		if (p === '/api/export/cle-publique.pem') return fichier(res, 'cle-publique.pem', 'application/x-pem-file', clePublique);
 		if (p === '/api/export/vendeur.json') {
 			const v = base.d.config.vendeur;
-			return fichier(res, 'vendeur.json', MIME['.json'], JSON.stringify({nom: v.nom, email: v.email, site: v.site}, null, 2));
+			return fichier(res, 'vendeur.json', MIME['.json'], JSON.stringify({nom: v.nom, email: v.email, telephone: v.telephone || '', whatsapp: (v.telephone || '').replace(/[^\d+]/g, ''), site: v.site}, null, 2));
 		}
 		if (p === '/api/import' && req.method === 'POST') {
 			const b = await lireCorps(req, 50 * 1024 * 1024);
@@ -523,7 +526,9 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-	console.log(`\n  Gestionnaire de licences ${VERSION} prêt !\n`);
+	console.log(`\n  Gestionnaire de licences ${VERSION} prêt !`);
+	console.log(`  ${MENTION}`);
+	console.log(`  ${PROPRIETAIRE.email} · Tél. / WhatsApp ${PROPRIETAIRE.telephone} · ${PROPRIETAIRE.site}\n`);
 	console.log(`  Tableau de bord : http://localhost:${PORT}`);
 	console.log(`  Empreinte de la clé publique : ${empreinteCle(clePublique)}`);
 	if (PUBLIQUE) console.log(`  API d'activation ouverte sur le réseau : POST /api/public/activer (placez un HTTPS devant)`);

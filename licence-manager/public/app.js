@@ -170,18 +170,20 @@ const ecranConnexion = async () => {
 				<label>Mot de passe administrateur<input type="password" name="motDePasse" autocomplete="current-password" required autofocus></label>
 				<button>Se connecter</button>
 				<p class="erreur" id="auth-err"></p>
+				<p class="proprio muted petit">Propriété de <b>KOPHI'S GROUP SAS</b> · contact@kophisgroup.com · +225 05 03 40 43 89 · www.kophisgroup.com</p>
 			</form>`
 			: html`<form class="carte connexion" id="f-auth">
 				<img src="icone.svg" alt="" width="48" height="48">
 				<h1>Bienvenue</h1>
 				<p class="muted">Première utilisation : créez le mot de passe qui protégera vos licences et indiquez le nom qui apparaîtra sur les licences et les e-mails.</p>
-				<label>Votre nom ou celui de votre société<input name="nom" required placeholder="Ex. : Studio Lumière"></label>
-				<label>E-mail de contact<input type="email" name="email" placeholder="contact@…"></label>
+				<label>Votre nom ou celui de votre société<input name="nom" required value="KOPHI'S GROUP SAS"></label>
+				<label>E-mail de contact<input type="email" name="email" value="contact@kophisgroup.com"></label>
 				<label>Devise<select name="devise">${['EUR', 'USD', 'XOF', 'XAF', 'CDF', 'CAD', 'CHF', 'GBP', 'MAD'].map((d) => html`<option>${d}</option>`)}</select></label>
 				<label>Mot de passe (8 caractères minimum)<input type="password" name="motDePasse" minlength="8" autocomplete="new-password" required></label>
 				<label>Confirmez le mot de passe<input type="password" name="confirmation" minlength="8" autocomplete="new-password" required></label>
 				<button>Créer mon espace</button>
 				<p class="erreur" id="auth-err"></p>
+				<p class="proprio muted petit">Propriété de <b>KOPHI'S GROUP SAS</b> · contact@kophisgroup.com · +225 05 03 40 43 89 · www.kophisgroup.com</p>
 			</form>`,
 	);
 	$('#f-auth').addEventListener('submit', async (e) => {
@@ -856,7 +858,7 @@ const certificat = (l) => {
 		<tr><td>Postes</td><td>${l.machine ? `poste ${l.machine}` : l.postes ? `${l.postes} maximum` : 'illimité'}</td></tr>
 		<tr><td>Fonctions incluses</td><td>${l.fonctions.map((f) => D.fonctions[f]).join(', ') || 'habillages de base'}</td></tr></table>
 		<p><b>Clé d'activation</b></p><div class="cle">${l.cle}</div>
-		<p class="bas muted">Pour activer : ouvrez la régie du kit, bouton « Licence », collez la clé puis « Activer ».<br>${v.nom}${v.email ? ` · ${v.email}` : ''}${v.site ? ` · ${v.site}` : ''}${v.adresse ? `<br>${esc(v.adresse)}` : ''}</p></div></body></html>`);
+		<p class="bas muted">Pour activer : ouvrez la régie du kit, bouton « Licence », collez la clé puis « Activer ».<br>${v.nom}${v.email ? ` · ${v.email}` : ''}${v.telephone ? ` · Tél. / WhatsApp ${v.telephone}` : ''}${v.site ? ` · ${v.site}` : ''}${v.adresse ? `<br>${esc(v.adresse)}` : ''}<br>OBS Overlay Kit est la propriété de KOPHI'S GROUP SAS. Tous droits réservés.</p></div></body></html>`);
 	const w = window.open(URL.createObjectURL(new Blob([page], {type: 'text/html'})), '_blank');
 	if (!w) toast('Autorisez les fenêtres surgissantes pour afficher le certificat.', 'ko');
 };
@@ -1073,13 +1075,14 @@ PAGES.parametres = (v) => {
 	<form class="carte formulaire" id="p-general"><h2>Votre activité</h2><div class="champs c2">
 		<label>Nom affiché (vendeur)<input name="vendeur.nom" value="${c.vendeur.nom}"></label>
 		<label>E-mail de contact<input type="email" name="vendeur.email" value="${c.vendeur.email}"></label>
+		<label>Téléphone / WhatsApp<input name="vendeur.telephone" value="${c.vendeur.telephone || ''}"></label>
 		<label>Site / page de vente<input name="vendeur.site" value="${c.vendeur.site}" placeholder="https://…"></label>
 		<label>Adresse (certificats)<input name="vendeur.adresse" value="${c.vendeur.adresse}"></label>
 		<label>Nom du produit<input name="produit" value="${c.produit}"></label>
 		<label>Devise principale<input name="devise" value="${c.devise}" maxlength="5"></label>
 		<label>Alerte « expire bientôt » (jours)<input type="number" name="alerteJours" min="1" max="365" value="${c.alerteJours}"></label>
 	</div>
-	<label>Modèle d'e-mail <small class="muted">— variables : {client} {produit} {offre} {cle} {id} {validite} {postes} {vendeur}</small><textarea name="modeleEmail" rows="9">${c.modeleEmail}</textarea></label>
+	<label>Modèle d'e-mail <small class="muted">— variables : {client} {produit} {offre} {cle} {id} {validite} {postes} {vendeur} {contact}</small><textarea name="modeleEmail" rows="9">${c.modeleEmail}</textarea></label>
 	<div class="actions"><button>Enregistrer</button></div></form>
 
 	<form class="carte formulaire" id="p-enligne"><h2>Activation en ligne <small class="muted">facultatif</small></h2>
@@ -1114,7 +1117,7 @@ PAGES.parametres = (v) => {
 		<label>Mot de passe actuel<input type="password" name="ancien" autocomplete="current-password" required></label>
 		<label>Nouveau mot de passe (8 caractères min.)<input type="password" name="nouveau" minlength="8" autocomplete="new-password" required></label>
 	</div><div class="actions"><button>Changer le mot de passe</button></div></form>
-	<p class="muted petit">Gestionnaire de licences v${D.version}</p>`);
+	<p class="muted petit">Gestionnaire de licences v${D.version} · Propriété de KOPHI'S GROUP SAS · contact@kophisgroup.com · +225 05 03 40 43 89 · www.kophisgroup.com</p>`);
 
 	const enregistrer = (id) =>
 		$(id).addEventListener('submit', async (e) => {

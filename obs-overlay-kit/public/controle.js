@@ -570,8 +570,22 @@
 			const h = document.createElement('h3');
 			h.textContent = 'Obtenir une licence';
 			const p = document.createElement('p');
-			p.textContent = `${l.vendeur.nom}${l.vendeur.email ? ` · ${l.vendeur.email}` : ''}`;
+			p.textContent = l.vendeur.nom;
 			v.append(h, p);
+			const liens = document.createElement('div');
+			liens.className = 'lic-liens';
+			const lien = (href, txt) => {
+				const a = document.createElement('a');
+				a.href = href;
+				a.target = '_blank';
+				a.rel = 'noopener';
+				a.textContent = txt;
+				liens.append(a);
+			};
+			if (l.vendeur.email) lien(`mailto:${l.vendeur.email}`, `✉ ${l.vendeur.email}`);
+			if (l.vendeur.telephone) lien(`tel:${l.vendeur.telephone.replace(/\s+/g, '')}`, `☎ ${l.vendeur.telephone}`);
+			if (l.vendeur.whatsapp) lien(`https://wa.me/${l.vendeur.whatsapp.replace(/\D+/g, '')}`, '💬 WhatsApp');
+			v.append(liens);
 			if (l.vendeur.site) {
 				const a = document.createElement('a');
 				a.href = l.vendeur.site;
