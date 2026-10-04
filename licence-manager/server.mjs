@@ -230,7 +230,7 @@ const apiPublique = (action, b, ip) => {
 };
 
 // --- HTTP ---------------------------------------------------------------------------------------
-const MIME = {'.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon'};
+const MIME = {'.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2'};
 const ENTETES = {'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'X-Frame-Options': 'DENY'};
 const json = (res, code, obj) => {
 	res.writeHead(code, {...ENTETES, 'Content-Type': MIME['.json'], 'Cache-Control': 'no-store'});

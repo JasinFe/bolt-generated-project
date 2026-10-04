@@ -23,6 +23,30 @@ const html = (parts, ...vals) =>
 		return acc + s + p;
 	}));
 
+const ic = (nom) => brut(`<svg class="ic" aria-hidden="true"><use href="#i-${nom}"/></svg>`);
+const animationsReduites = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Compteurs animés : <b data-compte="1234" data-fmt="argent">
+const animerNombres = (racine) => {
+	for (const e of $$('[data-compte]', racine)) {
+		const cible = Number(e.dataset.compte) || 0;
+		const fmt = e.dataset.fmt === 'argent' ? (x) => argent(x) : (x) => nombre(Math.round(x));
+		if (animationsReduites() || !cible || racine.classList?.contains('calme')) {
+			e.textContent = fmt(cible);
+			continue;
+		}
+		const t0 = performance.now();
+		const duree = 1100;
+		const pas = (t) => {
+			const k = Math.min(1, (t - t0) / duree);
+			e.textContent = fmt(k < 1 ? cible * (1 - (1 - k) ** 3) : cible);
+			if (k < 1) requestAnimationFrame(pas);
+		};
+		requestAnimationFrame(pas);
+	}
+};
+const initiales = (nom) => String(nom || '?').trim().split(/\s+/).slice(0, 2).map((m) => m[0]).join('').toUpperCase();
+let minuterieVue = null;
+
 // --- Préférences locales (thème, période…) --------------------------------------------------
 const pref = {
 	lire: (k, d) => {
@@ -94,6 +118,7 @@ let D = null;
 const charger = async () => {
 	D = await api('donnees');
 	$('#nav-produit').textContent = D.config.produit;
+	$('#nav-nb').textContent = D.licences.length || '';
 	document.title = `Licences · ${D.config.produit}`;
 	return D;
 };
@@ -209,15 +234,17 @@ $('#btn-deconnexion').addEventListener('click', async () => {
 
 // --- Routeur ------------------------------------------------------------------------------------
 const PAGES = {};
-const routeur = () => {
+const routeur = (calme = false) => {
 	if (!D) return;
 	cacherBulle();
+	clearInterval(minuterieVue);
 	const [chemin, requete] = location.hash.slice(2).split('?');
 	const [page, param] = chemin.split('/');
 	const p = PAGES[page] ? page : 'tableau';
 	$$('#nav a').forEach((a) => a.classList.toggle('actif', a.dataset.page === (p === 'licence' ? 'licences' : p)));
 	const v = $('#vue');
-	v.className = `vue page-${p}`;
+	// calme : nouveau rendu sans animations d'entrée (redimensionnement de la fenêtre)
+	v.className = `vue page-${p}${calme === true ? ' calme' : ''}`;
 	v.innerHTML = '';
 	PAGES[p](v, decodeURIComponent(param || ''), new URLSearchParams(requete || ''));
 	v.focus?.();
@@ -227,7 +254,7 @@ window.addEventListener('hashchange', routeur);
 let resizeT;
 window.addEventListener('resize', () => {
 	clearTimeout(resizeT);
-	resizeT = setTimeout(() => location.hash.startsWith('#/tableau') || location.hash === '' ? routeur() : null, 250);
+	resizeT = setTimeout(() => (location.hash.startsWith('#/tableau') || location.hash === '' ? routeur(true) : null), 250);
 });
 
 const entete = (titre, sous, actions = '') => html`<header class="entete"><div><h1>${titre}</h1>${sous ? html`<p class="muted">${sous}</p>` : ''}</div><div class="entete-actions">${actions}</div></header>`;
@@ -317,20 +344,44 @@ PAGES.tableau = (v) => {
 		return html`<span class="delta ${pc > 0 ? 'hausse' : pc < 0 ? 'baisse' : 'neutre'}">${pc > 0 ? '▲' : pc < 0 ? '▼' : '■'} ${Math.abs(pc)} %</span><span class="muted"> vs période préc.${argentF ? ` (${argentF(b)})` : ''}</span>`;
 	};
 
+	const heure = new Date().getHours();
+	const salut = heure < 5 ? 'Bonne nuit' : heure < 12 ? 'Bonjour' : heure < 18 ? 'Bon après-midi' : 'Bonsoir';
+	const tuile = (couleur, icone, lib, valeur, fmt, bas, {heros, lien, spark} = {}) => {
+		const corps = html`<div class="tuile-tete"><span class="tuile-ic">${ic(icone)}</span><span class="tuile-lib">${lib}</span></div>
+			<b class="tuile-val" data-compte="${valeur}" data-fmt="${fmt}">${fmt === 'argent' ? argent(0) : '0'}</b><div class="tuile-delta">${bas}</div>${spark ? html`<div class="tuile-spark" id="${spark}"></div>` : ''}`;
+		return lien ? html`<a class="tuile lien-tuile" href="${lien}" style="--t:${couleur}">${corps}</a>` : html`<div class="tuile ${heros ? 'heros' : ''}" style="--t:${couleur}">${corps}</div>`;
+	};
+	const vd = D.config.vendeur;
+	const etapes = [
+		{fait: !!vd.nom, titre: 'Vos informations', detail: vd.nom ? `${vd.nom}${vd.email ? ` · ${vd.email}` : ''}` : 'Nom, e-mail et téléphone affichés aux clients', lien: '#/parametres', bouton: 'Compléter'},
+		{fait: D.offres.some((o) => o.actif !== false), titre: 'Offres et tarifs', detail: `${D.offres.filter((o) => o.actif !== false).length} offre(s) proposée(s) en ${devise}`, lien: '#/offres', bouton: 'Ajuster'},
+		{fait: false, titre: 'Clé publique dans le kit', detail: `Empreinte ${D.cle.empreinte} : vérifiez qu'elle est dans obs-overlay-kit/licence/`, lien: '#/parametres', bouton: 'Voir'},
+		{fait: false, titre: 'Première licence', detail: 'Les graphiques se rempliront au fil des ventes', lien: '#/nouvelle', bouton: 'Créer'},
+	];
+
 	v.innerHTML = String(html`
-		${entete('Tableau de bord', `Suivi des ventes, des licences et des installations de ${D.config.produit}`, html`<a class="bouton" href="#/nouvelle">＋ Nouvelle licence</a>`)}
+		<header class="entete"><div>
+			<div class="surtitre"><span class="point"></span><span class="horloge" id="horloge"></span></div>
+			<h1>${salut}, <span class="titre-degrade">${vd.nom || 'bienvenue'}</span></h1>
+			<p class="muted">Voici l'activité de ${D.config.produit} : ventes, licences et installations.</p>
+		</div><div class="entete-actions"><a class="bouton" href="#/nouvelle">${ic('plus')} Nouvelle licence</a></div></header>
 		<div class="filtres">
-			<div class="segments" role="group" aria-label="Période">${Object.entries(PERIODES).map(([k, lib]) => html`<button type="button" data-periode="${k}" class="${k === periode ? 'actif' : ''}">${k === periode ? '✓ ' : ''}${lib}</button>`)}</div>
+			<div class="segments" role="group" aria-label="Période">${Object.entries(PERIODES).map(([k, lib]) => html`<button type="button" data-periode="${k}" class="${k === periode ? 'actif' : ''}" aria-pressed="${k === periode}">${lib}</button>`)}</div>
 			<select id="tdb-offre" aria-label="Offre"><option value="">Toutes les offres</option>${D.offres.map((o) => html`<option value="${o.code}" ${o.code === filtreOffre ? 'selected' : ''}>${o.nom}</option>`)}</select>
 		</div>
-		${D.licences.length ? '' : html`<div class="carte bienvenue"><h2>Votre tableau de bord est prêt</h2><p>Créez votre première licence : les graphiques se rempliront au fil des ventes et des activations.</p><a class="bouton" href="#/nouvelle">Créer une licence</a> <a class="bouton sec" href="#/parametres">Configurer le kit (clé publique)</a></div>`}
+		${
+			D.licences.length
+				? ''
+				: html`<section class="carte accueil"><div><h2>🚀 Votre espace est prêt</h2><p>Encore quelques étapes et vous pourrez vendre vos premières licences. Le tableau de bord s'animera dès la première vente.</p><a class="bouton" href="#/nouvelle">${ic('fusee')} Créer ma première licence</a></div>
+					<ol class="etapes">${etapes.map((e, i) => html`<li class="${e.fait ? 'fait' : ''}"><span class="num">${e.fait ? ic('check') : i + 1}</span><div><b>${e.titre}</b><small>${e.detail}</small></div><a class="bouton ${e.fait ? 'sec' : ''}" href="${e.lien}">${e.bouton}</a></li>`)}</ol></section>`
+		}
 		<div class="tuiles">
-			<div class="tuile heros"><span class="tuile-lib">Chiffre d'affaires · ${PERIODES[periode].toLowerCase()}</span><b class="tuile-val">${argent(revenus)}</b><div class="tuile-delta">${delta(revenus, revenusPrec, argent)}</div><div class="tuile-spark" id="sp-rev"></div>${autresDevises.length ? html`<small class="muted">Hors ventes en ${autresDevises.join(', ')}</small>` : ''}</div>
-			<div class="tuile"><span class="tuile-lib">Nouvelles licences</span><b class="tuile-val">${nombre(nouvelles)}</b><div class="tuile-delta">${delta(nouvelles, nouvellesPrec)}</div><div class="tuile-spark" id="sp-new"></div></div>
-			<div class="tuile"><span class="tuile-lib">Licences en cours de validité</span><b class="tuile-val">${nombre(actives.length)}</b><div class="tuile-delta muted">sur ${nombre(licences.length)} émises</div></div>
-			<div class="tuile"><span class="tuile-lib">Postes actifs (30 j)</span><b class="tuile-val">${nombre(postesActifs.length)}</b><div class="tuile-delta muted">${nombre(licences.reduce((a, l) => a + (l.activations?.length || 0), 0))} activations au total</div></div>
-			<a class="tuile lien-tuile" href="#/licences?statut=expire-bientot"><span class="tuile-lib">Expirent sous ${D.config.alerteJours} jours</span><b class="tuile-val">${nombre(bientot.length)}</b><div class="tuile-delta muted">${bientot.length ? 'À relancer pour renouvellement →' : 'Rien à relancer'}</div></a>
-			<div class="tuile"><span class="tuile-lib">Panier moyen</span><b class="tuile-val">${argent(payees.length ? payees.reduce((a, l) => a + l.prix, 0) / payees.length : 0)}</b><div class="tuile-delta muted">${attente.length ? html`<a href="#/licences?paiement=en-attente">${attente.length} paiement(s) en attente →</a>` : 'Aucun paiement en attente'}</div></div>
+			${tuile('#7c5cff', 'argent', `Chiffre d'affaires · ${PERIODES[periode].toLowerCase()}`, revenus, 'argent', html`${delta(revenus, revenusPrec, argent)}${autresDevises.length ? html` <small class="muted">Hors ventes en ${autresDevises.join(', ')}</small>` : ''}`, {heros: true, spark: 'sp-rev'})}
+			${tuile('#22c3ee', 'hausse', 'Nouvelles licences', nouvelles, '', delta(nouvelles, nouvellesPrec), {spark: 'sp-new'})}
+			${tuile('#10b981', 'bouclier', 'Licences en cours de validité', actives.length, '', `sur ${nombre(licences.length)} émises`)}
+			${tuile('#3b82f6', 'ecran', 'Postes actifs (30 j)', postesActifs.length, '', `${nombre(licences.reduce((a, l) => a + (l.activations?.length || 0), 0))} activations au total`)}
+			${tuile('#f59e0b', 'horloge', `Expirent sous ${D.config.alerteJours} jours`, bientot.length, '', bientot.length ? 'À relancer pour renouvellement →' : 'Rien à relancer', {lien: '#/licences?statut=expire-bientot'})}
+			${tuile('#ec4899', 'panier', 'Panier moyen', payees.length ? payees.reduce((a, l) => a + l.prix, 0) / payees.length : 0, 'argent', attente.length ? html`<a href="#/licences?paiement=en-attente">${attente.length} paiement(s) en attente →</a>` : 'Aucun paiement en attente')}
 		</div>
 		<div class="grille-graphiques">
 			${carteGraphique('g-ventes', 'Nouvelles licences', 'Histogramme par offre', {large: true, hauteur: 260})}
@@ -351,6 +402,13 @@ PAGES.tableau = (v) => {
 	$$('[data-periode]', v).forEach((b) => b.addEventListener('click', () => (pref.ecrire('periode', b.dataset.periode), routeur())));
 	$('#tdb-offre', v).addEventListener('change', (e) => (pref.ecrire('offreTdb', e.target.value), routeur()));
 
+	animerNombres(v);
+	const horloge = () => {
+		const e = $('#horloge');
+		if (e) e.textContent = new Date().toLocaleString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', second: '2-digit'});
+	};
+	horloge();
+	minuterieVue = setInterval(horloge, 1000);
 	const serieRev = parIntervalle((a, b) => somme(a, b));
 	const serieNew = parIntervalle((a, b) => compte(a, b));
 	sparkline($('#sp-rev'), serieRev);
@@ -487,7 +545,7 @@ PAGES.licences = (v, _, q) => {
 		sel: new Set(),
 	};
 	v.innerHTML = String(html`
-		${entete('Licences', `${D.licences.length} licence(s) émise(s)`, html`<a class="bouton sec" href="/api/export/licences.csv" download>Exporter (CSV)</a><a class="bouton" href="#/nouvelle">＋ Nouvelle licence</a>`)}
+		${entete('Licences', `${D.licences.length} licence(s) émise(s)`, html`<a class="bouton sec" href="/api/export/licences.csv" download>Exporter (CSV)</a><a class="bouton" href="#/nouvelle">${ic('plus')} Nouvelle licence</a>`)}
 		<div class="filtres">
 			<input type="search" id="f-q" placeholder="Rechercher : client, e-mail, n° de licence, étiquette…" value="${etat.q}">
 			<select id="f-statut"><option value="">Tous les statuts</option>${Object.entries(STATUTS).map(([k, s]) => html`<option value="${k}" ${k === etat.statut ? 'selected' : ''}>${s.lib}</option>`)}</select>
@@ -542,7 +600,7 @@ PAGES.licences = (v, _, q) => {
 							(l) => html`<tr data-id="${l.id}">
 						<td class="case"><input type="checkbox" data-sel="${l.id}" ${etat.sel.has(l.id) ? 'checked' : ''} aria-label="Sélectionner"></td>
 						<td><a href="#/licence/${l.id}" class="mono">${l.id}</a></td>
-						<td><b>${l.client.nom}</b>${l.client.organisation ? html` · ${l.client.organisation}` : ''}<br><small class="muted">${l.client.email}</small></td>
+						<td><div class="cellule-client"><span class="avatar" style="--c:${couleurOffre(l.offre)}">${initiales(l.client.nom)}</span><div><b>${l.client.nom}</b>${l.client.organisation ? html` · ${l.client.organisation}` : ''}<br><small class="muted">${l.client.email}</small></div></div></td>
 						<td><span class="pastille" style="--c:${couleurOffre(l.offre)}"></span>${l.offreNom}</td>
 						<td>${badge(l.statutEffectif)}</td>
 						<td>${l.expire ? date(l.expire) : html`<span class="muted">Perpétuelle</span>`}</td>
@@ -615,13 +673,20 @@ PAGES.licence = (v, id) => {
 	const st = l.statutEffectif;
 	v.innerHTML = String(html`
 		<p><a href="#/licences" class="lien">← Licences</a></p>
-		<header class="entete"><div><h1 class="mono">${l.id}</h1><p>${badge(st)} <span class="muted">· ${l.offreNom} · ${l.client.nom}</span></p></div>
-		<div class="entete-actions">
-			<button type="button" data-a="copier">Copier la clé</button>
-			<button type="button" class="sec" data-a="lic">Fichier .lic</button>
-			<button type="button" class="sec" data-a="email">E-mail</button>
-			<button type="button" class="sec" data-a="certificat">Certificat</button>
-		</div></header>
+		<section class="carte fiche-heros" style="--c:${couleurOffre(l.offre)}">
+			<div>
+				<div class="surtitre">${l.offreNom}</div>
+				<h1 class="mono">${l.id}</h1>
+				<div class="sous">${badge(st)} <span>${l.client.nom}${l.client.organisation ? ` · ${l.client.organisation}` : ''}</span></div>
+				<div class="entete-actions">
+					<button type="button" data-a="copier">${ic('copier')} Copier la clé</button>
+					<button type="button" class="sec" data-a="lic">${ic('fichier')} Fichier .lic</button>
+					<button type="button" class="sec" data-a="email">${ic('mail')} E-mail</button>
+					<button type="button" class="sec" data-a="certificat">${ic('certificat')} Certificat</button>
+				</div>
+			</div>
+			<div class="jauges">${jaugesLicence(l)}</div>
+		</section>
 		<div class="actions-ligne">
 			<button type="button" class="sec petit" data-a="prolonger">⟳ Prolonger / renouveler</button>
 			<button type="button" class="sec petit" data-a="modifier">✎ Modifier</button>
@@ -715,6 +780,23 @@ PAGES.licence = (v, id) => {
 			routeur();
 		}),
 	);
+};
+// Jauges de la fiche : durée de validité consommée et postes utilisés
+const jaugesLicence = (l) => {
+	let validite;
+	if (!l.expire) validite = html`<div><div class="jauge-lib"><span>Validité</span><b>Perpétuelle ∞</b></div><div class="jauge"><i style="--v:100%"></i></div></div>`;
+	else {
+		const debut = Date.parse(`${l.emise}T00:00:00Z`);
+		const fin = Date.parse(`${l.expire}T23:59:59Z`);
+		const restant = Math.max(0, Math.ceil((fin - Date.now()) / JOUR));
+		const pc = Math.max(0, Math.min(100, ((fin - Date.now()) / Math.max(1, fin - debut)) * 100));
+		validite = html`<div><div class="jauge-lib"><span>Validité restante</span><b>${restant} j</b></div><div class="jauge ${restant <= 0 ? 'fin' : restant <= (D.config.alerteJours || 30) ? 'alerte' : ''}"><i style="--v:${pc.toFixed(1)}%"></i></div></div>`;
+	}
+	const max = l.machine ? 1 : l.postes;
+	const n = l.activations.length;
+	const postes = html`<div><div class="jauge-lib"><span>Postes activés</span><b>${n}${max ? ` / ${max}` : ' (illimité)'}</b></div><div class="jauge ${max && n >= max ? 'alerte' : ''}"><i style="--v:${max ? Math.min(100, (n / max) * 100) : n ? 100 : 0}%"></i></div></div>`;
+	const encaisse = l.prix + (l.renouvellements || []).reduce((a, r) => a + (r.prix || 0), 0);
+	return html`${validite}${postes}<div class="jauge-lib"><span>Total encaissé</span><b>${argent(encaisse, l.devise)}</b></div>`;
 };
 const joursAvant = (iso) => {
 	const j = Math.ceil((Date.parse(`${iso}T23:59:59Z`) - Date.now()) / JOUR);
@@ -872,6 +954,7 @@ PAGES.nouvelle = (v, _, q) => {
 	const pre = {client: {nom: q.get('nom') || '', email: q.get('email') || '', organisation: q.get('organisation') || '', pays: q.get('pays') || ''}};
 	v.innerHTML = String(html`
 		${entete('Nouvelle licence', 'Choisissez une offre, renseignez le client : la clé signée est générée instantanément.')}
+		<div class="creation">
 		<form id="f-nouvelle" class="formulaire">
 			<fieldset><legend>Offre</legend><div class="offres-choix">${offres.map(
 				(o) => html`<label class="offre-carte" style="--c:${couleurOffre(o.code)}"><input type="radio" name="offreChoix" value="${o.code}" ${o === offre ? 'checked' : ''}>
@@ -882,8 +965,20 @@ PAGES.nouvelle = (v, _, q) => {
 				<label>Date de début<input type="date" name="emise" value="${aujourdhui()}"></label>
 				<label>Nombre de clés identiques (revendeur, lot)<input type="number" name="quantite" min="1" max="500" value="1"></label>
 			</div></fieldset>
-			<div class="actions"><button>Générer la licence</button></div>
-		</form>`);
+			<div class="actions"><button>${ic('cle')} Générer la licence</button></div>
+		</form>
+		<aside class="creation-apercu" aria-label="Aperçu de la licence">
+			<div class="carte-licence" id="cl">
+				<div class="cl-haut"><div><div class="cl-produit">${D.config.produit}</div><div class="cl-offre" id="cl-offre"></div></div><div class="cl-puce"></div></div>
+				<div class="cl-cle" id="cl-cle">OOK-••••-••••-••••</div>
+				<div class="cl-bas"><div><small>Titulaire</small><b id="cl-client">Nom du client</b></div><div style="text-align:right"><small>Valable jusqu'au</small><b id="cl-exp"></b></div></div>
+			</div>
+			<section class="carte"><h2>Récapitulatif</h2>
+				<dl class="cl-resume" id="cl-resume"></dl>
+				<h3>Fonctions incluses</h3><div class="cl-fonctions" id="cl-fonctions"></div>
+			</section>
+		</aside>
+		</div>`);
 	const f = $('#f-nouvelle');
 	const remplir = () => {
 		const debut = $('[name=emise]', f)?.value || aujourdhui();
@@ -892,9 +987,37 @@ PAGES.nouvelle = (v, _, q) => {
 		$('#champs').innerHTML = String(champsLicence({...garde, client: garde.client, offre: offre.code, expire: exp, postes: offre.postes, fonctions: offre.fonctions, prix: offre.prix, devise: D.config.devise, enLigne: D.config.activationEnLigneParDefaut, paiement: {statut: offre.prix ? garde.paiement?.statut || 'paye' : 'offert', mode: garde.paiement?.mode, reference: garde.paiement?.reference}, tags: garde.tags ? String(garde.tags).split(',') : [], notes: garde.notes}, {nouvelle: true}));
 		autoClient(f);
 	};
+	// Aperçu en direct : la carte se met à jour à chaque saisie
+	const apercu = () => {
+		const d = lireFormulaire(f);
+		$('#cl').style.setProperty('--c', couleurOffre(offre.code));
+		$('#cl-offre').textContent = offre.nom;
+		$('#cl-client').textContent = d.client?.nom || 'Nom du client';
+		$('#cl-exp').textContent = d.expire ? date(d.expire) : 'Perpétuelle';
+		const q = Number($('[name=quantite]', f).value) || 1;
+		const lignes = [
+			['Prix unitaire', d.paiement?.statut === 'offert' ? 'Offerte' : argent(d.prix || 0, d.devise || D.config.devise)],
+			['Postes', d.machine ? '1 (lié au PC)' : d.postes ? String(d.postes) : 'Illimité'],
+			['Activation', d.enLigne ? 'En ligne' : 'Hors ligne'],
+			['Quantité', String(q)],
+		];
+		$('#cl-resume').innerHTML = lignes.map(([k, val]) => String(html`<dt>${k}</dt><dd>${val}</dd>`)).join('') + String(html`<dt>Total</dt><dd class="total">${d.paiement?.statut === 'offert' ? argent(0, d.devise || D.config.devise) : argent((d.prix || 0) * q, d.devise || D.config.devise)}</dd>`);
+		$('#cl-fonctions').innerHTML = d.fonctions.length ? d.fonctions.map((k) => String(html`<span>${D.fonctions[k]}</span>`)).join('') : '<span>Habillages de base</span>';
+	};
+	const cl = $('#cl');
+	cl.addEventListener('pointermove', (e) => {
+		if (animationsReduites()) return;
+		const r = cl.getBoundingClientRect();
+		cl.style.setProperty('--ry', `${((e.clientX - r.left) / r.width - 0.5) * 14}deg`);
+		cl.style.setProperty('--rx', `${-((e.clientY - r.top) / r.height - 0.5) * 14}deg`);
+	});
+	cl.addEventListener('pointerleave', () => (cl.style.setProperty('--rx', '0deg'), cl.style.setProperty('--ry', '0deg')));
+	f.addEventListener('input', apercu);
+	f.addEventListener('change', apercu);
 	remplir();
-	$$('[name=offreChoix]', f).forEach((r) => r.addEventListener('change', () => ((offre = offres.find((o) => o.code === r.value)), remplir())));
-	$('[name=emise]', f).addEventListener('change', remplir);
+	apercu();
+	$$('[name=offreChoix]', f).forEach((r) => r.addEventListener('change', () => ((offre = offres.find((o) => o.code === r.value)), remplir(), apercu())));
+	$('[name=emise]', f).addEventListener('change', () => (remplir(), apercu()));
 	f.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const corps = {...lireFormulaire(f), offre: offre.code, quantite: Number($('[name=quantite]', f).value) || 1};
@@ -908,11 +1031,25 @@ PAGES.nouvelle = (v, _, q) => {
 		}
 	});
 };
+// Petite explosion de confettis (décor) autour de la coche de réussite
+const confettis = () => {
+	const couleurs = ['#7c5cff', '#22c3ee', '#f59e0b', '#ec4899', '#10b981', '#3b82f6'];
+	return brut(
+		[...Array(18)]
+			.map((_, i) => {
+				const a = (i / 18) * Math.PI * 2;
+				const d = 46 + (i % 3) * 18;
+				return `<i style="background:${couleurs[i % couleurs.length]};--x:${(Math.cos(a) * d).toFixed(0)}px;--y:${(Math.sin(a) * d).toFixed(0)}px;--r:${i * 47}deg"></i>`;
+			})
+			.join(''),
+	);
+};
 const resultatCreation = (ls) => {
 	const l = ls[0];
 	const f = ouvrirDialogue(
-		html`<h2>✓ ${ls.length > 1 ? `${ls.length} licences générées` : 'Licence générée'}</h2>
-		<p>${l.offreNom} pour <b>${l.client.nom}</b> · ${l.expire ? `valable jusqu'au ${date(l.expire)}` : 'perpétuelle'}</p>
+		html`<div class="succes"><span class="succes-coche">${ic('check')}<span class="confettis">${confettis()}</span></span>
+		<div><h2>${ls.length > 1 ? `${ls.length} licences générées !` : 'Licence générée !'}</h2>
+		<p class="muted" style="margin:2px 0 0">${l.offreNom} pour <b>${l.client.nom}</b> · ${l.expire ? `valable jusqu'au ${date(l.expire)}` : 'perpétuelle'}</p></div></div>
 		${ls.length > 1 ? html`<textarea class="cle" readonly rows="8">${ls.map((x) => `${x.id}\t${x.cle}`).join('\n')}</textarea>` : html`<textarea class="cle" readonly rows="5">${l.cle}</textarea>`}
 		<div class="actions">
 			<button type="button" class="sec" id="r-copier">Copier ${ls.length > 1 ? 'tout' : 'la clé'}</button>

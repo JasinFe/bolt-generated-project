@@ -1,6 +1,6 @@
 {
   "name": "obs-overlay-licences",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Gestionnaire de licences pour OBS Overlay Kit : génération de clés signées, tableau de bord, clients, offres, activation en ligne",
   "type": "module",

@@ -90,9 +90,23 @@ const tableau = (box, entetes, lignes) => {
 	box.append(t);
 };
 
+// Pas de données : silhouette de graphique qui « respire », avec un message
 const vide = (box, msg = 'Pas encore de données sur cette période') => {
-	box.append(h('div', 'g-vide', msg));
+	const v = h('div', 'g-vide');
+	const f = h('div', 'g-fantome');
+	[38, 62, 45, 80, 55, 70, 30, 58].forEach((pc, i) => {
+		const b = h('i');
+		b.style.height = `${pc}%`;
+		b.style.setProperty('--i', i);
+		f.append(b);
+	});
+	const m = h('div', 'g-vide-msg');
+	m.append(h('b', '', 'En attente de données'), h('span', '', msg));
+	v.append(f, m);
+	box.append(v);
 };
+// Les graphiques se dessinent à l'affichage (désactivé si l'utilisateur réduit les animations)
+const animer = (box) => box.classList.add('g-anim');
 
 // --- Colonnes (simples ou empilées) -------------------------------------------------------
 // donnees : {categories: [...], series: [{nom, couleur, valeurs: [...]}], format, vueTableau}
@@ -102,6 +116,7 @@ export const colonnes = (box, d) => {
 	if (d.vueTableau) return tableau(box, ['', ...d.series.map((s) => s.nom), ...(d.series.length > 1 ? ['Total'] : [])], d.categories.map((c, i) => [c, ...d.series.map((s) => fmt(s.valeurs[i])), ...(d.series.length > 1 ? [fmt(d.series.reduce((a, s) => a + s.valeurs[i], 0))] : [])]));
 	const totaux = d.categories.map((_, i) => d.series.reduce((a, s) => a + (s.valeurs[i] || 0), 0));
 	if (!totaux.some((v) => v > 0)) return vide(box);
+	animer(box);
 	const {w, h: H} = taille(box);
 	const m = {g: 44, d: 8, h: 12, b: 28};
 	const ticks = graduations(Math.max(...totaux));
@@ -131,7 +146,7 @@ export const colonnes = (box, d) => {
 			const r = haut ? Math.min(4, hauteur, larg / 2) : 0;
 			// coin arrondi en haut seulement, carré sur la ligne de base
 			const yb = y0 - (k > 0 ? 2 : 0);
-			el('path', {d: `M${x0},${yb} V${yb - hauteur + r} Q${x0},${yb - hauteur} ${x0 + r},${yb - hauteur} H${x0 + larg - r} Q${x0 + larg},${yb - hauteur} ${x0 + larg},${yb - hauteur + r} V${yb} Z`, fill: s.couleur, class: 'g-marque'}, svg);
+			el('path', {d: `M${x0},${yb} V${yb - hauteur + r} Q${x0},${yb - hauteur} ${x0 + r},${yb - hauteur} H${x0 + larg - r} Q${x0 + larg},${yb - hauteur} ${x0 + larg},${yb - hauteur + r} V${yb} Z`, fill: s.couleur, class: 'g-marque g-barre-col', style: `--i:${i}`}, svg);
 		});
 		// zone de survol : toute la bande
 		const zone = el('rect', {x: m.g + bande * i, y: m.h, width: bande, height: H - m.h - m.b, class: 'g-zone', tabindex: 0}, svg);
@@ -158,6 +173,7 @@ export const courbe = (box, d) => {
 	if (d.vueTableau) return tableau(box, ['', ...d.series.map((s) => s.nom)], d.categories.map((c, i) => [c, ...d.series.map((s) => fmt(s.valeurs[i]))]));
 	const tous = d.series.flatMap((s) => s.valeurs);
 	if (!tous.some((v) => v > 0)) return vide(box);
+	animer(box);
 	const {w, h: H} = taille(box);
 	const m = {g: 52, d: 16, h: 14, b: 28};
 	const ticks = graduations(Math.max(...tous));
@@ -177,7 +193,7 @@ export const courbe = (box, d) => {
 	for (const s of d.series) {
 		const pts = s.valeurs.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
 		if (d.aire !== false) el('path', {d: `M${x(0)},${y(0)} L${pts.join(' L')} L${x(n - 1)},${y(0)} Z`, fill: s.couleur, class: 'g-aire'}, svg);
-		el('path', {d: `M${pts.join(' L')}`, stroke: s.couleur, class: 'g-ligne'}, svg);
+		el('path', {d: `M${pts.join(' L')}`, stroke: s.couleur, class: 'g-ligne', pathLength: 1}, svg);
 		el('circle', {cx: x(n - 1), cy: y(s.valeurs[n - 1]), r: 4, fill: s.couleur, class: 'g-point'}, svg);
 	}
 	// réticule : suit le pointeur et s'aligne sur la date la plus proche
@@ -228,6 +244,7 @@ export const anneau = (box, d) => {
 	const total = parts.reduce((a, p) => a + p.valeur, 0);
 	if (d.vueTableau) return tableau(box, ['', 'Valeur', 'Part'], d.parts.map((p) => [p.nom, fmt(p.valeur), total ? `${Math.round((p.valeur / total) * 100)} %` : '—']));
 	if (!total) return vide(box);
+	animer(box);
 	const wrap = h('div', 'g-anneau');
 	const R = 80;
 	const r = 54;
@@ -241,7 +258,7 @@ export const anneau = (box, d) => {
 		const grand = e - s > Math.PI ? 1 : 0;
 		const pt = (rr, a) => `${(rr * Math.cos(a)).toFixed(2)},${(rr * Math.sin(a)).toFixed(2)}`;
 		const chemin = parts.length === 1 ? `M0,${-R} A${R},${R} 0 1 1 -0.01,${-R} L-0.01,${-r} A${r},${r} 0 1 0 0,${-r} Z` : `M${pt(R, s)} A${R},${R} 0 ${grand} 1 ${pt(R, e)} L${pt(r, e)} A${r},${r} 0 ${grand} 0 ${pt(r, s)} Z`;
-		const arc = el('path', {d: chemin, fill: p.couleur, class: 'g-marque g-part', tabindex: 0}, svg);
+		const arc = el('path', {d: chemin, fill: p.couleur, class: 'g-marque g-part', tabindex: 0, style: `--i:${parts.indexOf(p)}`}, svg);
 		const voir = (ev) => {
 			const b = arc.getBoundingClientRect();
 			montrerBulle(ev.clientX ?? b.left + b.width / 2, ev.clientY ?? b.top, p.nom, [{nom: `${Math.round((p.valeur / total) * 100)} %`, valeur: fmt(p.valeur), couleur: p.couleur, forme: 'carre'}]);
@@ -274,6 +291,7 @@ export const barres = (box, d) => {
 	const fmt = d.format || nombre;
 	if (d.vueTableau) return tableau(box, ['', d.unite || 'Valeur'], d.items.map((it) => [it.nom, fmt(it.valeur)]));
 	if (!d.items.length || !d.items.some((i) => i.valeur > 0)) return vide(box, d.messageVide);
+	animer(box);
 	const max = Math.max(...d.items.map((i) => i.valeur));
 	const liste = h('div', 'g-barres');
 	for (const it of d.items) {
@@ -287,6 +305,7 @@ export const barres = (box, d) => {
 		const rempli = h('span', 'g-rempli');
 		rempli.style.width = `${max ? Math.max(it.valeur > 0 ? 1.5 : 0, (it.valeur / max) * 100) : 0}%`;
 		rempli.style.background = it.couleur;
+		rempli.style.setProperty('--i', d.items.indexOf(it));
 		piste.append(rempli);
 		ligne.append(nom, piste, h('b', 'g-barre-val', fmt(it.valeur)));
 		if (it.onClick) {
@@ -316,6 +335,7 @@ export const chaleur = (box, d) => {
 	const W = 30 + (semaines + 1) * (c + g);
 	const H = 20 + 7 * (c + g);
 	const svg = el('svg', {viewBox: `0 0 ${W} ${H}`, class: 'g-svg g-chaleur', role: 'img'});
+	animer(box);
 	['lun', '', 'mer', '', 'ven', '', ''].forEach((j, i) => j && (el('text', {x: 0, y: 20 + i * (c + g) + 10, class: 'g-axe'}, svg).textContent = j));
 	const niveaux = ['var(--seq-0)', 'var(--seq-1)', 'var(--seq-2)', 'var(--seq-3)', 'var(--seq-4)'];
 	// lundi de la première semaine affichée
@@ -338,7 +358,7 @@ export const chaleur = (box, d) => {
 			}
 			const n = d.jours.get(iso) || 0;
 			const niv = n === 0 ? 0 : Math.min(4, 1 + Math.floor((n / max) * 3.999));
-			const r = el('rect', {x: 30 + s * (c + g), y: 20 + j * (c + g), width: c, height: c, rx: 3, fill: niveaux[niv], class: 'g-case', tabindex: -1}, svg);
+			const r = el('rect', {x: 30 + s * (c + g), y: 20 + j * (c + g), width: c, height: c, rx: 3, fill: niveaux[niv], class: 'g-case', tabindex: -1, style: `--i:${s}`}, svg);
 			const voir = (e) => montrerBulle(e.clientX, e.clientY, dt.toLocaleDateString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC'}), [{nom: d.unite || 'événements', valeur: nombre(n), couleur: niveaux[Math.max(1, niv)], forme: 'carre'}]);
 			r.addEventListener('pointermove', voir);
 			r.addEventListener('pointerleave', cacherBulle);
@@ -359,14 +379,18 @@ export const chaleur = (box, d) => {
 // Mini-courbe pour les tuiles de chiffres clés
 export const sparkline = (box, valeurs) => {
 	box.innerHTML = '';
-	if (valeurs.length < 2) return;
+	// une ligne plate à zéro n'apporte rien : on n'affiche la tendance que s'il y a des données
+	if (valeurs.length < 2 || !valeurs.some((v) => v > 0)) return;
 	const w = 120;
-	const H = 30;
+	const H = 34;
 	const max = Math.max(1, ...valeurs);
-	const svg = el('svg', {viewBox: `0 0 ${w} ${H}`, class: 'g-spark', 'aria-hidden': 'true'});
-	const pts = valeurs.map((v, i) => `${((i / (valeurs.length - 1)) * (w - 4) + 2).toFixed(1)},${(H - 3 - (v / max) * (H - 6)).toFixed(1)}`);
-	el('path', {d: `M${pts.join(' L')}`, class: 'g-spark-ligne'}, svg);
-	const [lx, ly] = pts[pts.length - 1].split(',');
-	el('circle', {cx: lx, cy: ly, r: 2.5, class: 'g-spark-point'}, svg);
+	const svg = el('svg', {viewBox: `0 0 ${w} ${H}`, class: 'g-spark', 'aria-hidden': 'true', preserveAspectRatio: 'none'});
+	const defs = el('defs', {}, svg);
+	const g = el('linearGradient', {id: 'spark-degrade', x1: 0, y1: 0, x2: 0, y2: 1}, defs);
+	el('stop', {offset: 0, 'stop-color': 'var(--accent2)', 'stop-opacity': 0.55}, g);
+	el('stop', {offset: 1, 'stop-color': 'var(--accent2)', 'stop-opacity': 0}, g);
+	const pts = valeurs.map((v, i) => `${((i / (valeurs.length - 1)) * (w - 4) + 2).toFixed(1)},${(H - 3 - (v / max) * (H - 8)).toFixed(1)}`);
+	el('path', {d: `M2,${H} L${pts.join(' L')} L${w - 2},${H} Z`, class: 'g-spark-aire'}, svg);
+	el('path', {d: `M${pts.join(' L')}`, class: 'g-spark-ligne', pathLength: 1, 'vector-effect': 'non-scaling-stroke'}, svg);
 	box.append(svg);
 };
