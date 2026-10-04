@@ -1,6 +1,6 @@
 {
   "name": "obs-overlay-kit",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "private": true,
   "description": "Habillage TV en direct pour OBS Studio : overlays + régie, sans dépendance, avec licence d'utilisation",
   "type": "module",

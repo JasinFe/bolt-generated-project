@@ -468,13 +468,17 @@
 			const on = !!state[k]?.visible;
 			$$(`[data-toggle="${k}"]`).forEach((b) => {
 				b.classList.toggle('is-on', on);
-				b.textContent = on ? '● Affiché' : 'Afficher';
+				b.textContent = on ? 'Affiché' : 'Afficher';
 			});
 			const card = $(`[data-el="${k}"]`);
 			if (card) card.classList.toggle('is-on', on);
 		}
 		$$('[data-ecran]').forEach((b) => b.classList.toggle('toggle', b.dataset.ecran === state.ecran.mode && state.ecran.mode !== 'aucun'));
 		$$('[data-ecran]').forEach((b) => b.classList.toggle('is-on', b.dataset.ecran === state.ecran.mode && state.ecran.mode !== 'aucun'));
+		// compteur « à l'antenne » (écran plein compris)
+		const nbAntenne = ELEMENTS.filter((k) => k !== 'logo' && state[k]?.visible).length + (state.ecran.mode !== 'aucun' ? 1 : 0);
+		$('#antenne-nb').textContent = nbAntenne;
+		$('#antenne').classList.toggle('on', nbAntenne > 0);
 		$('#sa').textContent = state.score.scoreA;
 		$('#sb').textContent = state.score.scoreB;
 		renderLicence();
@@ -840,6 +844,11 @@
 	};
 	$('#btn-chat-vider').addEventListener('click', () => post('/api/chat/vider'));
 
+	// Horloge de la régie
+	const horloge = () => ($('#horloge').textContent = new Date().toLocaleTimeString('fr-FR'));
+	horloge();
+	setInterval(horloge, 1000);
+
 	const connect = () => {
 		const es = new EventSource('/api/events?chat=1');
 		es.addEventListener('chat', (e) => ajouterMessage(JSON.parse(e.data)));
@@ -853,7 +862,7 @@
 		es.addEventListener('etat', (e) => {
 			state = JSON.parse(e.data);
 			$('#statut').classList.add('ok');
-			$('#statut-txt').textContent = 'connectée';
+			$('#statut-txt').textContent = 'connectée ·';
 			render();
 		});
 		es.onerror = () => {
