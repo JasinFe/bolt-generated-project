@@ -107,12 +107,20 @@ html body .km-scope .km-b.km-top-play { width:40px!important; height:40px!import
    SESSION — hero (pochette + titre)
    ================================================================ */
 .km-page { --km-cover-hi:color-mix(in srgb,var(--km-cover) 82%,#fff 6%); }
-.km-hero { position:relative; overflow:hidden; width:100%; background:var(--km-cover); transition:background 1s ease; }
-.km-hero-bg { position:absolute; inset:-60px; background-size:cover; background-position:center; filter:blur(60px) saturate(1.4); opacity:.42; transform:scale(1.2); }
-.km-hero-gradient { position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.5) 100%); }
-.km-hero-inner { position:relative; z-index:2; max-width:var(--km-max); margin:0 auto; padding:96px var(--km-pad) 28px;
+/* Mise en page verrouillée (!important) : un thème ou un ancien CSS personnalisé ne peut plus
+   empiler la pochette au-dessus du titre ni la renvoyer à droite. */
+html body .km-scope .km-sh { position:relative; display:block!important; overflow:hidden; width:100%!important; max-width:none!important; margin:0!important; padding:0!important;
+  float:none!important; background:var(--km-cover); transition:background 1s ease; }
+html body .km-scope .km-sh.km-sh-nocover { background:linear-gradient(135deg,color-mix(in srgb,var(--km-accent) 38%,#15151f) 0%,color-mix(in srgb,var(--km-cover) 70%,#101018) 70%); }
+html body .km-scope .km-sh-in { display:flex!important; flex-direction:row!important; flex-wrap:nowrap!important; align-items:flex-end!important; justify-content:flex-start!important;
+  width:100%!important; float:none!important; text-align:left!important; box-sizing:border-box; }
+html body .km-scope .km-sh-cover { order:0!important; margin:0!important; float:none!important; }
+html body .km-scope .km-sh-text { order:1!important; text-align:left!important; float:none!important; margin:0!important; }
+.km-sh-bg { position:absolute; inset:-60px; background-size:cover; background-position:center; filter:blur(60px) saturate(1.4); opacity:.42; transform:scale(1.2); }
+.km-sh-shade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.5) 100%); }
+.km-sh-in { position:relative; z-index:2; max-width:var(--km-max)!important; margin:0 auto!important; padding:96px var(--km-pad) 28px;
   display:flex; align-items:flex-end; gap:32px; animation:km-fade-up .55s var(--km-ease) both; }
-.km-cover-wrap { flex:0 0 auto; width:clamp(180px,19vw,264px); }
+.km-sh-cover { flex:0 0 auto; width:clamp(180px,19vw,264px); }
 html body .km-scope .km-b.km-cover-btn { position:relative; display:block; width:100%; aspect-ratio:1/1; border-radius:8px; overflow:hidden; cursor:zoom-in;
   box-shadow:0 8px 60px rgba(0,0,0,.6)!important; transition:transform .35s var(--km-ease); }
 html body .km-scope .km-b.km-cover-btn:hover { transform:scale(1.025); }
@@ -122,7 +130,7 @@ html body .km-scope .km-b.km-cover-btn:hover { transform:scale(1.025); }
 .km-cover-btn:hover .km-cover-zoom, .km-cover-btn:focus-visible .km-cover-zoom { opacity:1; }
 .km-cover-ph { width:100%; aspect-ratio:1/1; border-radius:8px; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.4);
   background:linear-gradient(145deg,#33305a,#1b1a33); box-shadow:0 8px 60px rgba(0,0,0,.6); }
-.km-hero-text { flex:1 1 auto; min-width:0; padding-bottom:2px; }
+.km-sh-text { flex:1 1 auto; min-width:0; padding-bottom:2px; }
 .km-type-label { display:block; font-size:14px; font-weight:700; color:#fff; margin:0 0 6px; }
 html body .km-scope .km-title { font-weight:900; letter-spacing:-.045em; line-height:1; margin:0 0 20px!important; padding:0!important; color:#fff!important;
   overflow-wrap:anywhere; text-wrap:balance; text-shadow:0 2px 30px rgba(0,0,0,.25); }
@@ -140,7 +148,7 @@ html body .km-scope .km-title { font-weight:900; letter-spacing:-.045em; line-he
 /* ================================================================
    SESSION — corps (actions, liste, paroles)
    ================================================================ */
-.km-body { position:relative; padding-bottom:48px;
+html body .km-scope .km-body { position:relative; display:block!important; width:100%!important; max-width:none!important; margin:0!important; float:none!important; padding-bottom:48px;
   background:linear-gradient(180deg,color-mix(in srgb,var(--km-cover) 62%,var(--km-bg)) 0,var(--km-bg) 300px); transition:background 1s ease; }
 .km-actions { max-width:var(--km-max); margin:0 auto; padding:24px var(--km-pad) 8px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
 html body .km-scope .km-b.km-btn-play-main { width:60px!important; height:60px!important; border-radius:50%; background:var(--km-accent); color:#fff;
@@ -157,7 +165,7 @@ html body .km-scope .km-b.km-act[aria-pressed="true"] { color:var(--km-accent-hi
 .km-fact { display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:600; color:rgba(255,255,255,.78);
   background:rgba(255,255,255,.07); border:1px solid var(--km-border); padding:6px 12px; border-radius:999px; }
 .km-fact.is-warn { color:var(--km-gold); border-color:rgba(245,181,68,.25); background:rgba(245,181,68,.08); }
-.km-hero-notices { max-width:var(--km-max); margin:0 auto; padding:10px var(--km-pad) 0; display:grid; gap:8px; }
+.km-sh-notices { max-width:var(--km-max); margin:0 auto; padding:10px var(--km-pad) 0; display:grid; gap:8px; }
 .km-notice { display:flex; align-items:flex-start; gap:10px; font-size:13px; line-height:1.55; padding:10px 14px; border-radius:10px; border:1px solid; }
 .km-notice svg { margin-top:2px; }
 .km-notice-info { background:rgba(167,139,250,.08); border-color:rgba(167,139,250,.2); color:#c9b9ff; }
@@ -471,6 +479,43 @@ html body .km-scope .km-b.km-download-btn { width:34px!important; height:34px!im
 html body .km-scope .km-b.km-download-btn:hover { color:var(--km-accent); border-color:var(--km-accent)!important; }
 
 /* ================================================================
+   BLINDAGE ANTI-THÈME — la disposition des blocs principaux est imposée,
+   quel que soit le CSS du thème ou un ancien CSS personnalisé.
+   ================================================================ */
+html body .km-scope.km-page { text-align:left!important; direction:ltr; }
+html body .km-scope .km-top { display:flex!important; flex-direction:row!important; align-items:center!important; justify-content:flex-start!important; }
+html body .km-scope .km-top-now { display:flex!important; flex-direction:row!important; align-items:center!important; }
+html body .km-scope .km-byline,
+html body .km-scope .km-chips,
+html body .km-scope .km-facts,
+html body .km-scope .km-actions,
+html body .km-scope .km-tr-sub,
+html body .km-scope .km-tr-tools,
+html body .km-scope .km-card-head,
+html body .km-scope .km-notice { display:flex!important; flex-direction:row!important; justify-content:flex-start!important; text-align:left!important; float:none!important; }
+html body .km-scope .km-byline, html body .km-scope .km-actions, html body .km-scope .km-tr-sub, html body .km-scope .km-tr-tools { align-items:center!important; }
+html body .km-scope .km-card-head { justify-content:space-between!important; align-items:baseline!important; }
+html body .km-scope .km-notice { align-items:flex-start!important; }
+html body .km-scope .km-main { display:grid!important; float:none!important; }
+html body .km-scope .km-tl-head, html body .km-scope .km-tr { display:grid!important; float:none!important; text-align:left!important; }
+html body .km-scope .km-tr-n { display:flex!important; flex-direction:row!important; align-items:center!important; justify-content:center!important; }
+html body .km-scope .km-tr-info, html body .km-scope .km-tr-title, html body .km-scope .km-sh-text, html body .km-scope .km-np-meta, html body .km-scope .km-lyrics-body { text-align:left!important; }
+html body .km-scope .km-tr-dur { text-align:right!important; }
+html body .km-scope .km-th, html body .km-scope .km-np-track, html body .km-scope .km-np-artist, html body .km-scope .km-type-label,
+html body .km-scope .km-title, html body .km-scope .km-about-body, html body .km-scope .km-top-title { text-align:left!important; }
+html body .km-scope .km-th.center { text-align:center!important; }
+html body .km-scope .km-np-meta, html body .km-scope .km-tr-info { display:block!important; }
+html body .km-scope .km-seek { display:flex!important; flex-direction:row!important; align-items:center!important; }
+html body .km-scope .km-np-left, html body .km-scope .km-np-controls, html body .km-scope .km-np-progress, html body .km-scope .km-np-vol { display:flex; flex-direction:row!important; align-items:center!important; text-align:left!important; }
+html body .km-scope .km-np-controls { justify-content:center!important; }
+@media (min-width:901px) {
+  html body .km-scope .km-np-inner { display:grid!important; }
+  html body .km-scope .km-np-center { display:flex!important; flex-direction:column!important; align-items:center!important; }
+  html body .km-scope .km-np-right { display:flex!important; flex-direction:row!important; align-items:center!important; justify-content:flex-end!important; }
+  html body .km-scope .km-np-left { justify-content:flex-start!important; }
+}
+
+/* ================================================================
    RESPONSIVE
    ================================================================ */
 @media (max-width:1100px) {
@@ -497,17 +542,17 @@ html body .km-scope .km-b.km-download-btn:hover { color:var(--km-accent); border
   .km-np.is-open .km-np-art { display:flex!important; flex:1 1 auto; min-height:0; align-items:center; justify-content:center; padding:12px 0 24px; }
   .km-np.is-open .km-np-art img,.km-np.is-open .km-np-art-ph { width:min(100%,46vh)!important; aspect-ratio:1/1; height:auto!important; object-fit:cover; border-radius:10px; box-shadow:0 20px 70px rgba(0,0,0,.6); }
   .km-np-art-ph { display:flex; align-items:center; justify-content:center; background:linear-gradient(145deg,#33305a,#1b1a33); color:rgba(255,255,255,.4); }
-  .km-np.is-open .km-np-inner { display:flex; flex-direction:column; align-items:stretch; gap:18px; padding:0; min-height:0; }
+  html body .km-scope .km-np.is-open .km-np-inner { display:flex; flex-direction:column!important; align-items:stretch!important; gap:18px; padding:0; min-height:0; }
   .km-np.is-open .km-np-left { cursor:default; }
   .km-np.is-open .km-np-thumb,.km-np.is-open .km-np-thumb-ph { display:none!important; }
   .km-np.is-open .km-np-track { font-size:22px; font-weight:800; white-space:normal; }
   .km-np.is-open .km-np-artist { font-size:15px; margin-top:6px; }
-  .km-np.is-open .km-np-center { display:flex; flex-direction:column-reverse; gap:14px; max-width:none; }
+  html body .km-scope .km-np.is-open .km-np-center { display:flex; flex-direction:column-reverse!important; gap:14px; max-width:none; }
   .km-np.is-open .km-np-progress { position:static; }
   .km-np.is-open .km-np-progress .km-seek-track { height:4px; border-radius:99px; }
   .km-np.is-open .km-np-t,.km-np.is-open .km-np-btn-repeat,.km-np.is-open .km-np-btn-shuffle,.km-np.is-open .km-np-btn-prev { display:inline-flex!important; }
   .km-np.is-open .km-np-t { display:block!important; flex-basis:38px; }
-  .km-np.is-open .km-np-controls { width:100%; justify-content:space-between; }
+  html body .km-scope .km-np.is-open .km-np-controls { width:100%; justify-content:space-between!important; }
   html body .km-scope .km-np.is-open .km-b.km-np-btn-play { width:64px!important; height:64px!important; }
   html body .km-scope .km-np.is-open .km-b.km-ibtn { width:48px!important; height:48px!important; color:#fff; }
   .km-np.is-open .km-ibtn svg { width:26px; height:26px; }
@@ -522,8 +567,8 @@ html body .km-scope .km-b.km-download-btn:hover { color:var(--km-accent); border
   .km-top { height:56px; margin-bottom:-56px; }
   .km-top-label { display:none; }
   .km-top-title { font-size:16px; }
-  .km-hero-inner { flex-direction:column; align-items:flex-start; gap:20px; padding:72px var(--km-pad) 20px; }
-  .km-cover-wrap { width:min(62vw,260px); align-self:center; }
+  html body .km-scope .km-sh-in { flex-direction:column!important; align-items:flex-start!important; gap:20px; padding:72px var(--km-pad) 20px; }
+  html body .km-scope .km-sh-cover { width:min(62vw,260px); align-self:center; }
   .km-type-label { font-size:12px; }
   html body .km-scope .km-title { font-size:clamp(28px,8.6vw,44px)!important; letter-spacing:-.03em!important; line-height:1.05!important; margin-bottom:12px!important; }
   .km-byline { font-size:13.5px; }

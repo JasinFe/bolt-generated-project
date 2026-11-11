@@ -3,7 +3,7 @@
  * Plugin Name:       KM SALLE D'ÉCOUTE
  * Plugin URI:        https://votre-label.com
  * Description:       Système d'écoute sécurisé de démos et productions musicales pour partenaires et invités du Label.
- * Version:           1.8.0
+ * Version:           1.8.1
  * Author:            KM Label
  * Text Domain:       km-salle-ecoute
  * Domain Path:       /languages
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes globales
-define( 'KM_SALLE_ECOUTE_VERSION',    '1.8.0' );
+define( 'KM_SALLE_ECOUTE_VERSION',    '1.8.1' );
 define( 'KM_SALLE_ECOUTE_FILE',       __FILE__ );
 define( 'KM_SALLE_ECOUTE_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'KM_SALLE_ECOUTE_URL',        plugin_dir_url( __FILE__ ) );

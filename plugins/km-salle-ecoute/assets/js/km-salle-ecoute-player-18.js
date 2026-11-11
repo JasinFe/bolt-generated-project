@@ -203,7 +203,7 @@
      BARRE SUPÉRIEURE, POCHETTE EN GRAND
   ================================================================ */
   function initTopBar() {
-    var top = document.getElementById('km-top'), hero = document.querySelector('.km-hero');
+    var top = document.getElementById('km-top'), hero = document.querySelector('.km-sh');
     if (!top || !hero) return;
     var bar = document.getElementById('wpadminbar');
     function offset() {

@@ -62,14 +62,14 @@ class KM_Salle_Ecoute_Player {
         );
         wp_register_script(
             'km-salle-ecoute-player',
-            KM_SALLE_ECOUTE_URL . 'assets/js/km-salle-ecoute-player-17.js',
+            KM_SALLE_ECOUTE_URL . 'assets/js/km-salle-ecoute-player-18.js',
             [ 'jquery' ],
             KM_SALLE_ECOUTE_VERSION,
             true
         );
         wp_register_script(
             'km-salle-ecoute-inline-player',
-            KM_SALLE_ECOUTE_URL . 'assets/js/km-salle-ecoute-inline-player-17.js',
+            KM_SALLE_ECOUTE_URL . 'assets/js/km-salle-ecoute-inline-player-18.js',
             [ 'jquery', 'wavesurfer' ],
             KM_SALLE_ECOUTE_VERSION,
             true

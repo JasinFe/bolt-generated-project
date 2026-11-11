@@ -152,14 +152,14 @@ $avatar   = $artiste_obj ? get_the_post_thumbnail_url( $artiste_obj->ID, 'thumbn
 </div>
 
 <!-- ── HERO ── -->
-<header class="km-hero">
+<div class="km-sh<?php echo $cover_url ? '' : ' km-sh-nocover'; ?>">
     <?php if ( $cover_url ) : ?>
-    <div class="km-hero-bg" style="background-image:url('<?php echo esc_url( $cover_med ?: $cover_url ); ?>')"></div>
+    <div class="km-sh-bg" style="background-image:url('<?php echo esc_url( $cover_med ?: $cover_url ); ?>')"></div>
     <?php endif; ?>
-    <div class="km-hero-gradient"></div>
+    <div class="km-sh-shade"></div>
 
-    <div class="km-hero-inner">
-        <div class="km-cover-wrap">
+    <div class="km-sh-in">
+        <div class="km-sh-cover">
             <?php if ( $cover_url ) : ?>
             <button type="button" class="km-b km-cover-btn" id="km-cover-btn" data-full="<?php echo esc_url( $cover_url ); ?>" aria-label="<?php esc_attr_e( 'Agrandir la pochette', 'km-salle-ecoute' ); ?>">
                 <img src="<?php echo esc_url( $cover['sizes']['large'] ?? $cover_url ); ?>" alt="<?php echo esc_attr( $titre ); ?>"
@@ -171,7 +171,7 @@ $avatar   = $artiste_obj ? get_the_post_thumbnail_url( $artiste_obj->ID, 'thumbn
             <?php endif; ?>
         </div>
 
-        <div class="km-hero-text">
+        <div class="km-sh-text">
             <span class="km-type-label"><?php esc_html_e( 'Session d\'écoute', 'km-salle-ecoute' ); ?></span>
             <h1 class="km-title <?php echo esc_attr( $title_cls ); ?>"><?php echo esc_html( $titre ); ?></h1>
 
@@ -201,7 +201,7 @@ $avatar   = $artiste_obj ? get_the_post_thumbnail_url( $artiste_obj->ID, 'thumbn
             <?php endif; ?>
         </div>
     </div>
-</header>
+</div><!-- .km-sh -->
 
 <div class="km-body">
     <!-- ── ACTIONS ── -->
@@ -245,7 +245,7 @@ $avatar   = $artiste_obj ? get_the_post_thumbnail_url( $artiste_obj->ID, 'thumbn
     <?php endif; ?>
 
     <?php if ( $msg_partner || $wm ) : ?>
-    <div class="km-hero-notices">
+    <div class="km-sh-notices">
         <?php if ( $msg_partner ) : ?>
         <div class="km-notice km-notice-info"><?php echo $I::svg( 'message', 16 ); ?><div><?php echo wp_kses_post( nl2br( $msg_partner ) ); ?></div></div>
         <?php endif; ?>

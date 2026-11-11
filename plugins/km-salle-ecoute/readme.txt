@@ -4,7 +4,7 @@ Tags: audio, music, player, demo, label, partenaire, écoute, wavesurfer
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -73,6 +73,11 @@ Deux snippets sont proposés à WPCode :
 Le journal des accès est désormais intégré : Sessions d'Écoute > Réglages > Journal des accès.
 
 == Changelog ==
+
+= 1.8.1 =
+* **Mise en page de la page session verrouillée** : sur certains thèmes (ou avec un ancien CSS personnalisé visant les classes de la version 1.7), la pochette s'empilait à droite au-dessus du titre. L'en-tête n'utilise plus la balise `<header>` (stylée par les thèmes), ses classes ont été renommées et la disposition pochette à gauche / titre à droite est imposée.
+* Session sans pochette : fond d'en-tête dégradé aux couleurs du lecteur au lieu d'un aplat sombre.
+* Fichiers CSS/JS renommés et version incrémentée pour forcer le rafraîchissement des caches.
 
 = 1.8.0 =
 **Page session repensée façon lecteur de streaming**
