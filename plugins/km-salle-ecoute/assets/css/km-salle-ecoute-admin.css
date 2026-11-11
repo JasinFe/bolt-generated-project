@@ -1,0 +1,24 @@
+/* KM SALLE D'ÉCOUTE — Améliorations visuelles admin */
+
+/* Badge dans la liste des sessions */
+.column-km_acces .km-acces-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:700; padding:3px 10px;
+    border-radius:20px;
+}
+.km-badge-public   { background:#e8f5e9; color:#2e7d32; }
+.km-badge-password { background:#fff3e0; color:#e65100; }
+.km-badge-prive    { background:#ede7f6; color:#4527a0; }
+
+/* Copy link button */
+.km-copy-link {
+    cursor:pointer; transition:all .2s;
+}
+.km-copy-link.copied {
+    background:#4CAF50!important; color:#fff!important; border-color:#4CAF50!important;
+}
+
+/* Séparateur entre pistes ACF */
+.acf-field .acf-field-message p strong {
+    font-size:13px; color:#23282d;
+}

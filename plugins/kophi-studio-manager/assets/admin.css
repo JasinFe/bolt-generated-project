@@ -1,0 +1,255 @@
+/* ================================================================
+   KOPHI'S MUSIC STUDIO v4.0 — Admin CSS
+   Fond: #0D0D0D → #1e0938 | Gold | Violet | Green | Modern Dark
+   ================================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --kg: linear-gradient(to bottom, #0D0D0D 0%, #0D0D0D 55%, #110920 80%, #1e0938 100%);
+  --k-gold:#E8B84B; --k-gold2:#F5CC6A; --k-gold-d:rgba(232,184,75,.12); --k-gold-b:rgba(232,184,75,.3);
+  --k-violet:#8B3FD9; --k-violet2:#A855F7; --k-violet-d:rgba(139,63,217,.15); --k-violet-b:rgba(139,63,217,.35);
+  --k-green:#00C87A; --k-green-d:rgba(0,200,122,.12); --k-green-b:rgba(0,200,122,.3);
+  --k-red:#FF4757; --k-red-d:rgba(255,71,87,.12); --k-red-b:rgba(255,71,87,.3);
+  --k-orange:#FF8C42;
+  --k-dark:#0D0D0D; --k-dark2:#12112A; --k-dark3:#1A1830; --k-dark4:#221F3A; --k-dark5:#2A2748;
+  --k-glass:rgba(255,255,255,.04); --k-glass2:rgba(255,255,255,.07);
+  --k-border:rgba(255,255,255,.08); --k-border2:rgba(255,255,255,.05);
+  --k-text:#F0ECF8; --k-text2:#C8C0DC; --k-text3:#9E98B8; --k-text4:#f2a007;
+  --k-glow-gold:0 0 30px rgba(232,184,75,.25); --k-glow-violet:0 0 30px rgba(139,63,217,.3);
+  --k-glow-green:0 0 20px rgba(0,200,122,.25); --k-shadow:0 8px 32px rgba(0,0,0,.4);
+  --k-radius:14px; --k-radius-sm:8px; --k-radius-lg:20px;
+}
+
+.kophi-wrap * { box-sizing:border-box; }
+.kophi-wrap {
+  font-family:'Inter',-apple-system,sans-serif;
+  background:var(--kg); min-height:calc(100vh - 32px);
+  margin:-8px -20px -10px; padding:0; color:var(--k-text); position:relative; overflow-x:hidden;
+}
+.kophi-wrap::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 70% 20%,rgba(139,63,217,.15) 0%,transparent 60%),
+             radial-gradient(ellipse 60% 40% at 20% 80%,rgba(232,184,75,.08) 0%,transparent 50%);
+}
+.kophi-inner { max-width:1600px; margin:0 auto; padding:28px 32px; position:relative; z-index:1; }
+
+.kophi-page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; padding-bottom:22px; border-bottom:1px solid var(--k-border); flex-wrap:wrap; gap:14px; }
+.kophi-page-title { display:flex; align-items:center; gap:14px; }
+.kophi-page-icon { width:48px; height:48px; border-radius:14px; flex-shrink:0; background:linear-gradient(135deg,var(--k-violet),var(--k-gold)); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:var(--k-glow-violet); }
+.kophi-page-title h1 { font-family:'Bebas Neue',sans-serif; font-size:30px; color:#fff; margin:0; letter-spacing:3px; line-height:1; }
+.kophi-page-title h1 span { color:var(--k-gold); }
+
+.kophi-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:24px; }
+.kophi-stat { background:var(--k-glass); backdrop-filter:blur(20px); border:1px solid var(--k-border); border-radius:var(--k-radius); padding:20px 18px; position:relative; overflow:hidden; transition:transform .2s,box-shadow .2s; }
+.kophi-stat:hover { transform:translateY(-3px); }
+.kophi-stat::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; border-radius:2px 2px 0 0; }
+.kophi-stat.gold { color:var(--k-gold); } .kophi-stat.gold::before { background:linear-gradient(90deg,var(--k-gold),transparent); } .kophi-stat.gold:hover { box-shadow:var(--k-glow-gold); border-color:var(--k-gold-b); }
+.kophi-stat.violet { color:var(--k-violet2); } .kophi-stat.violet::before { background:linear-gradient(90deg,var(--k-violet),transparent); } .kophi-stat.violet:hover { box-shadow:var(--k-glow-violet); border-color:var(--k-violet-b); }
+.kophi-stat.green { color:var(--k-green); } .kophi-stat.green::before { background:linear-gradient(90deg,var(--k-green),transparent); } .kophi-stat.green:hover { box-shadow:var(--k-glow-green); border-color:var(--k-green-b); }
+.kophi-stat.red { color:var(--k-red); } .kophi-stat.red::before { background:linear-gradient(90deg,var(--k-red),transparent); }
+.kophi-stat.orange { color:var(--k-orange); } .kophi-stat.orange::before { background:linear-gradient(90deg,var(--k-orange),transparent); }
+.kophi-stat-label { font-size:9px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--k-text4); margin-bottom:10px; }
+.kophi-stat-val { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:1px; line-height:1; color:currentColor; margin-bottom:4px; }
+.kophi-stat-sub { font-size:10px; color:var(--k-text4); }
+.kophi-stat-icon { position:absolute; top:16px; right:16px; font-size:22px; opacity:.2; }
+
+.kophi-card { background:var(--k-glass); backdrop-filter:blur(20px); border:1px solid var(--k-border); border-radius:var(--k-radius); padding:22px; margin-bottom:20px; position:relative; overflow:hidden; }
+.kophi-card-title { font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--k-text3); margin-bottom:18px; display:flex; align-items:center; gap:10px; }
+.kophi-card-title::after { content:''; flex:1; height:1px; background:var(--k-border); }
+.kophi-card-gold { border-color:var(--k-gold-b); } .kophi-card-violet { border-color:var(--k-violet-b); } .kophi-card-green { border-color:var(--k-green-b); }
+
+/* CHRONOMÈTRE LIVE */
+.kophi-live-banner { background:linear-gradient(135deg,rgba(255,71,87,.15),rgba(139,63,217,.1)); border:1px solid var(--k-red-b); border-radius:var(--k-radius-lg); padding:20px 24px; margin-bottom:24px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; animation:kBorderPulse 2.5s ease-in-out infinite; }
+@keyframes kBorderPulse { 0%,100%{border-color:rgba(255,71,87,.3)} 50%{border-color:rgba(255,71,87,.8)} }
+.kophi-live-dot { width:12px; height:12px; border-radius:50%; background:var(--k-red); box-shadow:0 0 12px var(--k-red); animation:kPulse 1s infinite; flex-shrink:0; }
+@keyframes kPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.5);opacity:.7} }
+.kophi-live-sessions { display:flex; gap:14px; flex-wrap:wrap; flex:1; }
+.kophi-live-session { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:12px 16px; min-width:180px; }
+.kophi-live-name { font-size:12px; font-weight:600; color:#fff; margin-bottom:4px; }
+.kophi-live-service { font-size:10px; color:var(--k-text3); margin-bottom:6px; }
+.kophi-timer-display { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:4px; color:var(--k-red); text-shadow:0 0 20px rgba(255,71,87,.5); }
+.kophi-timer-display.warning { color:var(--k-orange); text-shadow:0 0 20px rgba(255,140,66,.5); animation:kFlash .8s infinite; }
+.kophi-timer-display.ok { color:var(--k-green); text-shadow:var(--k-glow-green); }
+@keyframes kFlash { 0%,100%{opacity:1} 50%{opacity:.3} }
+.kophi-timer-bar-wrap { height:4px; background:rgba(255,255,255,.1); border-radius:10px; margin-top:8px; overflow:hidden; }
+.kophi-timer-bar { height:100%; border-radius:10px; transition:width .5s linear,background .5s; }
+
+.kophi-table-wrap { overflow-x:auto; }
+.kophi-table { width:100%; border-collapse:collapse; font-size:12px; }
+.kophi-table th { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--k-text4); padding:10px 14px; text-align:left; border-bottom:1px solid var(--k-border); white-space:nowrap; background:rgba(0,0,0,.2); }
+.kophi-table td { padding:12px 14px; border-bottom:1px solid var(--k-border2); color:var(--k-text2); vertical-align:middle; }
+.kophi-table tr:last-child td { border-bottom:none; }
+.kophi-table tbody tr { transition:background .15s; }
+.kophi-table tbody tr:hover td { background:rgba(255,255,255,.03); }
+.kophi-table .td-name { font-weight:600; color:var(--k-text); }
+.kophi-table .td-gold { color:var(--k-gold); font-weight:700; font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:.5px; }
+.kophi-table .td-green { color:var(--k-green); font-weight:700; }
+
+.kophi-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:10px; font-weight:700; letter-spacing:.5px; white-space:nowrap; }
+.kophi-badge.live { background:var(--k-red-d); color:var(--k-red); border:1px solid var(--k-red-b); animation:kPulse 1.5s infinite; }
+.kophi-badge.scheduled { background:var(--k-gold-d); color:var(--k-gold); border:1px solid var(--k-gold-b); }
+.kophi-badge.done { background:var(--k-green-d); color:var(--k-green); border:1px solid var(--k-green-b); }
+.kophi-badge.cancelled { background:rgba(255,255,255,.05); color:var(--k-text3); border:1px solid var(--k-border); }
+.kophi-badge.interne { background:var(--k-violet-d); color:var(--k-violet2); border:1px solid var(--k-violet-b); }
+.kophi-badge.pending { background:rgba(255,140,66,.12); color:var(--k-orange); border:1px solid rgba(255,140,66,.3); }
+.kophi-badge.confirmed { background:var(--k-green-d); color:var(--k-green); border:1px solid var(--k-green-b); }
+.kophi-badge.fl_studio { background:rgba(255,140,66,.15); color:var(--k-orange); border:1px solid rgba(255,140,66,.35); }
+.kophi-badge.studio_one { background:var(--k-violet-d); color:var(--k-violet2); border:1px solid var(--k-violet-b); }
+.kophi-badge.en_cours { background:rgba(255,140,66,.12); color:var(--k-orange); border:1px solid rgba(255,140,66,.3); }
+.kophi-badge.termine { background:var(--k-green-d); color:var(--k-green); border:1px solid var(--k-green-b); }
+
+.kophi-btn { display:inline-flex; align-items:center; gap:6px; font-family:'Inter',sans-serif; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:9px 18px; border-radius:var(--k-radius-sm); border:none; cursor:pointer; transition:all .2s; text-decoration:none; white-space:nowrap; }
+.kophi-btn-primary { background:linear-gradient(135deg,var(--k-violet),#A855F7); color:#fff; box-shadow:0 4px 15px rgba(139,63,217,.35); }
+.kophi-btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(139,63,217,.5); color:#fff; }
+.kophi-btn-gold { background:linear-gradient(135deg,#E8B84B,#F5CC6A); color:#000; box-shadow:0 4px 15px rgba(232,184,75,.3); }
+.kophi-btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(232,184,75,.45); color:#000; }
+.kophi-btn-green { background:var(--k-green-d); border:1px solid var(--k-green-b); color:var(--k-green); }
+.kophi-btn-green:hover { background:var(--k-green); color:#000; transform:translateY(-1px); }
+.kophi-btn-red { background:var(--k-red-d); border:1px solid var(--k-red-b); color:var(--k-red); }
+.kophi-btn-red:hover { background:var(--k-red); color:#fff; transform:translateY(-1px); }
+.kophi-btn-outline { background:transparent; border:1px solid var(--k-border); color:var(--k-text3); }
+.kophi-btn-outline:hover { border-color:var(--k-gold-b); color:var(--k-gold); background:var(--k-gold-d); }
+.kophi-btn-violet { background:var(--k-violet-d); border:1px solid var(--k-violet-b); color:var(--k-violet2); }
+.kophi-btn-violet:hover { background:var(--k-violet); color:#fff; transform:translateY(-1px); }
+.kophi-btn-wa { background:#25D366; color:#fff !important; }
+.kophi-btn-wa:hover { background:#20BD5A; transform:translateY(-2px); color:#fff; }
+.kophi-btn-sm { padding:5px 12px; font-size:9px; } .kophi-btn-lg { padding:13px 28px; font-size:12px; }
+.kophi-btn-group { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+.kophi-avatar { width:36px; height:36px; border-radius:50%; flex-shrink:0; background:linear-gradient(135deg,var(--k-violet),var(--k-gold)); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:14px; color:#fff; letter-spacing:1px; }
+
+.kophi-fg { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+.kophi-fg label { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--k-text3); }
+.kophi-fg input,.kophi-fg select,.kophi-fg textarea { font-family:'Inter',sans-serif; font-size:12px; padding:10px 13px; background:rgba(0,0,0,.35); border:1px solid var(--k-border); border-radius:var(--k-radius-sm); color:#fff; outline:none; width:100%; transition:border .2s,box-shadow .2s; }
+.kophi-fg input:focus,.kophi-fg select:focus,.kophi-fg textarea:focus { border-color:var(--k-gold-b); box-shadow:0 0 0 3px rgba(232,184,75,.1); }
+.kophi-fg input::placeholder,.kophi-fg textarea::placeholder { color:var(--k-text4); }
+.kophi-fg textarea { resize:vertical; min-height:70px; }
+.kophi-fg select option { background:#1A1830; }
+.kophi-form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.kophi-form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+
+.kophi-modal-bg { display:none; position:fixed; inset:0; z-index:100000; background:rgba(0,0,0,.88); backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:20px; }
+.kophi-modal-bg.open { display:flex; }
+.kophi-modal { background:linear-gradient(135deg,#16142A,#1e1c38); border:1px solid var(--k-gold-b); border-radius:var(--k-radius-lg); padding:28px; width:100%; max-width:580px; max-height:92vh; overflow-y:auto; box-shadow:var(--k-glow-gold),var(--k-shadow); animation:kModalIn .25s ease; }
+@keyframes kModalIn { from{opacity:0;transform:translateY(20px) scale(.96)} to{opacity:1;transform:none} }
+.kophi-modal-title { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:3px; color:#fff; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.kophi-modal-close { background:none; border:none; font-size:22px; cursor:pointer; color:var(--k-text3); padding:0; line-height:1; transition:color .2s; }
+.kophi-modal-close:hover { color:var(--k-red); }
+
+.kophi-toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px); z-index:99999; padding:12px 22px; border-radius:30px; font-size:12px; font-weight:600; box-shadow:var(--k-shadow); opacity:0; pointer-events:none; transition:all .3s; white-space:nowrap; backdrop-filter:blur(20px); border:1px solid var(--k-border); background:rgba(22,20,42,.95); }
+.kophi-toast.show { opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto; }
+.kophi-toast.success { border-color:var(--k-green-b); color:var(--k-green); }
+.kophi-toast.error { border-color:var(--k-red-b); color:var(--k-red); }
+.kophi-toast.info { border-color:var(--k-gold-b); color:var(--k-gold); }
+
+.kophi-empty { text-align:center; padding:50px 20px; color:var(--k-text4); }
+.kophi-empty-icon { font-size:44px; margin-bottom:14px; opacity:.4; }
+.kophi-empty p { font-size:13px; line-height:1.7; }
+.kophi-empty a { color:var(--k-gold); text-decoration:none; }
+
+.kophi-charts { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.kophi-chart-wrap { background:var(--k-glass); border:1px solid var(--k-border); border-radius:var(--k-radius); padding:20px; }
+.kophi-chart-title { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--k-text3); margin-bottom:16px; }
+
+.kophi-cal { border-radius:var(--k-radius); overflow:hidden; border:1px solid var(--k-border); }
+.kophi-cal-header { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; background:rgba(0,0,0,.3); border-bottom:1px solid var(--k-border); }
+.kophi-cal-title { font-family:'Bebas Neue',sans-serif; font-size:24px; color:#fff; letter-spacing:3px; }
+.kophi-cal-dow { display:grid; grid-template-columns:repeat(7,1fr); padding:10px 14px 4px; background:rgba(0,0,0,.2); }
+.kophi-cal-dow span { text-align:center; font-size:9px; font-weight:700; letter-spacing:2px; color:var(--k-text4); text-transform:uppercase; }
+.kophi-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; padding:10px 14px 14px; background:rgba(0,0,0,.1); }
+.kophi-cal-day { border-radius:10px; aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; border:1px solid transparent; }
+.kophi-cal-day .dn { font-family:'Bebas Neue',sans-serif; font-size:17px; line-height:1; }
+.kophi-cal-day .ds { font-size:7px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-top:2px; }
+.kophi-cal-day.libre { background:rgba(0,200,122,.08); border-color:rgba(0,200,122,.2); } .kophi-cal-day.libre .dn { color:var(--k-green); } .kophi-cal-day.libre:hover { background:rgba(0,200,122,.2); transform:scale(1.08); }
+.kophi-cal-day.session { background:rgba(232,184,75,.1); border-color:rgba(232,184,75,.25); } .kophi-cal-day.session .dn { color:var(--k-gold); }
+.kophi-cal-day.bloque { background:var(--k-violet-d); border-color:var(--k-violet-b); cursor:not-allowed; } .kophi-cal-day.bloque .dn { color:var(--k-violet2); }
+.kophi-cal-day.ferme { background:rgba(255,71,87,.06); cursor:default; } .kophi-cal-day.ferme .dn { color:rgba(255,71,87,.4); }
+.kophi-cal-day.passe { opacity:.3; cursor:default; }
+.kophi-cal-day.today { outline:2px solid var(--k-gold); outline-offset:2px; }
+.kophi-cal-day.mixte { background:rgba(255,140,66,.1); border-color:rgba(255,140,66,.3); } .kophi-cal-day.mixte .dn { color:var(--k-orange); }
+
+/* DAW Tracker */
+.kophi-daw-card { background:linear-gradient(135deg,rgba(255,140,66,.07),rgba(139,63,217,.07)); border:1px solid rgba(255,140,66,.2); border-radius:var(--k-radius); padding:16px; display:flex; align-items:center; gap:14px; transition:all .2s; margin-bottom:10px; }
+.kophi-daw-card:hover { border-color:rgba(255,140,66,.45); transform:translateX(3px); }
+.kophi-daw-icon { font-size:28px; flex-shrink:0; }
+.kophi-daw-info { flex:1; min-width:0; }
+.kophi-daw-name { font-weight:700; font-size:13px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kophi-daw-meta { font-size:10px; color:var(--k-text3); margin-top:2px; }
+.kophi-daw-timer { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--k-orange); letter-spacing:2px; flex-shrink:0; }
+
+#adminmenu #toplevel_page_kophi-dashboard { border-left:3px solid var(--k-gold); }
+#adminmenu #toplevel_page_kophi-dashboard > a { color:var(--k-gold) !important; }
+#wpcontent,#wpbody { background:#0D0D0D !important; }
+
+@media(max-width:1200px) { .kophi-charts { grid-template-columns:1fr; } }
+@media(max-width:900px) { .kophi-form-row,.kophi-form-row-3 { grid-template-columns:1fr; } .kophi-stats { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:600px) { .kophi-inner { padding:16px; } .kophi-page-header { flex-direction:column; align-items:flex-start; } .kophi-stats { grid-template-columns:1fr 1fr; } }
+
+/* ================================================================
+   KOPHI v4.1 — Améliorations design (tableau de bord & global)
+   ================================================================ */
+
+/* En-tête de page : titre dégradé + icône plus présente */
+.kophi-page-title h1 {
+  background:linear-gradient(135deg,#fff 0%,#F0ECF8 40%,var(--k-gold) 100%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 2px 8px rgba(232,184,75,.15));
+}
+.kophi-page-title h1 span { -webkit-text-fill-color:var(--k-gold); }
+.kophi-page-icon {
+  box-shadow:0 8px 24px rgba(139,63,217,.45), inset 0 1px 0 rgba(255,255,255,.2);
+  animation:kFloat 4s ease-in-out infinite;
+}
+@keyframes kFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.kophi-breadcrumb { color:var(--k-text3); font-size:12px; letter-spacing:.5px; margin-top:4px; }
+
+/* Cartes de statistiques : plus de profondeur + halo au survol */
+.kophi-stat {
+  background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+  border:1px solid var(--k-border);
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s;
+}
+.kophi-stat::before { height:3px; }
+.kophi-stat:hover { transform:translateY(-5px) scale(1.01); }
+.kophi-stat-icon {
+  font-size:22px; margin-bottom:10px; display:inline-flex;
+  width:42px; height:42px; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.05); border-radius:12px; border:1px solid var(--k-border);
+}
+.kophi-stat-val { text-shadow:0 2px 12px rgba(0,0,0,.4); }
+.kophi-stat-sub { font-size:11px; color:var(--k-text3); margin-top:2px; }
+
+/* Cartes : liseré supérieur subtil + ombre douce */
+.kophi-card {
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  transition:border-color .25s, box-shadow .25s;
+}
+.kophi-card:hover { box-shadow:0 14px 40px rgba(0,0,0,.35); }
+.kophi-card-gold::after, .kophi-card-violet::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+}
+.kophi-card-gold::after  { background:linear-gradient(90deg,var(--k-gold),transparent); }
+.kophi-card-violet::after { background:linear-gradient(90deg,var(--k-violet),transparent); }
+
+/* Boutons : rendu un peu plus « premium » */
+.kophi-btn { letter-spacing:1px; }
+.kophi-btn-wa { background:#25D366; color:#fff; box-shadow:0 4px 15px rgba(37,211,102,.3); }
+.kophi-btn-wa:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(37,211,102,.45); color:#fff; }
+.kophi-btn-sm { padding:6px 12px; font-size:9px; }
+
+/* Tableaux : lignes plus lisibles */
+.kophi-table tbody tr { transition:background .15s; }
+.kophi-table tbody tr:hover { background:rgba(255,255,255,.03); }
+.td-gold { color:var(--k-gold); font-weight:700; }
+
+/* Cartes de la page Écoute Client */
+.kex-admin-card.kex-has { box-shadow:0 10px 30px rgba(232,184,75,.08); }
+.kex-admin-card audio { filter:saturate(1.05); border-radius:8px; }
+
+/* Responsive : empilement propre sur mobile (et non « cassé ») */
+@media (max-width:782px) {
+  .kophi-inner { padding:18px 14px; }
+  .kophi-page-title h1 { font-size:24px; }
+  div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns:1fr !important; }
+}

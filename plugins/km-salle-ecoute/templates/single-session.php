@@ -1,0 +1,352 @@
+<?php
+/**
+ * KM SALLE D'ÉCOUTE v1.7 — Template session d'écoute
+ * Lecteur HTML5 unique (une seule balise <audio>), barre de lecture pro.
+ */
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+$I     = 'KM_Salle_Ecoute_Icons';
+$pid   = get_the_ID();
+$label = KM_Salle_Ecoute_ACF_Helper::label_nom();
+$email = get_option( 'kse_label_email', '' );
+
+// Champs ACF
+$acces        = KM_Salle_Ecoute_Access_Control::access_type( $pid );
+$has_access   = KM_Salle_Ecoute_Access_Control::has_access( $pid );
+$wm           = get_field( 'km_marque_watermark',    $pid );
+$dl_ok        = KM_Salle_Ecoute_Access_Control::download_allowed( $pid );
+$msg_partner  = get_field( 'km_message_partenaire',  $pid );
+$desc         = get_field( 'km_description_session', $pid );
+$artiste_obj  = KM_Salle_Ecoute_ACF_Helper::artiste_obj( $pid );
+$cover        = get_field( 'km_cover_art',           $pid );
+$bpm          = get_field( 'km_bpm',                 $pid );
+$tona         = get_field( 'km_tonalite',            $pid );
+$date_c       = get_field( 'km_date_creation',       $pid );
+$expire_ts    = KM_Salle_Ecoute_Access_Control::expiration_timestamp( $pid );
+
+$pistes = KM_Salle_Ecoute_ACF_Helper::get_pistes( $pid );
+$titre  = get_the_title();
+
+$artiste_nom = KM_Salle_Ecoute_ACF_Helper::artiste_nom( $pid );
+
+if ( ! is_array( $cover ) ) $cover = [];
+$cover_url   = $cover['url']                ?? '';
+$cover_med   = $cover['sizes']['medium']    ?? $cover_url;
+$cover_thumb = $cover['sizes']['thumbnail'] ?? $cover_med;
+
+$types  = get_the_terms( $pid, 'kse_type_contenu' ) ?: [];
+$genres = get_the_terms( $pid, 'kse_genre' )        ?: [];
+if ( is_wp_error( $types ) )  $types  = [];
+if ( is_wp_error( $genres ) ) $genres = [];
+
+$type_labels = [
+    'demo'         => __( 'Démo', 'km-salle-ecoute' ),
+    'produit_fini' => __( 'Produit Fini', 'km-salle-ecoute' ),
+    'instrumental' => __( 'Instrumental', 'km-salle-ecoute' ),
+    'remix'        => __( 'Remix', 'km-salle-ecoute' ),
+];
+$chip_cls    = [ 'Produit Fini' => 'km-chip-produit', 'Démo' => 'km-chip-demo', 'Demo' => 'km-chip-demo', 'Instrumental' => 'km-chip-instr', 'Remix' => 'km-chip-remix' ];
+
+$nb_pistes = count( $pistes );
+$kse_error = isset( $_GET['kse_error'] ) ? sanitize_key( wp_unslash( $_GET['kse_error'] ) ) : '';
+$acc       = $I::access( (string) $acces );
+$nb_txt    = sprintf( _n( '%d piste', '%d pistes', $nb_pistes, 'km-salle-ecoute' ), $nb_pistes );
+
+get_header();
+?>
+<div class="km-page km-scope"
+     data-session-title="<?php echo esc_attr( $titre ); ?>"
+     data-session-artist="<?php echo esc_attr( $artiste_nom ?: $label ); ?>"
+     data-session-album="<?php echo esc_attr( $label ); ?>"
+     data-session-cover="<?php echo esc_url( $cover_med ); ?>">
+
+<?php if ( ! $has_access && 'password' === $acces ) : /* ══ ACCÈS PROTÉGÉ ══ */ ?>
+
+<div class="km-gate">
+    <div class="km-gate-card">
+        <div class="km-gate-icon"><?php echo $I::svg( 'lock', 30 ); ?></div>
+        <h2><?php esc_html_e( 'Accès restreint', 'km-salle-ecoute' ); ?></h2>
+        <p><?php esc_html_e( 'Cette session est protégée par le Label. Saisissez le mot de passe pour accéder aux pistes.', 'km-salle-ecoute' ); ?></p>
+
+        <div class="km-gate-prev">
+            <?php if ( $cover_thumb ) : ?>
+            <img src="<?php echo esc_url( $cover_thumb ); ?>" class="km-gate-prev-img" alt="">
+            <?php else : ?>
+            <div class="km-gate-prev-ph"><?php echo $I::svg( 'music', 20 ); ?></div>
+            <?php endif; ?>
+            <div>
+                <p class="km-gate-prev-name"><?php echo esc_html( $titre ); ?></p>
+                <?php if ( $artiste_nom ) : ?><p class="km-gate-prev-artist"><?php echo esc_html( $artiste_nom ); ?></p><?php endif; ?>
+            </div>
+        </div>
+
+        <div id="km-err" class="km-gate-err" role="alert"><?php echo $I::svg( 'alert', 16 ); ?><span id="km-err-txt"></span></div>
+        <?php if ( '' !== $kse_error ) :
+            $kse_err_msg = ( '2' === $kse_error )
+                ? __( 'Trop de tentatives. Réessayez dans quelques minutes.', 'km-salle-ecoute' )
+                : __( 'Mot de passe incorrect. Réessayez.', 'km-salle-ecoute' );
+        ?>
+        <div class="km-gate-err show" role="alert"><?php echo $I::svg( 'alert', 16 ); ?><span><?php echo esc_html( $kse_err_msg ); ?></span></div>
+        <?php endif; ?>
+
+        <form class="km-gate-form" id="km-gate-form" method="post" novalidate>
+        <?php wp_nonce_field( 'kse_password', 'kse_password_nonce' ); ?>
+        <input type="hidden" name="kse_post_id" value="<?php echo esc_attr( $pid ); ?>">
+        <input type="text" name="username" value="<?php echo esc_attr( $titre ); ?>" autocomplete="username" hidden aria-hidden="true" tabindex="-1">
+        <div class="km-gate-field">
+            <input type="password" id="km-pwd" name="km_password" class="km-gate-input" required
+                   placeholder="<?php esc_attr_e( 'Mot de passe', 'km-salle-ecoute' ); ?>" autocomplete="current-password" autofocus>
+            <button type="button" id="km-pwd-eye" class="km-b km-gate-eye" aria-label="<?php esc_attr_e( 'Afficher le mot de passe', 'km-salle-ecoute' ); ?>">
+                <span class="ico-on"><?php echo $I::svg( 'eye', 18 ); ?></span><span class="ico-off"><?php echo $I::svg( 'eye-off', 18 ); ?></span>
+            </button>
+        </div>
+        <button type="submit" id="km-pwd-btn" class="km-b km-gate-btn">
+            <?php echo $I::svg( 'lock', 16 ); ?><span class="km-btn-label"><?php esc_html_e( 'Accéder à l\'écoute', 'km-salle-ecoute' ); ?></span>
+        </button>
+        </form>
+        <?php if ( $email ) : ?>
+        <p class="km-gate-hint"><?php esc_html_e( 'Pas de mot de passe ?', 'km-salle-ecoute' ); ?>
+            <a href="mailto:<?php echo esc_attr( $email ); ?>"><?php esc_html_e( 'Contacter le Label', 'km-salle-ecoute' ); ?> →</a></p>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?php elseif ( ! $has_access ) : /* ══ ACCÈS REFUSÉ (sécurité : rien d'autre n'est affiché) ══ */ ?>
+
+<div class="km-gate">
+    <div class="km-gate-card">
+        <div class="km-gate-icon"><?php echo $I::svg( 'ban', 30 ); ?></div>
+        <h2><?php esc_html_e( 'Accès restreint', 'km-salle-ecoute' ); ?></h2>
+        <p><?php esc_html_e( 'Vous n\'avez pas accès à cette session d\'écoute.', 'km-salle-ecoute' ); ?></p>
+        <?php if ( $email ) : ?>
+        <a class="km-b km-gate-btn" href="mailto:<?php echo esc_attr( $email ); ?>"><?php esc_html_e( 'Contacter le Label', 'km-salle-ecoute' ); ?></a>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?php else : /* ══ SESSION ══ */ ?>
+
+<!-- ── HERO ── -->
+<div class="km-hero">
+    <?php if ( $cover_url ) : ?>
+    <div class="km-hero-bg" style="background-image:url('<?php echo esc_url( $cover_thumb ?: $cover_url ); ?>')"></div>
+    <?php endif; ?>
+    <div class="km-hero-gradient" id="km-hero-grad"></div>
+    <div class="km-hero-vignette"></div>
+
+    <div class="km-hero-inner">
+        <div class="km-cover-wrap">
+            <?php if ( $cover_url ) : ?>
+            <img src="<?php echo esc_url( $cover_url ); ?>" alt="<?php echo esc_attr( $titre ); ?>"
+                 class="km-cover-img" id="km-cover" crossorigin="anonymous" loading="eager">
+            <?php else : ?>
+            <div class="km-cover-ph"><?php echo $I::svg( 'music', 72 ); ?></div>
+            <?php endif; ?>
+        </div>
+
+        <div class="km-hero-text">
+            <span class="km-type-label"><?php esc_html_e( 'Session d\'écoute', 'km-salle-ecoute' ); ?> · <?php echo esc_html( $label ); ?></span>
+            <h1 class="km-title"><?php echo esc_html( $titre ); ?></h1>
+
+            <?php if ( $artiste_nom ) : ?>
+            <div class="km-artist-row">
+                <?php $avatar = $artiste_obj ? get_the_post_thumbnail_url( $artiste_obj->ID, 'thumbnail' ) : '';
+                if ( $avatar ) : ?><img src="<?php echo esc_url( $avatar ); ?>" class="km-artist-avatar" alt=""><?php endif; ?>
+                <span><?php echo esc_html( $artiste_nom ); ?></span>
+            </div>
+            <?php endif; ?>
+
+            <?php
+            $meta = [];
+            if ( $nb_pistes ) $meta[] = esc_html( $nb_txt );
+            if ( $bpm )       $meta[] = esc_html( $bpm ) . ' BPM';
+            if ( $tona )      $meta[] = esc_html( $tona );
+            if ( $date_c && strtotime( $date_c ) ) $meta[] = esc_html( wp_date( 'Y', strtotime( $date_c ) ) );
+            if ( $meta ) echo '<div class="km-meta">' . implode( '<span class="dot">•</span>', $meta ) . '</div>';
+            ?>
+
+            <?php if ( $types || $genres ) : ?>
+            <div class="km-chips">
+                <?php foreach ( $types as $t ) :
+                    echo '<span class="km-chip ' . esc_attr( $chip_cls[ $t->name ] ?? '' ) . '">' . $I::svg( $I::for_type( $t->name ), 12 ) . esc_html( $t->name ) . '</span>';
+                endforeach;
+                foreach ( $genres as $g ) :
+                    echo '<span class="km-chip km-chip-genre">' . esc_html( $g->name ) . '</span>';
+                endforeach; ?>
+            </div>
+            <?php endif; ?>
+
+            <?php if ( $desc ) : ?><div class="km-hero-desc"><?php echo wp_kses_post( $desc ); ?></div><?php endif; ?>
+
+            <div class="km-facts">
+                <span class="km-fact"><?php echo $I::svg( $acc['icon'], 14 ); ?><?php echo esc_html( $acc['label'] ); ?></span>
+                <?php if ( $expire_ts ) :
+                    $days_left = (int) floor( ( $expire_ts - time() ) / DAY_IN_SECONDS ); ?>
+                <span class="km-fact<?php echo $days_left < 3 ? ' is-warn' : ''; ?>"><?php echo $I::svg( 'clock', 14 ); ?><?php echo esc_html( sprintf( __( 'Disponible jusqu\'au %s', 'km-salle-ecoute' ), wp_date( 'j F Y', $expire_ts ) ) ); ?></span>
+                <?php endif; ?>
+                <?php if ( ! $dl_ok ) : ?>
+                <span class="km-fact"><?php echo $I::svg( 'ban', 14 ); ?><?php esc_html_e( 'Téléchargement désactivé', 'km-salle-ecoute' ); ?></span>
+                <?php endif; ?>
+            </div>
+
+            <?php if ( $nb_pistes ) : ?>
+            <div class="km-hero-actions">
+                <button type="button" class="km-b km-btn-play-main km-pp" id="km-btn-main" aria-label="<?php esc_attr_e( 'Lancer l\'écoute', 'km-salle-ecoute' ); ?>">
+                    <span class="ico-play"><?php echo $I::svg( 'play', 20 ); ?></span><span class="ico-pause"><?php echo $I::svg( 'pause', 20 ); ?></span>
+                    <span class="km-btn-label" id="km-main-label"><?php esc_html_e( 'Écouter', 'km-salle-ecoute' ); ?></span>
+                </button>
+                <button type="button" class="km-b km-btn-ghost" id="km-help-btn" aria-expanded="false" aria-controls="km-help">
+                    <?php echo $I::svg( 'keyboard', 16 ); ?><?php esc_html_e( 'Raccourcis', 'km-salle-ecoute' ); ?>
+                </button>
+                <div class="km-help" id="km-help" hidden>
+                    <h4><?php esc_html_e( 'Raccourcis clavier', 'km-salle-ecoute' ); ?></h4>
+                    <ul>
+                        <li><span><?php esc_html_e( 'Lecture / pause', 'km-salle-ecoute' ); ?></span><kbd>Espace</kbd></li>
+                        <li><span><?php esc_html_e( 'Avancer / reculer 10 s', 'km-salle-ecoute' ); ?></span><kbd>← →</kbd></li>
+                        <li><span><?php esc_html_e( 'Aller à 0 % … 90 %', 'km-salle-ecoute' ); ?></span><kbd>0 – 9</kbd></li>
+                        <li><span><?php esc_html_e( 'Piste suivante / précédente', 'km-salle-ecoute' ); ?></span><kbd>N · P</kbd></li>
+                        <li><span><?php esc_html_e( 'Volume', 'km-salle-ecoute' ); ?></span><kbd>↑ ↓</kbd></li>
+                        <li><span><?php esc_html_e( 'Muet', 'km-salle-ecoute' ); ?></span><kbd>M</kbd></li>
+                        <li><span><?php esc_html_e( 'Répétition', 'km-salle-ecoute' ); ?></span><kbd>R</kbd></li>
+                        <li><span><?php esc_html_e( 'Lecture aléatoire', 'km-salle-ecoute' ); ?></span><kbd>A</kbd></li>
+                        <li><span><?php esc_html_e( 'Vitesse', 'km-salle-ecoute' ); ?></span><kbd>S</kbd></li>
+                    </ul>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if ( $msg_partner || $wm ) : ?>
+            <div class="km-hero-notices">
+                <?php if ( $msg_partner ) : ?>
+                <div class="km-notice km-notice-info"><?php echo $I::svg( 'message', 16 ); ?><div><?php echo wp_kses_post( nl2br( $msg_partner ) ); ?></div></div>
+                <?php endif; ?>
+                <?php if ( $wm ) : ?>
+                <div class="km-notice km-notice-warn"><?php echo $I::svg( 'alert', 16 ); ?><div><?php esc_html_e( 'Contenu confidentiel — usage évaluation uniquement. Toute reproduction est interdite.', 'km-salle-ecoute' ); ?></div></div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<!-- ── LISTE DES PISTES ── -->
+<div class="km-tracklist">
+<?php if ( $pistes ) : ?>
+    <div class="km-tl-head" aria-hidden="true">
+        <div class="km-th center">#</div><div class="km-th"><?php esc_html_e( 'Titre', 'km-salle-ecoute' ); ?></div>
+        <div class="km-th"></div><div class="km-th right"><?php esc_html_e( 'Durée', 'km-salle-ecoute' ); ?></div><div class="km-th"></div>
+    </div>
+
+    <?php foreach ( $pistes as $i => $p ) :
+        $audio_url = $p['url'];
+        $tid       = 'tid' . abs( $pid ) . 'i' . $i;
+        $dur       = $p['duree'] ?: '—';
+        $dl_url    = ( $dl_ok && $audio_url ) ? KM_Salle_Ecoute_Access_Control::get_download_url( $pid, $i ) : '';
+    ?>
+    <div class="km-track" data-tid="<?php echo esc_attr( $tid ); ?>" data-url="<?php echo esc_url( $audio_url ); ?>" data-title="<?php echo esc_attr( $p['titre'] ); ?>" data-duration="<?php echo esc_attr( KM_Salle_Ecoute_ACF_Helper::duration_to_seconds( $p['duree'] ) ); ?>">
+
+        <div class="km-tr" role="button" tabindex="<?php echo $audio_url ? '0' : '-1'; ?>"
+             aria-label="<?php echo esc_attr( sprintf( __( 'Lire %s', 'km-salle-ecoute' ), $p['titre'] ) ); ?>"
+             <?php if ( ! $audio_url ) echo 'aria-disabled="true"'; ?>>
+            <div class="km-tr-n">
+                <span class="km-tr-num"><?php echo (int) ( $i + 1 ); ?></span>
+                <span class="km-tr-icon"><?php echo $I::svg( 'play', 20 ); ?></span>
+                <span class="km-tr-spinner" aria-hidden="true"></span>
+                <span class="km-eq" aria-hidden="true"><span class="km-eq-b"></span><span class="km-eq-b"></span><span class="km-eq-b"></span><span class="km-eq-b"></span></span>
+            </div>
+            <div class="km-tr-info">
+                <div class="km-tr-title"><?php echo esc_html( $p['titre'] ); ?></div>
+                <span class="km-tr-badge km-b-<?php echo esc_attr( $p['type'] ); ?>"><?php echo esc_html( $type_labels[ $p['type'] ] ?? $p['type'] ); ?></span>
+            </div>
+            <div class="km-tr-prog-col">
+                <div class="km-seek km-seek-mini" data-seek="mini" role="slider" tabindex="-1" aria-label="<?php esc_attr_e( 'Position', 'km-salle-ecoute' ); ?>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div class="km-seek-track"><div class="km-seek-buf"></div><div class="km-seek-fill"></div><div class="km-seek-thumb"></div></div>
+                </div>
+            </div>
+            <div class="km-tr-dur"><?php echo esc_html( $dur ); ?></div>
+            <div class="km-tr-dl">
+                <?php if ( $dl_url ) : ?>
+                <a href="<?php echo esc_url( $dl_url ); ?>" class="km-b km-dl-link" title="<?php esc_attr_e( 'Télécharger', 'km-salle-ecoute' ); ?>" aria-label="<?php esc_attr_e( 'Télécharger', 'km-salle-ecoute' ); ?>"><?php echo $I::svg( 'download', 15 ); ?></a>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="km-player-panel"><div class="km-panel-wrap"><div class="km-panel-inner">
+            <div class="km-seek" data-seek="panel" role="slider" tabindex="0" aria-label="<?php esc_attr_e( 'Position de lecture', 'km-salle-ecoute' ); ?>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="km-seek-track"><div class="km-seek-buf"></div><div class="km-seek-fill"></div><div class="km-seek-thumb"></div></div>
+                <div class="km-seek-tip">0:00</div>
+            </div>
+            <div class="km-panel-controls">
+                <button type="button" class="km-b km-btn-panel-play km-pp" aria-label="<?php esc_attr_e( 'Lecture / pause', 'km-salle-ecoute' ); ?>">
+                    <span class="ico-play"><?php echo $I::svg( 'play', 16 ); ?></span><span class="ico-pause"><?php echo $I::svg( 'pause', 16 ); ?></span>
+                </button>
+                <div class="km-panel-time"><span class="km-time-cur">0:00</span><span>/</span><span class="km-time-tot"><?php echo esc_html( $dur ); ?></span></div>
+                <?php if ( $dl_url ) : ?>
+                <div class="km-panel-right"><a href="<?php echo esc_url( $dl_url ); ?>" class="km-b km-btn-dl-panel"><?php echo $I::svg( 'download', 14 ); ?><?php esc_html_e( 'Télécharger', 'km-salle-ecoute' ); ?></a></div>
+                <?php endif; ?>
+            </div>
+        </div></div></div>
+    </div>
+    <?php endforeach; ?>
+
+    <audio class="km-audio" id="km-audio" preload="none" playsinline></audio>
+    <div class="km-toast" id="km-toast" role="status" aria-live="polite" hidden></div>
+
+<?php else : ?>
+    <div class="km-empty"><?php echo $I::svg( 'music', 52 ); ?><p><?php esc_html_e( 'Aucune piste disponible pour cette session.', 'km-salle-ecoute' ); ?></p></div>
+<?php endif; ?>
+</div>
+
+<?php if ( $pistes ) : ?>
+<!-- ── BARRE DE LECTURE ── -->
+<div class="km-np" id="km-np" role="region" aria-label="<?php esc_attr_e( 'Lecteur', 'km-salle-ecoute' ); ?>">
+    <div class="km-seek km-np-seek" id="np-seek" data-seek="dock" role="slider" tabindex="0" aria-label="<?php esc_attr_e( 'Position de lecture', 'km-salle-ecoute' ); ?>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="km-seek-track"><div class="km-seek-buf"></div><div class="km-seek-fill"></div><div class="km-seek-thumb"></div></div>
+        <div class="km-seek-tip">0:00</div>
+    </div>
+    <div class="km-np-inner">
+        <div class="km-np-left">
+            <?php if ( $cover_thumb ) : ?><img src="<?php echo esc_url( $cover_thumb ); ?>" class="km-np-thumb" alt="">
+            <?php else : ?><div class="km-np-thumb-ph"><?php echo $I::svg( 'music', 20 ); ?></div><?php endif; ?>
+            <div class="km-np-meta">
+                <div class="km-np-track" id="np-track">—</div>
+                <div class="km-np-artist"><?php echo esc_html( $artiste_nom ?: $label ); ?></div>
+            </div>
+        </div>
+
+        <div class="km-np-center">
+            <button type="button" class="km-b km-ibtn km-np-btn-shuffle" id="np-shuffle" aria-pressed="false" title="<?php esc_attr_e( 'Lecture aléatoire (A)', 'km-salle-ecoute' ); ?>" aria-label="<?php esc_attr_e( 'Lecture aléatoire : désactivée', 'km-salle-ecoute' ); ?>"><?php echo $I::svg( 'shuffle', 18 ); ?></button>
+            <button type="button" class="km-b km-ibtn km-np-btn-repeat" id="np-repeat" data-repeat="off" aria-pressed="false" title="<?php esc_attr_e( 'Répétition (R)', 'km-salle-ecoute' ); ?>" aria-label="<?php esc_attr_e( 'Répétition : désactivée', 'km-salle-ecoute' ); ?>">
+                <span class="km-icon-repeat"><?php echo $I::svg( 'repeat', 18 ); ?></span><span class="km-icon-repeat-1"><?php echo $I::svg( 'repeat-1', 18 ); ?></span>
+            </button>
+            <button type="button" class="km-b km-ibtn km-np-btn-prev" id="np-prev" title="<?php esc_attr_e( 'Précédent (P)', 'km-salle-ecoute' ); ?>" aria-label="<?php esc_attr_e( 'Piste précédente', 'km-salle-ecoute' ); ?>"><?php echo $I::svg( 'prev', 20 ); ?></button>
+            <button type="button" class="km-b km-np-btn-play km-pp" id="np-play" aria-label="<?php esc_attr_e( 'Lecture / pause', 'km-salle-ecoute' ); ?>">
+                <span class="ico-play"><?php echo $I::svg( 'play', 20 ); ?></span><span class="ico-pause"><?php echo $I::svg( 'pause', 20 ); ?></span>
+            </button>
+            <button type="button" class="km-b km-ibtn" id="np-next" title="<?php esc_attr_e( 'Suivant (N)', 'km-salle-ecoute' ); ?>" aria-label="<?php esc_attr_e( 'Piste suivante', 'km-salle-ecoute' ); ?>"><?php echo $I::svg( 'next', 20 ); ?></button>
+            <div class="km-np-time"><b id="np-cur">0:00</b> / <span id="np-dur">—</span></div>
+        </div>
+
+        <div class="km-np-right">
+            <button type="button" class="km-b km-np-speed" id="np-speed" title="<?php esc_attr_e( 'Vitesse de lecture (S)', 'km-salle-ecoute' ); ?>" aria-label="<?php esc_attr_e( 'Vitesse de lecture', 'km-salle-ecoute' ); ?>">1×</button>
+            <div class="km-np-vol" id="np-vol-wrap" data-level="2">
+                <button type="button" class="km-b km-ibtn" id="np-mute" title="<?php esc_attr_e( 'Muet (M)', 'km-salle-ecoute' ); ?>" aria-label="<?php esc_attr_e( 'Couper le son', 'km-salle-ecoute' ); ?>">
+                    <span class="ico-vol ico-vol-2"><?php echo $I::svg( 'volume-2', 18 ); ?></span><span class="ico-vol ico-vol-1"><?php echo $I::svg( 'volume-1', 18 ); ?></span><span class="ico-vol ico-vol-x"><?php echo $I::svg( 'volume-x', 18 ); ?></span>
+                </button>
+                <input type="range" class="km-vol-range" id="np-vol" min="0" max="100" value="80" aria-label="<?php esc_attr_e( 'Volume', 'km-salle-ecoute' ); ?>">
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+<div class="km-footer">
+    <div class="km-footer-inner">
+        <p class="km-footer-brand"><strong><?php echo esc_html( $label ); ?></strong> — <?php esc_html_e( 'Propriété exclusive. Usage évaluation uniquement.', 'km-salle-ecoute' ); ?></p>
+        <p class="km-footer-copy">© <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php echo esc_html( $label ); ?></p>
+    </div>
+</div>
+
+<?php endif; /* fin session */ ?>
+</div><!-- .km-page -->
+<?php get_footer(); ?>
