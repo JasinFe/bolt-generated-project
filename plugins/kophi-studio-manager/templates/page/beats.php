@@ -45,9 +45,7 @@ $svc_labels = [
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<!-- WaveSurfer -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/7.8.2/wavesurfer.min.js" defer></script>
-<?php wp_head(); ?>
+<?php wp_enqueue_style('kophi-player'); wp_enqueue_script('kophi-player'); wp_head(); ?>
 <style>
 /* ══════════════════════════════════════════════
    BOUTIQUE BEATS — KM STUDIO
@@ -199,32 +197,30 @@ body {
 }
 .kb-card:hover { border-color: var(--gold-b); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,.4); }
 
-/* Cover */
+/* Pochette : carrée, image entière recadrée au centre (jamais étirée) */
 .kb-cover {
-  position: relative; height: 180px; cursor: pointer;
+  position: relative; aspect-ratio: 1 / 1; cursor: pointer; overflow: hidden;
   background: linear-gradient(135deg, rgba(139,63,217,.4), rgba(13,13,13,.9));
-  overflow: hidden;
 }
 .kb-cover-img {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; opacity: .55; transition: opacity .3s;
+  position: absolute; inset: 0; width: 100% !important; height: 100% !important; max-width: none !important;
+  object-fit: cover; object-position: center; display: block; margin: 0; transition: transform .5s ease;
 }
-.kb-card:hover .kb-cover-img { opacity: .65; }
+.kb-card:hover .kb-cover-img { transform: scale(1.05); }
+.kb-cover-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.75); background: linear-gradient(135deg, var(--violet), var(--gold)); }
+.kb-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,.55)); opacity: 0; transition: opacity .2s; pointer-events: none; }
+.kb-cover:hover::after, .kb-card.kp-current .kb-cover::after { opacity: 1; }
+.kb-cover:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
 .kb-play {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -58%);
-  width: 48px; height: 48px; border-radius: 50%;
-  background: rgba(232,184,75,.92); border: none; color: #000;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; z-index: 2;
-  transition: all .2s; box-shadow: 0 4px 20px rgba(0,0,0,.4);
+  position: absolute; right: 12px; bottom: 12px; width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, #F5CC6A, #E8B84B); color: #141005;
+  display: flex; align-items: center; justify-content: center; z-index: 2;
+  box-shadow: 0 8px 22px rgba(0,0,0,.45); opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s;
 }
-.kb-play:hover { background: var(--gold); transform: translate(-50%, -58%) scale(1.1); }
-.kb-waveform {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  height: 50px; padding: 0 8px; z-index: 1;
-}
-.kb-waveform wave { overflow: hidden !important; }
+.kb-cover:hover .kb-play, .kb-cover:focus-visible .kb-play, .kb-card.kp-current .kb-play { opacity: 1; transform: none; }
+.kb-progress { position: absolute; left: 0; bottom: 0; height: 3px; width: var(--kp-progress, 0%); background: linear-gradient(90deg, var(--violet), var(--gold)); z-index: 3; }
+.kb-card.kp-current { border-color: var(--gold-b); }
+@media (hover: none) { .kb-play { opacity: 1; transform: none; } }
 
 /* Infos */
 .kb-info { padding: 16px; }
@@ -471,16 +467,19 @@ body {
   $genre_name  = !empty($beat_genres) ? $beat_genres[0]->name : '';
   $duree_fmt   = $duree ? gmdate('i:s', $duree) : '';
 ?>
-<div class="kb-card" data-genre="<?= esc_attr($genre_slug) ?>">
-  <!-- Cover -->
-  <div class="kb-cover" onclick="kbPlay(<?= $beat_id ?>, '<?= esc_js($audio) ?>')">
+<div class="kb-card" data-genre="<?= esc_attr($genre_slug) ?>"
+     data-kp-id="<?= (int) $beat_id ?>" data-kp-url="<?= esc_url($audio) ?>" data-kp-title="<?= esc_attr($beat->post_title) ?>"
+     data-kp-sub="<?= esc_attr(trim(($genre_name ? $genre_name . ' · ' : '') . ($tempo ? $tempo . ' BPM' : ''), ' ·')) ?>"
+     data-kp-cover="<?= esc_url($thumb) ?>" data-kp-duration="<?= (int) $duree ?>">
+  <!-- Pochette (carrée, jamais déformée) — lecture via le lecteur unifié -->
+  <div class="kb-cover" data-kp-play role="button" tabindex="0" aria-label="Écouter <?= esc_attr($beat->post_title) ?>">
     <?php if ($thumb): ?>
-    <img class="kb-cover-img" src="<?= esc_url($thumb) ?>" alt="<?= esc_attr($beat->post_title) ?>" loading="lazy">
+    <img class="kb-cover-img" src="<?= esc_url($thumb) ?>" alt="" loading="lazy" decoding="async">
+    <?php else: ?>
+    <div class="kb-cover-ph" aria-hidden="true"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
     <?php endif; ?>
-    <button class="kb-play" id="kb-play-<?= $beat_id ?>" aria-label="Écouter">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
-    </button>
-    <div class="kb-waveform" id="kb-wave-<?= $beat_id ?>"></div>
+    <span class="kb-play" id="kb-play-<?= (int) $beat_id ?>" aria-hidden="true"><svg class="kp-ico-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><svg class="kp-ico-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></span>
+    <span class="kb-progress" aria-hidden="true"></span>
   </div>
   <!-- Infos -->
   <div class="kb-info">
@@ -697,56 +696,12 @@ function kbFilter(genre, btn) {
   });
 }
 
-// ── Lecteur WaveSurfer ───────────────────────────────────────
-function kbIconPlay()  { return '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>'; }
-function kbIconPause() { return '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>'; }
+// ── Lecteur : géré par le lecteur unifié (assets/js/kophi-player.js) ──
+function kbPlay(id) { if (window.KophiPlayer) KophiPlayer.toggle(id); }
+document.addEventListener('keydown', function (e) {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.kb-cover[data-kp-play]')) { e.preventDefault(); e.target.click(); }
+});
 
-function kbPlay(id, url) {
-  const cover   = document.querySelector('[data-genre]'); // placeholder
-  const btn     = document.getElementById('kb-play-' + id);
-  const waveDiv = document.getElementById('kb-wave-' + id);
-
-  if (KB_playing === id) {
-    KB_PLAYERS[id]?.pause();
-    if (btn) btn.innerHTML = kbIconPlay();
-    KB_playing = null;
-    return;
-  }
-
-  if (KB_playing && KB_PLAYERS[KB_playing]) {
-    KB_PLAYERS[KB_playing].pause();
-    const ob = document.getElementById('kb-play-' + KB_playing);
-    if (ob) ob.innerHTML = kbIconPlay();
-  }
-
-  if (!url) { alert('Aperçu audio non disponible pour ce beat.'); return; }
-
-  if (!KB_PLAYERS[id] && waveDiv && window.WaveSurfer) {
-    const ws = WaveSurfer.create({
-      container: waveDiv, waveColor: '#3A3450', progressColor: '#E8B84B',
-      cursorColor: '#E8B84B', barWidth: 2, barGap: 2, barRadius: 2, height: 44,
-    });
-    ws.load(url);
-    ws.on('finish', () => {
-      if (btn) btn.innerHTML = kbIconPlay();
-      KB_playing = null;
-    });
-    KB_PLAYERS[id] = ws;
-    ws.play();
-  } else if (KB_PLAYERS[id]) {
-    KB_PLAYERS[id].play();
-  } else {
-    const audio = new Audio(url);
-    audio.play().catch(() => {});
-    audio.onended = () => { if (btn) btn.innerHTML = kbIconPlay(); KB_playing = null; };
-    KB_PLAYERS[id] = { pause: () => audio.pause(), play: () => audio.play() };
-  }
-
-  KB_playing = id;
-  if (btn) btn.innerHTML = kbIconPause();
-}
-
-// ── Modal achat ──────────────────────────────────────────────
 function kbAchat(id, titre, licence, prix) {
   KB_modal = { beat_id: id, titre, licence, prix };
   const labels = { 'non_exclusive': 'Non-Exclusive (Lease)', 'exclusive': 'Exclusive (Droits totaux)' };

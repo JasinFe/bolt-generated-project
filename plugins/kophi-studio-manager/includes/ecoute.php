@@ -378,6 +378,34 @@ function ksm_listen_render_metabox($post) {
     </div>
     <button type="button" class="button" id="kex-add-row">＋ Ajouter un titre</button>
 
+    <?php $kex_cover_id = (int) get_post_meta($post->ID, '_kophi_ecoute_cover', true);
+          $kex_cover_src = $kex_cover_id ? wp_get_attachment_image_src($kex_cover_id, 'thumbnail') : false; ?>
+    <div class="kex-fld" style="margin:14px 0 4px">
+      <label>Pochette de la page d'écoute (facultatif)</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img id="kex-cover-prev" src="<?= esc_url($kex_cover_src ? $kex_cover_src[0] : '') ?>" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:6px;background:#e5e5e5;<?= $kex_cover_src ? '' : 'display:none' ?>">
+        <input type="hidden" name="ksm_listen_cover" id="kex-cover-id" value="<?= esc_attr($kex_cover_id ?: '') ?>">
+        <button type="button" class="button" id="kex-cover-pick">Choisir une image</button>
+        <button type="button" class="button-link" id="kex-cover-clear" style="color:#b32d2e;<?= $kex_cover_id ? '' : 'display:none' ?>">Retirer</button>
+      </div>
+      <p class="description">Image carrée conseillée. Sans image, une pochette aux couleurs du studio est affichée.</p>
+      <script>
+      jQuery(function($){
+        $('#kex-cover-pick').on('click', function(e){
+          e.preventDefault();
+          var frame = wp.media({ title:'Choisir la pochette', library:{ type:'image' }, multiple:false, button:{ text:'Utiliser cette image' } });
+          frame.on('select', function(){
+            var a = frame.state().get('selection').first().toJSON();
+            var url = (a.sizes && a.sizes.thumbnail) ? a.sizes.thumbnail.url : a.url;
+            $('#kex-cover-id').val(a.id); $('#kex-cover-prev').attr('src', url).show(); $('#kex-cover-clear').show();
+          });
+          frame.open();
+        });
+        $('#kex-cover-clear').on('click', function(e){ e.preventDefault(); $('#kex-cover-id').val(''); $('#kex-cover-prev').hide(); $(this).hide(); });
+      });
+      </script>
+    </div>
+
     <div class="kex-grid">
       <div class="kex-fld">
         <label>Montant total (F CFA)</label>
@@ -639,6 +667,13 @@ function ksm_listen_save_metabox($post_id, $post) {
     if ($expire && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $expire)) $expire = '';
     update_post_meta($post_id, '_kophi_ecoute_expire', $expire);
 
+    // Pochette de la page d'écoute (ID de pièce jointe image, facultatif)
+    if (isset($_POST['ksm_listen_cover'])) {
+        $cover_id = (int) $_POST['ksm_listen_cover'];
+        if ($cover_id && wp_attachment_is_image($cover_id)) update_post_meta($post_id, '_kophi_ecoute_cover', $cover_id);
+        else delete_post_meta($post_id, '_kophi_ecoute_cover');
+    }
+
     // Générer le jeton dès qu'il y a au moins un titre
     if (!empty($tracks)) ksm_listen_get_token($post_id);
 }
@@ -777,7 +812,21 @@ function ksm_listen_download(string $token, int $index) {
 }
 
 /**
+ * Pochette de l'écoute : image choisie dans la boîte « Écoute client », sinon
+ * image mise en avant du post, sinon '' (une pochette générée est alors affichée).
+ */
+function ksm_listen_cover_url(int $post_id, string $size = 'large'): string {
+    $aid = (int) get_post_meta($post_id, '_kophi_ecoute_cover', true);
+    if (!$aid) $aid = (int) get_post_thumbnail_id($post_id);
+    if (!$aid) return '';
+    $src = wp_get_attachment_image_src($aid, $size);
+    return $src ? (string) $src[0] : '';
+}
+
+/**
  * Page publique d'écoute (HTML autonome, aux couleurs du studio).
+ * v4.8.0 : présentation « lecteur de streaming » — grande pochette, liste des
+ * titres, barre de lecture fixe avec enchaînement automatique (lecteur unifié).
  */
 function ksm_listen_render_page(string $token) {
     list($post, $tracks) = ksm_listen_guard($token);
@@ -791,300 +840,376 @@ function ksm_listen_render_page(string $token) {
     $count      = count($tracks);
     $expire     = ksm_listen_expire_date($post->ID);
     $wa_num     = preg_replace('/[^0-9]/', '', defined('KOPHI_WA') ? KOPHI_WA : '2250503404389');
+    $titre      = get_the_title($post->ID);
+    $cover      = ksm_listen_cover_url($post->ID, 'large');
+    $cover_sm   = ksm_listen_cover_url($post->ID, 'thumbnail');
+    $ver        = defined('KOPHI_VERSION') ? KOPHI_VERSION : '1';
+    $len        = function_exists('mb_strlen') ? mb_strlen($titre) : strlen($titre);
+    $title_cls  = $len <= 16 ? 'xl' : ($len <= 30 ? 'lg' : ($len <= 48 ? 'md' : 'sm'));
 
     $wa_solde = rawurlencode(
         "Bonjour KOPHI'S MUSIC STUDIO 🎙\nJe souhaite régler le solde de " .
-        number_format($solde, 0, ',', ' ') . " F CFA pour mon son : " . get_the_title($post->ID)
+        number_format($solde, 0, ',', ' ') . " F CFA pour mon son : " . $titre
     );
 
+    // La page dépend du jeton, du solde et des remarques : jamais mise en cache.
+    if (!defined('DONOTCACHEPAGE')) define('DONOTCACHEPAGE', true);
+    nocache_headers();
     header('Content-Type: text/html; charset=utf-8');
+    header('X-Robots-Tag: noindex, nofollow');
     ?><!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Écoute — KOPHI'S MUSIC STUDIO</title>
+<meta name="theme-color" content="#0b0a12">
+<title><?= esc_html($titre) ?> — Écoute · KOPHI'S MUSIC STUDIO</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="<?= esc_url(KOPHI_URL . 'assets/css/kophi-player.css?ver=' . $ver) ?>">
 <style>
-  :root{--gold:#E8B84B;--gold2:#F5CC6A;--violet:#8B3FD9;--violet2:#A855F7;--ink:#F0ECF8;--mut:#9E98B8;--card:rgba(255,255,255,.045)}
+  :root{--gold:#E8B84B;--gold2:#F5CC6A;--violet:#8B3FD9;--violet2:#A855F7;--ink:#F0ECF8;--mut:#A7A1BF;--bg:#0b0a12;--tint:#3a1c66;
+    --line:rgba(255,255,255,.09);--max:1080px;--pad:40px}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%}
-  body{font-family:'Inter',-apple-system,Segoe UI,sans-serif;color:var(--ink);min-height:100vh;
-    background:#08070d;position:relative;overflow-x:hidden;padding:26px 16px 70px}
-  /* fond animé premium */
-  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
-    background:linear-gradient(165deg,#0D0D0D 0%,#0D0D0D 45%,#140a26 75%,#1e0938 100%)}
-  .bg::before,.bg::after{content:'';position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;
-    animation:drift 16s ease-in-out infinite alternate}
-  .bg::before{width:460px;height:460px;background:radial-gradient(circle,rgba(139,63,217,.5),transparent 70%);top:-120px;right:-90px}
-  .bg::after{width:420px;height:420px;background:radial-gradient(circle,rgba(232,184,75,.32),transparent 70%);bottom:-140px;left:-100px;animation-delay:-8s}
-  @keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-30px,40px) scale(1.12)}}
-  .wrap{max-width:580px;margin:0 auto;position:relative;z-index:1}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:'Inter',-apple-system,'Segoe UI',sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  a{color:inherit;text-decoration:none}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-  .head{text-align:center;margin:10px 0 26px}
-  .logo{width:78px;height:78px;margin:0 auto 12px;border-radius:24px;display:flex;align-items:center;justify-content:center;
-    font-size:40px;background:linear-gradient(135deg,var(--violet),var(--gold));
-    box-shadow:0 16px 40px rgba(139,63,217,.5),inset 0 1px 0 rgba(255,255,255,.25);animation:float 5s ease-in-out infinite}
-  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-  h1{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;line-height:.95}
-  h1 span{background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-  .badge{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:6px 14px;border-radius:999px;font-size:11px;
-    font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1a1205;
-    background:linear-gradient(135deg,var(--gold2),var(--gold));box-shadow:0 6px 18px rgba(232,184,75,.35)}
-  .sub{font-size:12.5px;color:var(--mut);margin-top:12px;letter-spacing:.3px}
-  .client{font-size:14px;color:#D9D2EC;margin-top:6px}
-  .client b{color:var(--gold)}
+  /* ── En-tête : pochette + titre ── */
+  .hero{position:relative;overflow:hidden;background:var(--tint);transition:background 1s}
+  .hero-bg{position:absolute;inset:-60px;background-size:cover;background-position:center;filter:blur(60px) saturate(1.4);opacity:.45;transform:scale(1.2)}
+  .hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.55))}
+  .hero-in{position:relative;z-index:1;max-width:var(--max);margin:0 auto;padding:64px var(--pad) 28px;display:flex;align-items:flex-end;gap:32px;animation:up .55s cubic-bezier(.2,.8,.2,1) both}
+  .brand{position:absolute;z-index:2;top:18px;left:var(--pad);display:inline-flex;align-items:center;gap:9px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    padding:7px 13px;border-radius:999px;background:rgba(0,0,0,.4);backdrop-filter:blur(8px)}
+  .brand i{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--violet2),var(--gold))}
+  .cover{flex:0 0 auto;width:clamp(170px,22vw,248px);aspect-ratio:1/1;border-radius:10px;overflow:hidden;position:relative;box-shadow:0 10px 60px rgba(0,0,0,.6);
+    background:linear-gradient(145deg,var(--violet) 0%,#5b2aa0 45%,var(--gold) 130%)}
+  .cover img{width:100%;height:100%;object-fit:cover;display:block}
+  .cover-gen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#fff}
+  .cover-gen svg{width:34%;height:auto;filter:drop-shadow(0 6px 18px rgba(0,0,0,.35))}
+  .cover-gen b{font-size:10px;letter-spacing:.3em;text-transform:uppercase;opacity:.85}
+  .bars{display:flex;align-items:flex-end;gap:4px;height:26px}
+  .bars span{width:4px;border-radius:2px;background:rgba(255,255,255,.8);height:40%}
+  .bars span:nth-child(2){height:75%}.bars span:nth-child(3){height:100%}.bars span:nth-child(4){height:55%}.bars span:nth-child(5){height:85%}.bars span:nth-child(6){height:35%}.bars span:nth-child(7){height:65%}
+  .kp-is-playing .bars span{animation:eq .8s ease-in-out infinite alternate;transform-origin:bottom}
+  .kp-is-playing .bars span:nth-child(2n){animation-delay:.2s}.kp-is-playing .bars span:nth-child(3n){animation-delay:.35s}
+  .htext{flex:1;min-width:0}
+  .kind{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+  h1{font-weight:900;letter-spacing:-.045em;line-height:1;margin-bottom:18px;overflow-wrap:anywhere;text-wrap:balance;text-shadow:0 2px 30px rgba(0,0,0,.25)}
+  h1.xl{font-size:clamp(40px,8vw,96px)} h1.lg{font-size:clamp(36px,6vw,72px)} h1.md{font-size:clamp(30px,4.4vw,54px)} h1.sm{font-size:clamp(24px,3.2vw,38px);letter-spacing:-.03em;line-height:1.1}
+  .by{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:14.5px;color:rgba(255,255,255,.8)}
+  .by b{color:#fff;font-weight:800}.by .d{opacity:.7}
 
-  /* lecteur premium */
-  .ksmp{background:var(--card);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:16px 16px 18px;margin-bottom:14px;
-    backdrop-filter:blur(22px);box-shadow:0 14px 36px rgba(0,0,0,.34);transition:border-color .3s,box-shadow .3s}
-  .ksmp.playing{border-color:rgba(232,184,75,.5);box-shadow:0 16px 44px rgba(139,63,217,.22)}
-  .ksmp-row{display:flex;align-items:center;gap:14px}
-  .ksmp-play{flex:0 0 auto;width:54px;height:54px;border:none;border-radius:50%;cursor:pointer;position:relative;
-    background:linear-gradient(135deg,var(--violet),var(--gold));color:#fff;display:flex;align-items:center;justify-content:center;
-    box-shadow:0 8px 22px rgba(139,63,217,.5);transition:transform .15s}
-  .ksmp-play:active{transform:scale(.92)}
-  .ksmp-play svg{width:26px;height:26px;fill:#fff}
-  .ksmp-play .ic-pause{display:none}
-  .ksmp.playing .ksmp-play .ic-play{display:none}
-  .ksmp.playing .ksmp-play .ic-pause{display:block}
-  .ksmp.playing .ksmp-play{animation:pulse 2s ease-in-out infinite}
-  @keyframes pulse{0%,100%{box-shadow:0 8px 22px rgba(139,63,217,.5)}50%{box-shadow:0 8px 30px rgba(232,184,75,.6)}}
-  .ksmp-info{flex:1;min-width:0}
-  .ksmp-nt{display:flex;align-items:center;gap:8px}
-  .ksmp-num{flex:0 0 auto;width:20px;height:20px;border-radius:6px;font-size:11px;font-weight:800;color:#fff;
-    display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12)}
-  .ksmp-title{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ksmp-eq{display:flex;align-items:flex-end;gap:3px;height:14px;margin-top:7px;opacity:.4;transition:opacity .3s}
-  .ksmp.playing .ksmp-eq{opacity:1}
-  .ksmp-eq i{width:3px;height:100%;border-radius:2px;background:linear-gradient(180deg,var(--gold),var(--violet));
-    transform-origin:bottom;transform:scaleY(.3)}
-  .ksmp.playing .ksmp-eq i{animation:eq .9s ease-in-out infinite}
-  .ksmp-eq i:nth-child(2){animation-delay:.15s}.ksmp-eq i:nth-child(3){animation-delay:.3s}
-  .ksmp-eq i:nth-child(4){animation-delay:.45s}.ksmp-eq i:nth-child(5){animation-delay:.6s}
-  @keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
-  .ksmp-time{flex:0 0 auto;font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}
-  .ksmp-time .cur{color:var(--ink)}
-  .ksmp-seek{position:relative;height:8px;margin-top:14px;border-radius:8px;background:rgba(255,255,255,.1);cursor:pointer}
-  .ksmp-buf{position:absolute;left:0;top:0;height:100%;width:0;border-radius:8px;background:rgba(255,255,255,.12)}
-  .ksmp-fill{position:absolute;left:0;top:0;height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,var(--violet),var(--gold))}
-  .ksmp-knob{position:absolute;top:50%;width:15px;height:15px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);
-    left:0;box-shadow:0 2px 8px rgba(0,0,0,.4);opacity:0;transition:opacity .2s}
-  .ksmp:hover .ksmp-knob,.ksmp.playing .ksmp-knob{opacity:1}
-  .ksmp-dl{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;text-decoration:none;
-    padding:12px;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;
-    background:linear-gradient(135deg,var(--violet),var(--gold));color:#fff;box-shadow:0 8px 20px rgba(139,63,217,.35)}
+  /* ── Corps ── */
+  .body{background:linear-gradient(180deg,color-mix(in srgb,var(--tint) 60%,var(--bg)) 0,var(--bg) 280px);padding-bottom:56px;transition:background 1s}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+  .actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-top:24px;padding-bottom:20px}
+  .play-main{width:60px;height:60px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#141005;
+    background:linear-gradient(135deg,var(--gold2),var(--gold));box-shadow:0 10px 30px rgba(232,184,75,.4);transition:transform .15s}
+  .play-main:hover{transform:scale(1.07)}.play-main:active{transform:scale(.96)}
+  .play-main svg{width:28px;height:28px;fill:currentColor}
+  .play-main .i-pause,.kp-is-playing .play-main .i-play{display:none}.kp-is-playing .play-main .i-pause{display:block}
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:999px;color:rgba(255,255,255,.82);
+    background:rgba(255,255,255,.07);border:1px solid var(--line)}
+  .chip.ok{color:#3ddc97;border-color:rgba(61,220,151,.3);background:rgba(61,220,151,.08)}
+  .chip.warn{color:var(--gold2);border-color:rgba(232,184,75,.3);background:rgba(232,184,75,.08)}
+  .chip svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
 
-  /* commentaires / instructions client */
-  .ksmp-fb{margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
-  .ksmp-fb-toggle{display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--mut);
-    font-size:12.5px;font-family:inherit;cursor:pointer;padding:2px 0}
-  .ksmp-fb-toggle:hover{color:var(--ink)}
-  .ksmp-fb-badge{background:var(--gold);color:#1a1205;font-weight:700;font-size:10.5px;border-radius:999px;
-    min-width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px}
-  .ksmp-fb-panel{margin-top:10px}
-  .ksmp-fb-list{margin-bottom:10px;display:flex;flex-direction:column;gap:8px}
-  .ksmp-fb-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:9px 11px}
-  .ksmp-fb-text{font-size:12.5px;color:#E5E0F2;line-height:1.5;white-space:pre-wrap}
-  .ksmp-fb-date{font-size:10.5px;color:var(--mut);margin-top:5px}
-  .ksmp-fb-input{width:100%;resize:vertical;min-height:64px;background:rgba(255,255,255,.05);
-    border:1px solid rgba(255,255,255,.12);border-radius:10px;color:var(--ink);font-family:inherit;
-    font-size:12.5px;padding:10px;line-height:1.5}
-  .ksmp-fb-input:focus{outline:none;border-color:rgba(232,184,75,.5)}
-  .ksmp-fb-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
-  .ksmp-fb-actions{display:flex;align-items:center;gap:10px;margin-top:8px}
-  .ksmp-fb-send{background:linear-gradient(135deg,var(--violet),var(--gold));color:#fff;border:none;
-    border-radius:9px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer}
-  .ksmp-fb-send:disabled{opacity:.6;cursor:default}
-  .ksmp-fb-sent{color:#00C87A;font-size:12px;font-weight:600}
-  .ksmp-fb-err{color:#ff6b6b;font-size:12px}
+  /* ── Liste des titres ── */
+  .thead,.row{display:grid;grid-template-columns:40px minmax(0,1fr) auto 56px;gap:0 14px;align-items:center}
+  .thead{padding:0 14px 9px;border-bottom:1px solid var(--line);margin-bottom:10px;font-size:12px;font-weight:600;color:var(--mut)}
+  .thead span:first-child{text-align:center}.thead span:last-child{text-align:right;padding-right:6px}
+  .track{position:relative;border-radius:10px;scroll-margin:20px 0 120px}
+  .track.kp-current{background:rgba(255,255,255,.07)}
+  .track.kp-current::before{content:'';position:absolute;left:0;bottom:0;height:2px;width:var(--kp-progress,0%);border-radius:2px;background:linear-gradient(90deg,var(--violet2),var(--gold))}
+  .row{padding:7px 14px;min-height:60px;border-radius:10px;transition:background .15s}
+  .track:not(.kp-current) .row:hover{background:rgba(255,255,255,.08)}
+  .row-main{display:contents;text-align:left}
+  .num{position:relative;height:40px;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--mut);font-variant-numeric:tabular-nums}
+  .num svg{position:absolute;width:18px;height:18px;fill:#fff;display:none}
+  .eq{position:absolute;display:none;align-items:flex-end;gap:2px;height:15px}
+  .eq i{width:3px;height:100%;border-radius:1px;background:var(--gold);animation:eq .7s ease-in-out infinite alternate;transform-origin:bottom}
+  .eq i:nth-child(2){animation-delay:.2s}.eq i:nth-child(3){animation-delay:.1s}.eq i:nth-child(4){animation-delay:.3s}
+  @keyframes eq{from{transform:scaleY(.2)}to{transform:scaleY(1)}}
+  .spin{position:absolute;display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .track.kp-current .num b{color:var(--gold)}
+  .num b{font-weight:500}
+  @media (hover:hover){
+    .row:hover .num b{display:none}.row:hover .num .i-play{display:block}
+    .track.kp-playing .row:hover .eq{display:none}.track.kp-playing .row:hover .num .i-play{display:none}.track.kp-playing .row:hover .num .i-pause{display:block}
+  }
+  .track.kp-playing .num b{display:none}.track.kp-playing .eq{display:flex}
+  .track.kp-loading .num b,.track.kp-loading .eq,.track.kp-loading .num svg{display:none!important}.track.kp-loading .spin{display:block}
+  .tinfo{min-width:0;cursor:pointer}
+  .ttitle{font-size:16px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .track.kp-current .ttitle{color:var(--gold2)}
+  .track.kp-error .ttitle{color:#ff7a90}
+  .tsub{font-size:13px;color:var(--mut);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tools{display:flex;align-items:center;gap:4px}
+  .tool{position:relative;width:38px;height:38px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--mut);transition:color .15s,background .15s}
+  .tool:hover,.tool[aria-expanded="true"]{color:#fff;background:rgba(255,255,255,.1)}
+  .tool svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .badge{position:absolute;top:1px;right:0;background:var(--gold);color:#1a1205;font-weight:800;font-size:10px;border-radius:999px;min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px}
+  .tdur{font-size:14px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums;padding-right:6px}
 
-  .note{font-size:11.5px;color:#f2a007;text-align:center;margin:20px 8px;line-height:1.7}
-  .info-dl{font-size:12.5px;text-align:center;margin:14px 0;color:var(--mut)}
-  .info-dl.ok{color:#00C87A;font-weight:600}
-  .solde-box{background:rgba(232,184,75,.07);border:1px solid rgba(232,184,75,.32);border-radius:20px;padding:22px;text-align:center;margin-top:14px}
-  .solde-box .lbl{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:1.5px}
-  .solde-box .val{font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--gold);letter-spacing:2px;margin:4px 0 2px}
-  .solde-box .hint{font-size:12.5px;color:#D9D2EC;margin-bottom:4px}
-  .btn-pay{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;text-decoration:none;
-    padding:15px;border-radius:14px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;background:#25D366;color:#fff;
-    box-shadow:0 8px 22px rgba(37,211,102,.35)}
-  .footer{text-align:center;font-size:11px;color:#6b6680;margin-top:32px;line-height:1.8}
-  .footer a{color:var(--gold);text-decoration:none}
+  /* ── Remarques client ── */
+  .fb{margin:2px 14px 12px 68px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+  .fb[hidden]{display:none}
+  .fb h3{font-size:13px;font-weight:700;margin-bottom:10px}
+  .fb-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .fb-item{background:rgba(255,255,255,.05);border-radius:10px;padding:9px 12px}
+  .fb-text{font-size:13.5px;line-height:1.5;color:#E5E0F2;white-space:pre-wrap;overflow-wrap:anywhere}
+  .fb-date{font-size:11px;color:var(--mut);margin-top:4px}
+  .fb-input{width:100%;resize:vertical;min-height:72px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:var(--ink);font:inherit;font-size:16px;padding:10px 12px;line-height:1.5}
+  .fb-input:focus{outline:none;border-color:var(--gold)}
+  .fb-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+  .fb-actions{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+  .fb-send{background:linear-gradient(135deg,var(--violet),var(--gold));color:#fff;border-radius:999px;padding:10px 20px;font-size:13.5px;font-weight:700}
+  .fb-send:disabled{opacity:.6;cursor:default}
+  .fb-sent{color:#3ddc97;font-size:13px;font-weight:600}.fb-err{color:#ff7a90;font-size:13px}
+  .fb-count{font-size:11.5px;color:var(--mut);margin-left:auto}
+
+  .note{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--gold2);background:rgba(232,184,75,.07);border:1px solid rgba(232,184,75,.22);border-radius:12px;padding:12px 14px;margin-top:28px}
+  .note svg{flex-shrink:0;width:16px;height:16px;margin-top:2px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .solde{margin-top:18px;border-radius:16px;padding:24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(139,63,217,.18),rgba(232,184,75,.1));border:1px solid rgba(232,184,75,.3)}
+  .solde .lbl{font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+  .solde .val{font-size:40px;font-weight:900;letter-spacing:-.03em;color:var(--gold);line-height:1.1;margin:4px 0}
+  .solde .hint{font-size:13.5px;color:#D9D2EC}
+  .pay{margin-left:auto;display:inline-flex;align-items:center;gap:10px;padding:15px 26px;border-radius:999px;font-size:15px;font-weight:800;background:#25D366;color:#06270f;box-shadow:0 10px 26px rgba(37,211,102,.3);transition:transform .15s}
+  .pay:hover{transform:translateY(-2px)}
+  .pay svg{width:20px;height:20px;fill:currentColor}
+  .foot{text-align:center;font-size:12.5px;color:#7d7896;margin-top:40px;line-height:1.9}
+  .foot a{color:var(--gold);font-weight:600}
+  @keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  @media (max-width:720px){
+    :root{--pad:16px}
+    .hero-in{flex-direction:column;align-items:flex-start;gap:20px;padding:72px var(--pad) 20px}
+    .cover{width:min(62vw,250px);align-self:center}
+    h1,h1.xl,h1.lg,h1.md{font-size:clamp(28px,8.6vw,42px);letter-spacing:-.03em;line-height:1.05;margin-bottom:12px}
+    .by{font-size:13.5px}
+    .actions{padding-top:16px}
+    .play-main{order:9;margin-left:auto;width:54px;height:54px}
+    .chips{margin-left:0;flex:1}
+    .thead{display:none}
+    .wrap.list{padding:0 6px}
+    .row{grid-template-columns:28px minmax(0,1fr) auto 44px;gap:0 8px;padding:6px 8px}
+    .ttitle{font-size:15px}
+    .fb{margin-left:10px;margin-right:10px}
+    .solde{padding:20px}.pay{margin-left:0;width:100%;justify-content:center}
+  }
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body oncontextmenu="return false">
-  <div class="bg"></div>
-  <div class="wrap">
-    <div class="head">
-      <div class="logo">🎙</div>
-      <h1>KOPHI'S MUSIC <span>STUDIO</span></h1>
-      <div class="badge">★ Espace d'écoute privé</div>
-      <div class="sub"><?= (int)$count ?> titre<?= $count > 1 ? 's' : '' ?> · version finale</div>
-      <?php if ($client): ?><div class="client">Pour&nbsp;: <b><?= esc_html($client) ?></b></div><?php endif; ?>
-      <?php if ($expire): ?>
-        <div class="sub" style="margin-top:4px;opacity:.85">⏳ Accès valable jusqu'au <?= esc_html(date_i18n('d/m/Y', strtotime($expire))) ?></div>
-      <?php endif; ?>
+  <header class="hero">
+    <?php if ($cover): ?><div class="hero-bg" style="background-image:url('<?= esc_url($cover_sm ?: $cover) ?>')"></div><?php endif; ?>
+    <div class="brand"><i></i>KOPHI'S MUSIC STUDIO</div>
+    <div class="hero-in">
+      <div class="cover">
+        <?php if ($cover): ?>
+          <img src="<?= esc_url($cover) ?>" alt="" id="ksl-cover" data-sample="<?= esc_url($cover_sm ?: $cover) ?>">
+        <?php else: ?>
+          <div class="cover-gen" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+            <div class="bars"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <b>Écoute privée</b>
+          </div>
+        <?php endif; ?>
+      </div>
+      <div class="htext">
+        <span class="kind">Espace d'écoute privé</span>
+        <h1 class="<?= esc_attr($title_cls) ?>"><?= esc_html($titre) ?></h1>
+        <div class="by">
+          <?php if ($client): ?><b><?= esc_html($client) ?></b><span class="d">•</span><?php endif; ?>
+          <span><?= (int) $count ?> titre<?= $count > 1 ? 's' : '' ?><span id="ksl-total"></span></span>
+          <?php if ($expire): ?><span class="d">•</span><span>Accès jusqu'au <?= esc_html(date_i18n('d/m/Y', strtotime($expire))) ?></span><?php endif; ?>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="body">
+    <div class="wrap actions">
+      <button type="button" class="play-main" id="ksl-play" aria-label="Lecture / pause">
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+      </button>
+      <div class="chips">
+        <?php if ($dl_allowed && $dl_mode === 'toujours'): ?>
+          <span class="chip ok"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>Téléchargement disponible</span>
+        <?php elseif ($dl_allowed && $paid): ?>
+          <span class="chip ok"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Solde réglé — téléchargement débloqué</span>
+        <?php elseif ($dl_allowed): ?>
+          <span class="chip ok"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>Téléchargement disponible</span>
+        <?php elseif ($dl_mode === 'jamais'): ?>
+          <span class="chip"><svg viewBox="0 0 24 24"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg>Écoute seule</span>
+        <?php elseif ($solde > 0): ?>
+          <span class="chip warn"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Téléchargement après règlement du solde</span>
+        <?php endif; ?>
+      </div>
     </div>
 
-    <?php foreach ($tracks as $i => $t):
-        $src = esc_url(ksm_listen_stream_link($token, $i));
-        $type = esc_attr(get_post_mime_type($t['id']) ?: 'audio/mpeg');
-        $fb   = ksm_listen_get_feedback_for_track($post->ID, $i); ?>
-    <div class="ksmp" oncontextmenu="return false">
-      <div class="ksmp-row">
-        <button class="ksmp-play" type="button" aria-label="Lecture / Pause">
-          <svg class="ic-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          <svg class="ic-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-        </button>
-        <div class="ksmp-info">
-          <div class="ksmp-nt"><span class="ksmp-num"><?= $i + 1 ?></span><span class="ksmp-title"><?= esc_html($t['title']) ?></span></div>
-          <div class="ksmp-eq"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="wrap list">
+      <div class="thead" aria-hidden="true"><span>#</span><span>Titre</span><span></span><span>Durée</span></div>
+      <?php foreach ($tracks as $i => $t):
+          $src = ksm_listen_stream_link($token, $i);
+          $fb  = ksm_listen_get_feedback_for_track($post->ID, $i); ?>
+      <div class="track" data-kp-id="t<?= (int) $i ?>" data-kp-probe
+           data-kp-url="<?= esc_url($src) ?>" data-kp-title="<?= esc_attr($t['title']) ?>"
+           data-kp-sub="<?= esc_attr($client ?: "KOPHI'S MUSIC STUDIO") ?>" data-kp-cover="<?= esc_url($cover_sm) ?>">
+        <div class="row">
+          <button type="button" class="row-main" data-kp-play aria-label="Lire <?= esc_attr($t['title']) ?>">
+            <span class="num">
+              <b><?= (int) $i + 1 ?></b>
+              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+              <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="spin" aria-hidden="true"></span>
+            </span>
+            <span class="tinfo">
+              <span class="ttitle" style="display:block"><?= esc_html($t['title']) ?></span>
+              <span class="tsub" style="display:block"><?= $client ? esc_html($client) : 'Version d\'écoute' ?></span>
+            </span>
+          </button>
+          <div class="tools">
+            <button type="button" class="tool fb-toggle" aria-expanded="false" aria-controls="ksl-fb-<?= (int) $i ?>" title="Laisser une remarque sur ce titre" aria-label="Laisser une remarque sur <?= esc_attr($t['title']) ?>">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <?php if ($fb): ?><span class="badge"><?= count($fb) ?></span><?php endif; ?>
+            </button>
+            <?php if ($dl_allowed): ?>
+            <a class="tool" href="<?= esc_url(add_query_arg(['ksm_dl' => $token, 'i' => $i], home_url('/'))) ?>" title="Télécharger" aria-label="Télécharger <?= esc_attr($t['title']) ?>">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+            </a>
+            <?php endif; ?>
+          </div>
+          <div class="tdur kp-dur">—</div>
         </div>
-        <div class="ksmp-time"><span class="cur">0:00</span> / <span class="dur">0:00</span></div>
-      </div>
-      <div class="ksmp-seek">
-        <div class="ksmp-buf"></div>
-        <div class="ksmp-fill"></div>
-        <div class="ksmp-knob"></div>
-      </div>
-      <audio class="ksmp-audio" preload="none"><source src="<?= $src ?>" type="<?= $type ?>"></audio>
-      <?php if ($dl_allowed): ?>
-      <a class="ksmp-dl" href="<?= esc_url(add_query_arg(['ksm_dl'=>$token,'i'=>$i], home_url('/'))) ?>">⬇ TÉLÉCHARGER</a>
-      <?php endif; ?>
 
-      <!-- Commentaire / instructions de retouche pour ce titre -->
-      <div class="ksmp-fb">
-        <button type="button" class="ksmp-fb-toggle">
-          💬 Laisser une remarque sur ce titre<?php if ($fb): ?><span class="ksmp-fb-badge"><?= count($fb) ?></span><?php endif; ?>
-        </button>
-        <div class="ksmp-fb-panel" style="display:none">
-          <?php if ($fb): ?>
-          <div class="ksmp-fb-list">
+        <!-- Remarques / instructions de retouche pour ce titre -->
+        <div class="fb" id="ksl-fb-<?= (int) $i ?>" hidden>
+          <h3>Vos remarques sur « <?= esc_html($t['title']) ?> »</h3>
+          <div class="fb-list">
             <?php foreach ($fb as $f): ?>
-              <div class="ksmp-fb-item">
-                <div class="ksmp-fb-text"><?= nl2br(esc_html($f['text'])) ?></div>
-                <div class="ksmp-fb-date"><?= esc_html(date_i18n('d/m/Y H:i', $f['date'])) ?></div>
+              <div class="fb-item">
+                <div class="fb-text"><?= esc_html($f['text'] ?? '') ?></div>
+                <div class="fb-date"><?= esc_html(date_i18n('d/m/Y H:i', (int) ($f['date'] ?? 0))) ?></div>
               </div>
             <?php endforeach; ?>
           </div>
-          <?php endif; ?>
-          <textarea class="ksmp-fb-input" maxlength="2000" rows="3"
-            placeholder="Ex : Baisser un peu la voix au refrain, couper les 10 dernières secondes, reprendre le mixage du couplet 2..."></textarea>
-          <input type="text" class="ksmp-fb-hp" tabindex="-1" autocomplete="off">
-          <div class="ksmp-fb-actions">
-            <button type="button" class="ksmp-fb-send" data-track="<?= $i ?>">Envoyer</button>
-            <span class="ksmp-fb-sent" style="display:none">✅ Envoyé au studio</span>
-            <span class="ksmp-fb-err" style="display:none"></span>
+          <label class="sr" for="ksl-fb-in-<?= (int) $i ?>">Votre remarque</label>
+          <textarea class="fb-input" id="ksl-fb-in-<?= (int) $i ?>" maxlength="2000" rows="3"
+            placeholder="Ex : baisser un peu la voix au refrain, couper les 10 dernières secondes…"></textarea>
+          <input type="text" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <div class="fb-actions">
+            <button type="button" class="fb-send" data-track="<?= (int) $i ?>">Envoyer au studio</button>
+            <button type="button" class="chip fb-stamp" title="Insérer la position de lecture en cours">+ Position actuelle</button>
+            <span class="fb-sent" hidden>Envoyé au studio ✓</span>
+            <span class="fb-err" role="alert" hidden></span>
           </div>
         </div>
       </div>
+      <?php endforeach; ?>
+
+      <div class="note"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Version d'écoute à usage privé. Merci de ne pas partager ni diffuser cet enregistrement.</span></div>
+
+      <?php if ($solde > 0): ?>
+      <div class="solde">
+        <div>
+          <div class="lbl">Solde restant à régler</div>
+          <div class="val"><?= number_format($solde, 0, ',', ' ') ?> F</div>
+          <div class="hint"><?= $dl_mode === 'solde' ? 'Réglez le solde pour débloquer le téléchargement de vos fichiers.' : 'Réglez le solde pour finaliser votre projet.' ?></div>
+        </div>
+        <a class="pay" href="https://wa.me/<?= esc_attr($wa_num) ?>?text=<?= $wa_solde ?>" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.300 1.200-1.800 1.200-.5.1-1 .2-3.300-.7-2.700-1.100-4.500-3.900-4.600-4.100-.1-.2-1.100-1.500-1.100-2.800 0-1.300.7-2 .9-2.200.2-.3.5-.3.700-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.2-.3.3-.1.6.2.300.7 1.200 1.600 1.900 1.100.9 2 1.200 2.300 1.400.3.1.5.1.6-.1l.8-1c.2-.2.4-.2.6-.1l1.900.9c.3.1.5.2.5.3.1.200.1.700-.2 1.100z"/></svg>
+          Payer le solde
+        </a>
+      </div>
+      <?php endif; ?>
+
+      <div class="foot">
+        KOPHI'S MUSIC STUDIO — Abidjan<br>
+        <a href="https://wa.me/<?= esc_attr($wa_num) ?>" target="_blank" rel="noopener">Nous contacter sur WhatsApp</a>
+      </div>
     </div>
-    <?php endforeach; ?>
+  </main>
 
-
-    <div class="note">🔒 Version d'écoute à usage privé. Merci de ne pas partager ni diffuser cet enregistrement.</div>
-
-    <?php
-    // Message sur la disponibilité du téléchargement
-    if ($dl_allowed && $dl_mode === 'toujours'): ?>
-      <div class="info-dl ok">⬇ Vos fichiers sont disponibles au téléchargement.</div>
-    <?php elseif ($dl_allowed && $paid): ?>
-      <div class="info-dl ok">✅ Solde réglé — téléchargement débloqué.</div>
-    <?php elseif ($dl_mode === 'jamais'): ?>
-      <div class="info-dl">🎧 Écoute seule — fichiers non téléchargeables.</div>
-    <?php elseif (!$dl_allowed && $solde > 0): ?>
-      <div class="info-dl">🔒 Réglez le solde pour débloquer le téléchargement de vos fichiers.</div>
-    <?php endif; ?>
-
-    <?php if ($solde > 0): ?>
-    <div class="solde-box">
-      <div class="lbl">Solde restant à régler</div>
-      <div class="val"><?= number_format($solde, 0, ',', ' ') ?> F</div>
-      <div class="hint">Réglez le solde pour finaliser votre projet.</div>
-      <a class="btn-pay" href="https://wa.me/<?= esc_attr($wa_num) ?>?text=<?= $wa_solde ?>" target="_blank" rel="noopener">💳 PAYER LE SOLDE</a>
-    </div>
-    <?php endif; ?>
-
-    <div class="footer">
-      KOPHI'S MUSIC STUDIO<br>
-      <a href="https://wa.me/<?= esc_attr($wa_num) ?>" target="_blank" rel="noopener">Nous contacter sur WhatsApp</a>
-    </div>
-  </div>
-
+<script src="<?= esc_url(KOPHI_URL . 'assets/js/kophi-player.js?ver=' . $ver) ?>"></script>
 <script>
 (function(){
-  var AJAX  = '<?= esc_js(admin_url('admin-ajax.php')) ?>';
-  var TOKEN = '<?= esc_js($token) ?>';
+  var AJAX  = <?= wp_json_encode(admin_url('admin-ajax.php')) ?>;
+  var TOKEN = <?= wp_json_encode($token) ?>;
+  var KP = window.KophiPlayer;
 
-  function fmt(s){ if(!isFinite(s)||s<0) return '0:00'; s=Math.floor(s); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
-  var players = [];
-  document.querySelectorAll('.ksmp').forEach(function(p){
-    var audio = p.querySelector('.ksmp-audio'),
-        btn   = p.querySelector('.ksmp-play'),
-        seek  = p.querySelector('.ksmp-seek'),
-        fill  = p.querySelector('.ksmp-fill'),
-        buf   = p.querySelector('.ksmp-buf'),
-        knob  = p.querySelector('.ksmp-knob'),
-        cur   = p.querySelector('.cur'),
-        dur   = p.querySelector('.dur');
-    players.push(audio);
+  // Bouton principal + clic sur le titre
+  document.getElementById('ksl-play').addEventListener('click', function(){ if (KP) KP.toggle(); });
 
-    btn.addEventListener('click', function(){
-      if(audio.paused){
-        players.forEach(function(a){ if(a!==audio){ a.pause(); } });
-        audio.play();
-      } else { audio.pause(); }
-    });
-    audio.addEventListener('play',  function(){ p.classList.add('playing'); });
-    audio.addEventListener('pause', function(){ p.classList.remove('playing'); });
-    audio.addEventListener('ended', function(){ p.classList.remove('playing'); fill.style.width='0%'; knob.style.left='0%'; cur.textContent='0:00'; });
-    audio.addEventListener('loadedmetadata', function(){ dur.textContent = fmt(audio.duration); });
-    audio.addEventListener('timeupdate', function(){
-      var pct = audio.duration ? (audio.currentTime/audio.duration*100) : 0;
-      fill.style.width = pct+'%'; knob.style.left = pct+'%'; cur.textContent = fmt(audio.currentTime);
-    });
-    audio.addEventListener('progress', function(){
-      try{ if(audio.buffered.length){ buf.style.width = (audio.buffered.end(audio.buffered.length-1)/audio.duration*100)+'%'; } }catch(e){}
-    });
-    function seekTo(e){
-      var r = seek.getBoundingClientRect();
-      var x = ((e.touches?e.touches[0].clientX:e.clientX) - r.left)/r.width;
-      x = Math.max(0, Math.min(1, x));
-      if(audio.duration){ audio.currentTime = x*audio.duration; }
-    }
-    seek.addEventListener('click', seekTo);
-    var drag=false;
-    seek.addEventListener('mousedown', function(e){ drag=true; seekTo(e); });
-    document.addEventListener('mousemove', function(e){ if(drag) seekTo(e); });
-    document.addEventListener('mouseup', function(){ drag=false; });
-    seek.addEventListener('touchstart', function(e){ seekTo(e); }, {passive:true});
-    seek.addEventListener('touchmove',  function(e){ seekTo(e); }, {passive:true});
-  });
+  // Durée totale (« 3 titres, 7 min 12 s ») dès que toutes les durées sont connues
+  function total(){
+    var sum = 0, ok = true;
+    document.querySelectorAll('.track').forEach(function(t){ var d = parseFloat(t.getAttribute('data-kp-duration')); if (d) sum += d; else ok = false; });
+    if (!ok || !sum) return;
+    sum = Math.round(sum); var m = Math.floor(sum/60), s = sum%60;
+    document.getElementById('ksl-total').textContent = ', ' + (m ? m + ' min ' + ('0'+s).slice(-2) + ' s' : s + ' s');
+  }
+  document.addEventListener('kophi-player:durations', total);
 
-  // Commentaires / instructions par titre
-  document.querySelectorAll('.ksmp-fb').forEach(function(fb){
-    var toggle = fb.querySelector('.ksmp-fb-toggle');
-    var panel  = fb.querySelector('.ksmp-fb-panel');
-    var input  = fb.querySelector('.ksmp-fb-input');
-    var hp     = fb.querySelector('.ksmp-fb-hp');
-    var send   = fb.querySelector('.ksmp-fb-send');
-    var sent   = fb.querySelector('.ksmp-fb-sent');
-    var err    = fb.querySelector('.ksmp-fb-err');
-    var list   = fb.querySelector('.ksmp-fb-list');
+  // Teinte de l'en-tête tirée de la pochette
+  (function(){
+    var img = document.getElementById('ksl-cover'); if (!img) return;
+    var probe = new Image();
+    probe.onload = function(){
+      try {
+        var c = document.createElement('canvas'); c.width = c.height = 40;
+        var x = c.getContext('2d'); x.drawImage(probe, 0, 0, 40, 40);
+        var d = x.getImageData(0, 0, 40, 40).data, r = 0, g = 0, b = 0, n = 0;
+        for (var i = 0; i < d.length; i += 4) {
+          var mx = Math.max(d[i], d[i+1], d[i+2]), mn = Math.min(d[i], d[i+1], d[i+2]), w = (mx ? (mx-mn)/mx : 0) + .05;
+          r += d[i]*w; g += d[i+1]*w; b += d[i+2]*w; n += w;
+        }
+        r /= n; g /= n; b /= n;
+        var l = (Math.max(r,g,b) + Math.min(r,g,b)) / 510, k = l > 0 ? .3 / l : 1;
+        var f = function(v){ return Math.round(Math.max(0, Math.min(255, v*k))); };
+        document.documentElement.style.setProperty('--tint', 'rgb(' + f(r) + ',' + f(g) + ',' + f(b) + ')');
+      } catch(e) {}
+    };
+    probe.src = img.getAttribute('data-sample') || img.src;
+  })();
+
+  // Remarques / instructions par titre
+  document.querySelectorAll('.track').forEach(function(track){
+    var toggle = track.querySelector('.fb-toggle'), panel = track.querySelector('.fb');
+    var input = panel.querySelector('.fb-input'), hp = panel.querySelector('.fb-hp'), send = panel.querySelector('.fb-send');
+    var sent = panel.querySelector('.fb-sent'), err = panel.querySelector('.fb-err'), list = panel.querySelector('.fb-list');
+    var stamp = panel.querySelector('.fb-stamp');
 
     toggle.addEventListener('click', function(){
-      panel.style.display = (panel.style.display === 'none') ? '' : 'none';
+      var open = panel.hidden;
+      panel.hidden = !open; toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) input.focus();
+    });
+    // Insère « [1:23] » : la position de lecture, si ce titre est en cours
+    stamp.addEventListener('click', function(){
+      var cur = track.style.getPropertyValue('--kp-progress'), d = parseFloat(track.getAttribute('data-kp-duration'));
+      var t = (cur && d) ? parseFloat(cur) / 100 * d : 0;
+      var txt = '[' + (KP ? KP.fmt(t) : '0:00') + '] ';
+      input.value = input.value + (input.value && !/\s$/.test(input.value) ? ' ' : '') + txt; input.focus();
     });
 
     send.addEventListener('click', function(){
       var msg = (input.value || '').trim();
-      err.style.display = 'none';
-      if (!msg) { err.textContent = 'Écrivez un message avant d\'envoyer.'; err.style.display = ''; return; }
+      err.hidden = true;
+      if (!msg) { err.textContent = 'Écrivez un message avant d\'envoyer.'; err.hidden = false; input.focus(); return; }
 
-      send.disabled = true; send.textContent = 'Envoi...';
+      send.disabled = true; send.textContent = 'Envoi…';
       var data = new FormData();
       data.append('action', 'ksm_listen_add_comment');
       data.append('token', TOKEN);
@@ -1092,49 +1217,29 @@ function ksm_listen_render_page(string $token) {
       data.append('message', msg);
       data.append('hp', hp.value || '');
 
-      fetch(AJAX, { method: 'POST', body: data })
+      fetch(AJAX, { method: 'POST', body: data, credentials: 'same-origin' })
         .then(function(r){ return r.json(); })
         .then(function(res){
-          send.disabled = false; send.textContent = 'Envoyer';
-          if (res && res.success && !res.data.fake) {
-            if (!list) {
-              list = document.createElement('div');
-              list.className = 'ksmp-fb-list';
-              panel.insertBefore(list, panel.firstChild);
-            }
-            var item = document.createElement('div');
-            item.className = 'ksmp-fb-item';
-            var textDiv = document.createElement('div');
-            textDiv.className = 'ksmp-fb-text';
-            textDiv.textContent = msg;
-            var dateDiv = document.createElement('div');
-            dateDiv.className = 'ksmp-fb-date';
-            dateDiv.textContent = (res.data && res.data.date) || '';
-            item.appendChild(textDiv); item.appendChild(dateDiv);
-            list.appendChild(item);
-            input.value = '';
-            sent.style.display = ''; setTimeout(function(){ sent.style.display = 'none'; }, 2500);
-            var badge = toggle.querySelector('.ksmp-fb-badge');
-            if (!badge) {
-              badge = document.createElement('span');
-              badge.className = 'ksmp-fb-badge';
-              toggle.appendChild(badge);
-              badge.textContent = '1';
-            } else {
+          send.disabled = false; send.textContent = 'Envoyer au studio';
+          if (res && res.success) {
+            if (!(res.data && res.data.fake)) {          // piège à robots : succès factice, rien n'est ajouté
+              var item = document.createElement('div'); item.className = 'fb-item';
+              var a = document.createElement('div'); a.className = 'fb-text'; a.textContent = msg;
+              var b = document.createElement('div'); b.className = 'fb-date'; b.textContent = (res.data && res.data.date) || '';
+              item.appendChild(a); item.appendChild(b); list.insertBefore(item, list.firstChild);
+              var badge = toggle.querySelector('.badge');
+              if (!badge) { badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = '0'; toggle.appendChild(badge); }
               badge.textContent = (parseInt(badge.textContent, 10) || 0) + 1;
             }
-          } else if (res && res.success && res.data.fake) {
-            // Piège à robots déclenché : on affiche quand même un succès factice
             input.value = '';
-            sent.style.display = ''; setTimeout(function(){ sent.style.display = 'none'; }, 2500);
+            sent.hidden = false; setTimeout(function(){ sent.hidden = true; }, 3000);
           } else {
-            err.textContent = (res && res.data && res.data.message) || 'Erreur, réessayez.';
-            err.style.display = '';
+            err.textContent = (res && res.data && res.data.message) || 'Erreur, réessayez.'; err.hidden = false;
           }
         })
         .catch(function(){
-          send.disabled = false; send.textContent = 'Envoyer';
-          err.textContent = 'Erreur réseau, réessayez.'; err.style.display = '';
+          send.disabled = false; send.textContent = 'Envoyer au studio';
+          err.textContent = 'Erreur réseau, réessayez.'; err.hidden = false;
         });
     });
   });

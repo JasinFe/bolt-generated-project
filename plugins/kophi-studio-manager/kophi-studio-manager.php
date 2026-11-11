@@ -376,6 +376,9 @@ function kophi_front_assets() {
     wp_enqueue_style('kophi-fonts', 'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;500;600;700&display=swap', [], null);
     wp_enqueue_style('kophi-front', KOPHI_URL . 'assets/front.css', [], KOPHI_VERSION);
     wp_enqueue_script('kophi-front', KOPHI_URL . 'assets/front.js', [], KOPHI_VERSION, true);
+    // Lecteur unifié (barre de lecture) : enregistré partout, chargé par les gabarits qui en ont besoin
+    wp_register_style('kophi-player', KOPHI_URL . 'assets/css/kophi-player.css', [], KOPHI_VERSION);
+    wp_register_script('kophi-player', KOPHI_URL . 'assets/js/kophi-player.js', [], KOPHI_VERSION, true);
     wp_localize_script('kophi-front', 'KOPHI', [
         'ajaxurl'  => admin_url('admin-ajax.php'),
         'nonce'    => wp_create_nonce('kophi_front_nonce'),
@@ -1323,6 +1326,7 @@ function kophi_shortcode_beats($atts) {
         body.kophi-beats-page{background:#0D0D0D!important}
         </style>';
     }, 1);
+    wp_enqueue_style('kophi-player'); wp_enqueue_script('kophi-player');
     ob_start();
     include KOPHI_DIR . 'templates/front/beats-store.php';
     return ob_get_clean();

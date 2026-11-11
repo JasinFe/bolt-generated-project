@@ -34,6 +34,7 @@ function kophi_shortcode_beats_home($atts) {
     $logo = 'https://studio.kophismusic.com/wp-content/uploads/sites/8/2026/03/LOGO-KOPHIS-MUSIC-STUDIO.png';
     $wa   = KOPHI_WA_LINK;
 
+    wp_enqueue_style('kophi-player'); wp_enqueue_script('kophi-player');
     ob_start();
     ?>
 <section class="kbh-section" id="kophi-beats-home">
@@ -80,7 +81,10 @@ function kophi_shortcode_beats_home($atts) {
         $duree_fmt  = $duree_sec ? sprintf('%d:%02d', intdiv($duree_sec,60), $duree_sec%60) : '';
         $prix_fmt   = $prix_ne ? number_format($prix_ne,0,',',' ') . ' F' : '—';
       ?>
-      <div class="kbh-card" data-beat-id="<?= $id ?>" data-audio="<?= esc_attr($audio_url) ?>">
+      <div class="kbh-card" data-beat-id="<?= (int) $id ?>" data-audio="<?= esc_attr($audio_url) ?>"
+           data-kp-id="<?= (int) $id ?>" data-kp-url="<?= esc_url($audio_url) ?>" data-kp-title="<?= esc_attr($titre) ?>"
+           data-kp-sub="<?= esc_attr(trim(($genre_str ? $genre_str . ' · ' : '') . ($tempo ? $tempo . ' BPM' : ''), ' ·')) ?>"
+           data-kp-cover="<?= esc_url($thumb) ?>" data-kp-duration="<?= (int) $duree_sec ?>" data-kp-fallback="<?= esc_url(KOPHI_WA_LINK) ?>">
 
         <!-- Thumbnail / Waveform zone -->
         <div class="kbh-card-visual">
@@ -93,10 +97,10 @@ function kophi_shortcode_beats_home($atts) {
           <?php endif; ?>
 
           <!-- Overlay play -->
-          <button class="kbh-play-btn" data-beat-id="<?= $id ?>" onclick="kbhTogglePlay(<?= $id ?>, this)">
+          <button type="button" class="kbh-play-btn" data-kp-play data-beat-id="<?= (int) $id ?>" aria-label="Écouter <?= esc_attr($titre) ?>">
             <span class="kbh-play-icon">
-              <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
-              <svg class="icon-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <svg class="icon-play kp-ico-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
+              <svg class="icon-pause kp-ico-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
             </span>
           </button>
 
@@ -271,8 +275,9 @@ function kophi_shortcode_beats_home($atts) {
   overflow: hidden;
 }
 .kbh-thumb {
-  width: 100%; height: 100%;
-  object-fit: cover;
+  position: absolute; inset: 0;
+  width: 100% !important; height: 100% !important; max-width: none !important;
+  object-fit: cover; object-position: center; display: block; margin: 0;
   opacity: .85;
   transition: opacity .3s;
 }
@@ -300,8 +305,8 @@ function kophi_shortcode_beats_home($atts) {
   z-index: 2;
 }
 .kbh-card:hover .kbh-play-btn,
-.kbh-card.playing .kbh-play-btn { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-.kbh-card.playing .kbh-play-btn { background: rgba(139,63,217,.95); color: #fff; }
+.kbh-card.kp-current .kbh-play-btn { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+.kbh-card.kp-current .kbh-play-btn { background: rgba(139,63,217,.95); color: #fff; }
 
 .kbh-duration {
   position: absolute;
@@ -337,6 +342,8 @@ function kophi_shortcode_beats_home($atts) {
   background: linear-gradient(90deg, #8B3FD9, #E8B84B);
   width: 0%;
   transition: width .1s linear;
+}
+.kbh-card.kp-current .kbh-progress-bar { width: var(--kp-progress, 0%);
 }
 
 /* Card body */
@@ -470,71 +477,9 @@ function kophi_shortcode_beats_home($atts) {
 </style>
 
 <script>
-(function() {
-  var _kbhAudio   = null;
-  var _kbhCurrent = null;
-
-  window.kbhTogglePlay = function(beatId, btn) {
-    var card     = btn.closest('.kbh-card');
-    var audioUrl = card.dataset.audio;
-    var progress = document.getElementById('kbh-progress-' + beatId);
-    var playIcon  = btn.querySelector('.icon-play');
-    var pauseIcon = btn.querySelector('.icon-pause');
-
-    // Stopper l'audio en cours (autre beat)
-    if (_kbhCurrent && _kbhCurrent !== beatId) {
-      if (_kbhAudio) { _kbhAudio.pause(); _kbhAudio = null; }
-      var prevCard = document.querySelector('.kbh-card[data-beat-id="' + _kbhCurrent + '"]');
-      if (prevCard) {
-        prevCard.classList.remove('playing');
-        var pp = prevCard.querySelector('.icon-play');
-        var pi = prevCard.querySelector('.icon-pause');
-        var pg = document.getElementById('kbh-progress-' + _kbhCurrent);
-        if (pp) pp.style.display = ''; if (pi) pi.style.display = 'none';
-        if (pg) pg.style.width = '0%';
-      }
-    }
-
-    // Toggle play/pause sur ce beat
-    if (!_kbhAudio || _kbhCurrent !== beatId) {
-      if (!audioUrl) {
-        // Pas d'audio → ouvrir WhatsApp
-        window.open('<?= esc_js(KOPHI_WA_LINK) ?>', '_blank');
-        return;
-      }
-      _kbhAudio   = new Audio(audioUrl);
-      _kbhCurrent = beatId;
-      card.classList.add('playing');
-      if (playIcon) playIcon.style.display = 'none';
-      if (pauseIcon) pauseIcon.style.display = '';
-
-      _kbhAudio.addEventListener('timeupdate', function() {
-        if (_kbhAudio.duration && progress) {
-          progress.style.width = (_kbhAudio.currentTime / _kbhAudio.duration * 100) + '%';
-        }
-      });
-      _kbhAudio.addEventListener('ended', function() {
-        card.classList.remove('playing');
-        if (playIcon) playIcon.style.display = '';
-        if (pauseIcon) pauseIcon.style.display = 'none';
-        if (progress) progress.style.width = '0%';
-        _kbhAudio = null; _kbhCurrent = null;
-      });
-      _kbhAudio.play().catch(function() {});
-
-    } else if (_kbhAudio.paused) {
-      _kbhAudio.play();
-      card.classList.add('playing');
-      if (playIcon) playIcon.style.display = 'none';
-      if (pauseIcon) pauseIcon.style.display = '';
-    } else {
-      _kbhAudio.pause();
-      card.classList.remove('playing');
-      if (playIcon) playIcon.style.display = '';
-      if (pauseIcon) pauseIcon.style.display = 'none';
-    }
-  };
-})();
+// Lecture : gérée par le lecteur unifié (assets/js/kophi-player.js) via [data-kp-play].
+// kbhTogglePlay() est conservé pour compatibilité avec d'éventuels appels externes.
+window.kbhTogglePlay = function (beatId) { if (window.KophiPlayer) KophiPlayer.toggle(beatId); };
 </script>
 <?php
     return ob_get_clean();

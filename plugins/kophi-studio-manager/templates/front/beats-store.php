@@ -113,19 +113,20 @@ document.getElementById('kbs-burger')?.addEventListener('click',function(){
       $duree_fmt = $duree ? gmdate('i:s',$duree) : '—';
       $desc_short = get_post_meta($b->ID,'_kophi_description_courte',true) ?: $b->post_excerpt;
   ?>
-  <div class="kbs-beat" data-genre="<?= esc_attr($genre) ?>" data-id="<?= $b->ID ?>">
-    <!-- Cover / Waveform -->
-    <div class="kbs-cover" onclick="kbsPlay(<?= $b->ID ?>,'<?= esc_js($audio) ?>')">
+  <div class="kbs-beat" data-genre="<?= esc_attr($genre) ?>" data-id="<?= (int) $b->ID ?>"
+       data-kp-id="<?= (int) $b->ID ?>" data-kp-url="<?= esc_url($audio) ?>" data-kp-title="<?= esc_attr($b->post_title) ?>"
+       data-kp-sub="<?= esc_attr(trim(($genre ? $genre . ' · ' : '') . ($tempo ? $tempo . ' BPM' : ''), ' ·')) ?>"
+       data-kp-cover="<?= esc_url($thumb) ?>" data-kp-duration="<?= (int) $duree ?>" data-kp-fallback="<?= esc_url($wa_link) ?>">
+    <!-- Pochette (carrée, jamais déformée) — lecture via le lecteur unifié -->
+    <div class="kbs-cover" data-kp-play role="button" tabindex="0" aria-label="Écouter <?= esc_attr($b->post_title) ?>">
       <?php if($thumb): ?>
-      <img src="<?= esc_url($thumb) ?>" alt="<?= esc_attr($b->post_title) ?>" style="width:100%;height:100%;object-fit:cover;border-radius:10px 10px 0 0">
+      <img src="<?= esc_url($thumb) ?>" alt="" loading="lazy" decoding="async">
       <?php else: ?>
-      <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--kf-violet),var(--kf-gold));display:flex;align-items:center;justify-content:center;font-size:42px;border-radius:10px 10px 0 0">🎹</div>
+      <div class="kbs-cover-ph" aria-hidden="true"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
       <?php endif; ?>
-      <button class="kbs-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);width:44px;height:44px;border-radius:50%;background:rgba(232,184,75,.9);border:none;color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3" id="play-<?= $b->ID ?>" onclick="kbsPlay(<?= $b->ID ?>,'<?= esc_js($audio) ?>')"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg></button>
-      <!-- Waveform simulée -->
-      <!-- WaveSurfer waveform -->
-      <div id="waveform-<?= $b->ID ?>" class="kbs-waveform"></div>
-      </div>
+      <span class="kbs-play-btn" id="play-<?= (int) $b->ID ?>" aria-hidden="true"><svg class="kp-ico-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><svg class="kp-ico-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></span>
+      <span class="kbs-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="kbs-progress" aria-hidden="true"></span>
     </div>
     <!-- Infos -->
     <div class="kbs-info">
@@ -334,27 +335,32 @@ document.getElementById('kbs-burger')?.addEventListener('click',function(){
 #kophi-beats-app .kbs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
 #kophi-beats-app .kbs-beat{background:var(--kf-dark2);border:1px solid var(--kf-border);border-radius:12px;overflow:hidden;transition:all .22s;}
 #kophi-beats-app .kbs-beat:hover{border-color:var(--kf-gold-b);transform:translateY(-3px);}
-#kophi-beats-app .kbs-cover{position:relative;height:160px;overflow:hidden;}
-#kophi-beats-app .kbs-waveform{position:absolute;bottom:0;left:0;right:0;height:48px;padding:0 8px;z-index:1;}
-#kophi-beats-app .kbs-play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);width:44px;height:44px;border-radius:50%;background:rgba(232,184,75,.92);border:none;color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.4);}
-#kophi-beats-app .kbs-play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);font-size:28px;color:#fff;opacity:0;transition:opacity .2s;}
-#kophi-beats-app .kbs-cover:hover .kbs-play-btn{opacity:1;}
-#kophi-beats-app .kbs-cover.playing .kbs-play-btn{opacity:1;}
-#kophi-beats-app .kbs-wave{position:absolute;bottom:0;left:0;right:0;height:28px;display:flex;align-items:flex-end;gap:1.5px;padding:0 8px;opacity:0;transition:opacity .2s;}
-#kophi-beats-app .kbs-cover:hover .kbs-wave,#kophi-beats-app .kbs-cover.playing .kbs-wave{opacity:1;}
-#kophi-beats-app .kbs-bar{flex:1;background:rgba(232,184,75,.6);border-radius:2px 2px 0 0;min-height:4px;}
-#kophi-beats-app .kbs-cover.playing .kbs-bar{animation:kwave .8s ease-in-out infinite alternate;}
-#kophi-beats-app .kbs-bar:nth-child(2n){animation-delay:.1s;}
-#kophi-beats-app .kbs-bar:nth-child(3n){animation-delay:.2s;}
-@keyframes kwave{0%{transform:scaleY(.4)}100%{transform:scaleY(1)}}
+#kophi-beats-app .kbs-cover{position:relative;width:100%;height:auto;aspect-ratio:1/1;overflow:hidden;cursor:pointer;background:linear-gradient(135deg,rgba(139,63,217,.35),rgba(232,184,75,.18));}
+#kophi-beats-app .kbs-cover img{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;object-fit:cover;object-position:center;display:block;margin:0;border-radius:0;transition:transform .5s ease;}
+#kophi-beats-app .kbs-beat:hover .kbs-cover img{transform:scale(1.05);}
+#kophi-beats-app .kbs-cover-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.75);background:linear-gradient(135deg,var(--kf-violet),var(--kf-gold));}
+#kophi-beats-app .kbs-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.55));opacity:0;transition:opacity .2s;pointer-events:none;}
+#kophi-beats-app .kbs-cover:hover::after,#kophi-beats-app .kbs-beat.kp-current .kbs-cover::after{opacity:1;}
+#kophi-beats-app .kbs-play-btn{position:absolute;right:12px;bottom:12px;inset:auto 12px 12px auto;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#F5CC6A,#E8B84B);color:#141005;display:flex;align-items:center;justify-content:center;z-index:3;font-size:0;
+  box-shadow:0 8px 22px rgba(0,0,0,.45);opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;}
+#kophi-beats-app .kbs-cover:hover .kbs-play-btn,#kophi-beats-app .kbs-cover:focus-visible .kbs-play-btn,#kophi-beats-app .kbs-beat.kp-current .kbs-play-btn{opacity:1;transform:none;}
+#kophi-beats-app .kbs-cover:focus-visible{outline:2px solid var(--kf-gold);outline-offset:-2px;}
+#kophi-beats-app .kbs-eq{position:absolute;left:12px;bottom:14px;z-index:3;display:none;align-items:flex-end;gap:3px;height:18px;}
+#kophi-beats-app .kbs-eq i{width:3px;height:100%;border-radius:2px;background:#F5CC6A;transform-origin:bottom;animation:kwave .7s ease-in-out infinite alternate;}
+#kophi-beats-app .kbs-eq i:nth-child(2){animation-delay:.2s}#kophi-beats-app .kbs-eq i:nth-child(3){animation-delay:.1s}#kophi-beats-app .kbs-eq i:nth-child(4){animation-delay:.3s}
+#kophi-beats-app .kbs-beat.kp-playing .kbs-eq{display:flex;}
+#kophi-beats-app .kbs-progress{position:absolute;left:0;bottom:0;height:3px;width:var(--kp-progress,0%);background:linear-gradient(90deg,var(--kf-violet),var(--kf-gold));z-index:4;}
+#kophi-beats-app .kbs-beat.kp-current{border-color:var(--kf-gold-b);}
+@keyframes kwave{0%{transform:scaleY(.3)}100%{transform:scaleY(1)}}
+@media (hover:none){#kophi-beats-app .kbs-play-btn{opacity:1;transform:none;}}
 #kophi-beats-app .kbs-info{padding:14px;}
 #kophi-beats-app .kbs-title{font-family:'Bebas Neue',sans-serif;font-size:17px;color:#fff;letter-spacing:.5px;margin-bottom:6px;}
 #kophi-beats-app .kbs-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
-#kophi-beats-app .kbs-meta span{font-size:9px;color:var(--kf-text4);}
+#kophi-beats-app .kbs-meta span{font-size:11px;color:var(--kf-text4);}
 #kophi-beats-app .kbs-genre{background:var(--kf-violet-d);color:#C084FC;border:1px solid var(--kf-violet-b);padding:2px 8px;border-radius:10px;font-size:9px;}
-#kophi-beats-app .kbs-desc{font-size:10px;color:var(--kf-text4);margin-bottom:8px;line-height:1.4;}
+#kophi-beats-app .kbs-desc{font-size:12px;color:var(--kf-text4);margin-bottom:8px;line-height:1.4;}
 #kophi-beats-app .kbs-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;}
-#kophi-beats-app .kbs-tag{font-size:8px;background:var(--kf-dark4);border:1px solid var(--kf-border);color:var(--kf-text4);padding:2px 6px;border-radius:6px;}
+#kophi-beats-app .kbs-tag{font-size:10px;background:var(--kf-dark4);border:1px solid var(--kf-border);color:var(--kf-text4);padding:2px 6px;border-radius:6px;}
 #kophi-beats-app .kbs-prices{display:flex;align-items:center;background:var(--kf-dark3);border:1px solid var(--kf-border);border-radius:10px;padding:10px;margin-bottom:10px;}
 #kophi-beats-app .kbs-price-col{flex:1;text-align:center;}
 #kophi-beats-app .kbs-price-label{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--kf-text4);margin-bottom:3px;}
@@ -465,67 +471,18 @@ document.getElementById('kbs-burger')?.addEventListener('click',function(){
 
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/7.8.2/wavesurfer.min.js"></script>
 <script>
 const KBS_REST  = '<?= esc_js(rest_url("kophi/v1/")) ?>';
 const KBS_NONCE = '<?= esc_js(wp_create_nonce("wp_rest")) ?>';
 const KBS_WA    = '<?= esc_js(preg_replace("/[^0-9]/","",get_option("kophi_whatsapp","2250503404389"))) ?>';
 
-// ── Lecteur WaveSurfer ──────────────────────────────────────
-const KBS_PLAYERS = {};
-let kbsPlayingId = null;
+// ── Lecteur : géré par le lecteur unifié (assets/js/kophi-player.js) ──
+// kbsPlay() est conservé pour compatibilité avec d'éventuels appels externes.
 let kbsModalData = {};
-
-function kbsIconPlay()  { return '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>'; }
-function kbsIconPause() { return '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>'; }
-
-function kbsPlay(id, url) {
-  const cover   = document.querySelector(`[data-id="${id}"] .kbs-cover`);
-  const btn     = document.getElementById(`play-${id}`);
-  const waveDiv = document.getElementById(`waveform-${id}`);
-
-  if (kbsPlayingId === id) {
-    KBS_PLAYERS[id]?.pause();
-    cover?.classList.remove('playing');
-    if (btn) btn.innerHTML = kbsIconPlay();
-    kbsPlayingId = null;
-    return;
-  }
-  if (kbsPlayingId && KBS_PLAYERS[kbsPlayingId]) {
-    KBS_PLAYERS[kbsPlayingId].pause();
-    document.querySelector(`[data-id="${kbsPlayingId}"] .kbs-cover`)?.classList.remove('playing');
-    const ob = document.getElementById(`play-${kbsPlayingId}`);
-    if (ob) ob.innerHTML = kbsIconPlay();
-  }
-
-  if (!url) { alert('Aperçu audio non disponible. Contactez-nous sur WhatsApp !'); return; }
-
-  if (!KBS_PLAYERS[id] && waveDiv && window.WaveSurfer) {
-    const ws = WaveSurfer.create({
-      container: waveDiv, waveColor: '#4A4460', progressColor: '#E8B84B',
-      cursorColor: '#E8B84B', barWidth: 2, barGap: 2, barRadius: 2, height: 42,
-    });
-    ws.load(url);
-    ws.on('finish', () => {
-      cover?.classList.remove('playing');
-      if (btn) btn.innerHTML = kbsIconPlay();
-      kbsPlayingId = null;
-    });
-    KBS_PLAYERS[id] = ws;
-    ws.play();
-  } else if (KBS_PLAYERS[id]) {
-    KBS_PLAYERS[id].play();
-  } else {
-    const audio = new Audio(url);
-    audio.play().catch(() => {});
-    audio.onended = () => { cover?.classList.remove('playing'); if (btn) btn.innerHTML = kbsIconPlay(); kbsPlayingId = null; };
-    KBS_PLAYERS[id] = { pause: () => audio.pause(), play: () => audio.play() };
-  }
-
-  kbsPlayingId = id;
-  cover?.classList.add('playing');
-  if (btn) btn.innerHTML = kbsIconPause();
-}
+function kbsPlay(id) { if (window.KophiPlayer) KophiPlayer.toggle(id); }
+document.addEventListener('keydown', function (e) {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.kbs-cover[data-kp-play]')) { e.preventDefault(); e.target.click(); }
+});
 
 // ── Filtres / Onglets ───────────────────────────────────────
 function kbsTab(id, btn) {
