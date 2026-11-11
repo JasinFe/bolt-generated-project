@@ -41,6 +41,10 @@ class KM_Salle_Ecoute_Icons {
         'download'   => '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
         'arrow-left' => '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
         'close'      => '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+        'lyrics'     => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 8h8"/><path d="M8 12h5"/>',
+        'chevron-down' => '<path d="m6 9 6 6 6-6"/>',
+        'expand'     => '<path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/>',
+        'info'       => '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
     ];
 
     /**

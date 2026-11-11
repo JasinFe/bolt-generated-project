@@ -170,6 +170,21 @@ class KM_Salle_Ecoute_ACF_Fields {
                     [ [ 'field' => 'field_km_nb_pistes', 'operator' => '>=', 'value' => (string) $i ] ],
                 ] : [],
             ];
+
+            // Paroles / notes (facultatif) — affichées dans le panneau « Paroles » du lecteur
+            $fields[] = [
+                'key'               => "field_km_piste_{$num}_paroles",
+                'label'             => "Paroles / notes",
+                'name'              => "km_piste_{$num}_paroles",
+                'type'              => 'textarea',
+                'rows'              => 4,
+                'new_lines'         => '',
+                'instructions'      => 'Facultatif. Une ligne par vers ; laissez une ligne vide entre les couplets.',
+                'wrapper'           => [ 'width' => '100' ],
+                'conditional_logic' => $i > 1 ? [
+                    [ [ 'field' => 'field_km_nb_pistes', 'operator' => '>=', 'value' => (string) $i ] ],
+                ] : [],
+            ];
         }
 
         $fields[] = [

@@ -38,7 +38,7 @@ class KM_Salle_Ecoute_Player {
     public static function register(): void {
         wp_register_style(
             'km-salle-ecoute-style',
-            KM_SALLE_ECOUTE_URL . 'assets/css/km-salle-ecoute-17.css',
+            KM_SALLE_ECOUTE_URL . 'assets/css/km-salle-ecoute-18.css',
             [],
             KM_SALLE_ECOUTE_VERSION
         );
@@ -138,6 +138,7 @@ class KM_Salle_Ecoute_Player {
             'shuffleOff'   => __( 'Lecture aléatoire : désactivée', 'km-salle-ecoute' ),
             'session'      => __( '%d session', 'km-salle-ecoute' ),
             'sessions'     => __( '%d sessions', 'km-salle-ecoute' ),
+            'noLyrics'     => __( 'Pas de paroles pour ce titre.', 'km-salle-ecoute' ),
             'volume'       => __( 'Volume : %s %%', 'km-salle-ecoute' ),
         ];
     }

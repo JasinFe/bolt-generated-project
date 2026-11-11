@@ -1,5 +1,5 @@
 /**
- * KM SALLE D'ÉCOUTE v1.7.2 — Lecteur HTML5 professionnel
+ * KM SALLE D'ÉCOUTE v1.8.0 — Lecteur HTML5 professionnel
  * - Un seul élément <audio> (enchaînement fiable, y compris iOS)
  * - Barres de progression glissables (souris + tactile) avec infobulle de temps et tampon
  * - Répétition (off / tout / une piste), lecture aléatoire, vitesse, volume mémorisés
@@ -21,7 +21,8 @@
     mute: 'Couper le son', unmute: 'Rétablir le son', speed: 'Vitesse de lecture : %s',
     repeatOff: 'Répétition : désactivée', repeatAll: 'Répétition : toutes les pistes', repeatOne: 'Répétition : piste en boucle',
     shuffleOn: 'Lecture aléatoire : activée', shuffleOff: 'Lecture aléatoire : désactivée',
-    session: '%d session', sessions: '%d sessions', volume: 'Volume : %s %%'
+    session: '%d session', sessions: '%d sessions', volume: 'Volume : %s %%',
+    noLyrics: 'Pas de paroles pour ce titre.', lyricsHint: 'Lancez un titre pour afficher ses paroles.'
   }, cfg.i18n || {});
   function tr_(s, v) { return String(s).replace('%s', v).replace('%d', v).replace('%%', '%'); }
 
@@ -56,6 +57,8 @@
     safe('extractCoverColor', extractCoverColor);
     safe('initPasswordForm', initPasswordForm);
     safe('initCatalogue', initCatalogue);
+    safe('initTopBar', initTopBar);
+    safe('initLightbox', initLightbox);
 
     if (!$('.km-track').length) return;
     audio = document.getElementById('km-audio');
@@ -83,6 +86,8 @@
     safe('applyRate', applyRate);
     safe('applyRepeat', applyRepeat);
     safe('applyShuffle', applyShuffle);
+    safe('initSessionUI', initSessionUI);
+    safe('updateTotal', updateTotal);
     safe('probeDurations', probeDurations);
     $(window).on('pagehide', function () { savePosition(true); });
   });
@@ -162,20 +167,73 @@
     var page = document.querySelector('.km-page');
     if (!img || !page) return;
 
+    // Teinte dominante « vive » : on pondère chaque pixel par sa saturation, puis
+    // on ramène la couleur à une luminosité fixe pour garder le texte lisible.
     function apply(r, g, b) {
-      page.style.setProperty('--km-cover', 'rgb(' + Math.round(r * .5) + ',' + Math.round(g * .5) + ',' + Math.round(b * .5) + ')');
+      var max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 510;
+      var target = 0.3, k = l > 0 ? target / l : 1;
+      r = clamp(r * k, 0, 255); g = clamp(g * k, 0, 255); b = clamp(b * k, 0, 255);
+      if (max - min < 18) { r = g = b = 62; }           // pochette grise : gris neutre
+      page.style.setProperty('--km-cover', 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')');
     }
-    function sample() {
+    function sample(el) {
       try {
-        var c = document.createElement('canvas'); c.width = 60; c.height = 60;
-        var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, 60, 60);
-        var d = ctx.getImageData(5, 5, 50, 50).data, r = 0, g = 0, b = 0, n = 0;
-        for (var i = 0; i < d.length; i += 20) { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; }
+        var c = document.createElement('canvas'); c.width = 48; c.height = 48;
+        var ctx = c.getContext('2d'); ctx.drawImage(el, 0, 0, 48, 48);
+        var d = ctx.getImageData(0, 0, 48, 48).data, r = 0, g = 0, b = 0, n = 0;
+        for (var i = 0; i < d.length; i += 4) {
+          var mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]);
+          var w = (mx ? (mx - mn) / mx : 0) + 0.05;
+          r += d[i] * w; g += d[i + 1] * w; b += d[i + 2] * w; n += w;
+        }
         if (n) apply(r / n, g / n, b / n);
-      } catch (e) { /* canvas "tainted" : on garde la couleur par défaut */ }
+      } catch (e) { /* canvas « tainted » : on garde la couleur par défaut */ }
     }
-    if (img.complete && img.naturalWidth) sample();
-    else img.addEventListener('load', sample);
+    // L'image affichée n'a plus d'attribut crossorigin (il empêchait tout simplement
+    // l'affichage de la pochette quand le CDN n'envoie pas d'en-têtes CORS) : la
+    // couleur est lue sur une copie miniature chargée à part.
+    var src = img.getAttribute('data-sample') || img.currentSrc || img.src;
+    var probe = new Image();
+    try { if (new URL(src, location.href).origin !== location.origin) probe.crossOrigin = 'anonymous'; } catch (e) {}
+    probe.onload = function () { sample(probe); };
+    probe.src = src;
+  }
+
+  /* ================================================================
+     BARRE SUPÉRIEURE, POCHETTE EN GRAND
+  ================================================================ */
+  function initTopBar() {
+    var top = document.getElementById('km-top'), hero = document.querySelector('.km-hero');
+    if (!top || !hero) return;
+    var bar = document.getElementById('wpadminbar');
+    function offset() {
+      var h = bar && getComputedStyle(bar).position === 'fixed' ? bar.offsetHeight : 0;
+      top.parentNode.style.setProperty('--km-adminbar', h + 'px');
+      return h;
+    }
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var stuck = hero.getBoundingClientRect().bottom < offset() + 70;
+      top.classList.toggle('is-stuck', stuck);
+      var tp = document.getElementById('km-top-play'); if (tp) tp.tabIndex = stuck ? 0 : -1;
+    }
+    window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+
+  function initLightbox() {
+    var btn = document.getElementById('km-cover-btn'), box = document.getElementById('km-lightbox');
+    if (!btn || !box) return;
+    var im = document.getElementById('km-lightbox-img');
+    function close() { box.hidden = true; btn.focus(); }
+    btn.addEventListener('click', function () {
+      if (!im.getAttribute('src')) im.src = btn.getAttribute('data-full');
+      box.hidden = false; document.getElementById('km-lightbox-close').focus();
+    });
+    box.addEventListener('click', close);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !box.hidden) { e.stopPropagation(); close(); } }, true);
   }
 
   /* ================================================================
@@ -188,6 +246,7 @@
       S.tracks.push({
         tid: $t.data('tid'), url: String(url), title: String($t.data('title') || ''),
         known: +$t.data('duration') || 0,
+        lyrics: $.trim($t.find('.km-tr-lyrics').text()),
         $t: $t, $row: $t.find('.km-tr'),
         $dur: $t.find('.km-tr-dur'), $curTxt: $t.find('.km-time-cur'), $totTxt: $t.find('.km-time-tot'),
         $seekPanel: $t.find('[data-seek="panel"]'), $seekMini: $t.find('[data-seek="mini"]')
@@ -222,6 +281,7 @@
       });
       tr.$t.find('.km-btn-panel-play').on('click', function (e) { e.stopPropagation(); togglePlay(); });
       tr.$t.on('click', '.km-retry', function (e) { e.preventDefault(); e.stopPropagation(); loadTrack(i, true); });
+      tr.$t.find('.km-tr-lyr').on('click', function (e) { e.stopPropagation(); showLyrics(i, true); });
     });
     $btnMain.on('click', function () { if (S.idx < 0) loadTrack(S.order[0] || 0, true); else togglePlay(); });
   }
@@ -257,6 +317,7 @@
     $np.addClass('show'); $('body').addClass('km-has-dock');
     updateProgressUI(0, tr.known);
     updateMediaMetadata(tr);
+    showLyrics(i, false);
     // Garde la piste active (et son panneau) visible au-dessus de la barre de lecture
     setTimeout(function () {
       var el = tr.$t.get(0);
@@ -270,7 +331,7 @@
   function clearTrackState(tr, resetUI) {
     tr.$t.removeClass('is-active is-playing is-loading');
     tr.$t.find('.km-pp').removeClass('is-playing');
-    if (resetUI) { setSeekUI(tr.$seekPanel, 0, 0); setSeekUI(tr.$seekMini, 0, 0); tr.$curTxt.text('0:00'); tr.$t.find('.km-seek-buf').css('width', 0); }
+    if (resetUI) { tr.$t.css('--p', '0%'); setSeekUI(tr.$seekPanel, 0, 0); setSeekUI(tr.$seekMini, 0, 0); tr.$curTxt.text('0:00'); tr.$t.find('.km-seek-buf').css('width', 0); }
   }
 
   function tryPlay() {
@@ -344,7 +405,7 @@
     audio.addEventListener('loadedmetadata', function () {
       var t = cur(); if (!t) return;
       var d = dur();
-      if (d) { t.known = d; var txt = fmt(d); t.$dur.text(txt); t.$totTxt.text(txt); $('#np-dur').text(txt); }
+      if (d) { t.known = d; var txt = fmt(d); t.$dur.text(txt); t.$totTxt.text(txt); $('#np-dur').text(txt); updateTotal(); }
       if (S.pendingResume && d && S.pendingResume < d - 10) {
         var at = S.pendingResume;
         seekTo(at);
@@ -374,9 +435,10 @@
       t.$t.find('.km-pp').toggleClass('is-playing', state);
       if (state) t.$t.removeClass('is-loading');
     }
-    $('#np-play').toggleClass('is-playing', state);
+    $('#np-play,#km-top-play').toggleClass('is-playing', state);
     $btnMain.toggleClass('is-playing', state);
-    $mainLabel.text(state ? T.pause : (S.idx > -1 ? T.resume : T.listen));
+    var lbl = state ? T.pause : (S.idx > -1 ? T.resume : T.listen);
+    $mainLabel.text(lbl); $btnMain.attr('aria-label', lbl);
     document.title = (state && t ? '▶ ' + t.title + ' · ' : '') + baseTitle;
     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = state ? 'playing' : 'paused';
   }
@@ -413,7 +475,7 @@
       a.addEventListener('loadedmetadata', function () {
         if (isFinite(a.duration) && a.duration > 0 && !t.known) {
           t.known = a.duration; var txt = fmt(a.duration);
-          t.$dur.text(txt); t.$totTxt.text(txt);
+          t.$dur.text(txt); t.$totTxt.text(txt); updateTotal();
         }
         done();
       }, { once: true });
@@ -430,6 +492,7 @@
     var pct = d ? clamp(time / d * 100, 0, 100) : 0;
     setSeekUI(t.$seekPanel, pct, time); setSeekUI(t.$seekMini, pct, time);
     setSeekUI($('#np-seek'), pct, time);
+    t.$t.css('--p', pct + '%');
     var txt = fmt(time);
     t.$curTxt.text(txt); $('#np-cur').text(txt);
     updateBuffered();
@@ -507,7 +570,8 @@
     $('#np-prev').on('click', prev);
     $('#np-next').on('click', function () { next(false); });
     $('#np-repeat').on('click', cycleRepeat);
-    $('#np-shuffle').on('click', toggleShuffle);
+    $('#np-shuffle,#km-act-shuffle').on('click', toggleShuffle);
+    $('#km-top-play').on('click', togglePlay);
     $('#np-speed').on('click', cycleRate);
     $('#np-mute').on('click', toggleMute);
     $('#np-vol').on('input', function () {
@@ -559,7 +623,65 @@
 
   function toggleShuffle() { S.shuffle = !S.shuffle; store.set('shuffle', S.shuffle); buildOrder(); applyShuffle(); }
   function applyShuffle() {
+    $('#km-act-shuffle').attr('aria-pressed', S.shuffle);
     $('#np-shuffle').attr({ 'aria-pressed': S.shuffle, 'aria-label': S.shuffle ? T.shuffleOn : T.shuffleOff });
+  }
+
+  /* ================================================================
+     PAROLES, DURÉE TOTALE, LECTEUR PLEIN ÉCRAN (mobile)
+  ================================================================ */
+  function showLyrics(i, focus) {
+    var $body = $('#km-lyrics-body'); if (!$body.length) return;
+    var tr = S.tracks[i]; if (!tr) return;
+    $('#km-lyrics-track').text(tr.title);
+    $body.empty().scrollTop(0);
+    if (tr.lyrics) {
+      tr.lyrics.replace(/\r/g, '').split(/\n{2,}/).forEach(function (block) {
+        var $p = $('<p>');
+        block.split('\n').forEach(function (line, n) { if (n) $p.append('<br>'); $p.append(document.createTextNode(line)); });
+        $body.append($p);
+      });
+    } else {
+      $body.append($('<p class="km-lyrics-empty">').text(T.noLyrics));
+    }
+    $('.km-track').removeClass('is-lyrics'); tr.$t.addClass('is-lyrics');
+    if (focus) focusLyrics();
+  }
+  function focusLyrics() {
+    var el = document.getElementById('km-lyrics'); if (!el) return;
+    closeFullPlayer();
+    if (S.idx < 0 && !$('.km-track.is-lyrics').length) {
+      for (var i = 0; i < S.tracks.length; i++) { if (S.tracks[i].lyrics) { showLyrics(i, false); break; } }
+    }
+    var r = el.getBoundingClientRect();
+    if (r.top < 80 || r.top > window.innerHeight - 220) {
+      window.scrollTo({ top: window.pageYOffset + r.top - 96, behavior: reducedMotion() ? 'auto' : 'smooth' });
+    }
+    el.classList.remove('is-flash'); void el.offsetWidth; el.classList.add('is-flash');
+  }
+
+  /** « 5 pistes, 12 min 30 s » — mis à jour à mesure que les durées sont connues. */
+  function updateTotal() {
+    var $el = $('#km-total-dur'); if (!$el.length || !S.tracks.length) return;
+    var tot = 0, all = true;
+    S.tracks.forEach(function (t) { if (t.known) tot += t.known; else all = false; });
+    if (!all || !tot) { $el.text(''); return; }
+    tot = Math.round(tot);
+    var h = Math.floor(tot / 3600), m = Math.floor((tot % 3600) / 60), sec = tot % 60;
+    $el.text(h ? h + ' h ' + m + ' min' : (m ? m + ' min ' + (sec < 10 ? '0' : '') + sec + ' s' : sec + ' s'));
+  }
+
+  function isCompact() { return window.matchMedia && window.matchMedia('(max-width:900px)').matches; }
+  function closeFullPlayer() { if ($np && $np.hasClass('is-open')) { $np.removeClass('is-open'); $('body').removeClass('km-np-open'); } }
+  function initSessionUI() {
+    $('#np-lyrics,#km-act-lyrics').on('click', focusLyrics);
+    $('#np-open').on('click', function () {
+      if (!isCompact() || $np.hasClass('is-open')) return;
+      $np.addClass('is-open'); $('body').addClass('km-np-open');
+    });
+    $('#np-collapse').on('click', function (e) { e.stopPropagation(); closeFullPlayer(); });
+    $(window).on('resize', function () { if (!isCompact()) closeFullPlayer(); });
+    $(document).on('keydown', function (e) { if (e.key === 'Escape') closeFullPlayer(); });
   }
 
   /* ================================================================
@@ -601,6 +723,7 @@
         case 'r': case 'R': cycleRepeat(); break;
         case 'a': case 'A': toggleShuffle(); break;
         case 's': case 'S': if (active) cycleRate(); break;
+        case 'l': case 'L': if ($('#km-lyrics').length) focusLyrics(); break;
       }
     });
   }

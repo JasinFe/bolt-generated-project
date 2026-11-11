@@ -36,6 +36,7 @@ class KM_Salle_Ecoute_ACF_Helper {
                 'mime'     => $file['mime'],
                 'type'     => sanitize_key( $type ),
                 'duree'    => trim( (string) get_field( "km_piste_{$i}_duree", $post_id ) ),
+                'paroles'  => trim( (string) get_field( "km_piste_{$i}_paroles", $post_id ) ),
                 'num'      => $i,
             ];
         }
