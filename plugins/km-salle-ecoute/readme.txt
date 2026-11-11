@@ -4,7 +4,7 @@ Tags: audio, music, player, demo, label, partenaire, écoute, wavesurfer
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.7.2
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -73,6 +73,22 @@ Deux snippets sont proposés à WPCode :
 Le journal des accès est désormais intégré : Sessions d'Écoute > Réglages > Journal des accès.
 
 == Changelog ==
+
+= 1.8.0 =
+**Page session repensée façon lecteur de streaming**
+* **Pochette** grand format, carrée, jamais déformée, alignée sur le titre ; clic pour l'agrandir en plein écran. Sur mobile elle est centrée au-dessus du titre.
+* **Titre géant** dont la taille s'adapte à sa longueur, ligne « artiste • label • année • nombre de pistes, durée totale ».
+* **Couleur d'ambiance** tirée de la pochette (teinte dominante vive, luminosité maîtrisée) appliquée à l'en-tête, au corps de page et au panneau des paroles.
+* **Barre supérieure** qui apparaît au défilement (retour au catalogue, lecture / pause, titre de la session).
+* **Liste des pistes** épurée : numéro → icône lecture au survol → égaliseur animé pendant la lecture, progression affichée sous la piste en cours.
+* **Paroles / notes** : nouveau champ facultatif par piste (ACF). Panneau « Paroles » à droite de la liste, mis à jour à chaque piste ; bouton dédié dans la barre de lecture et touche L.
+* **Barre de lecture** réorganisée : pochette et titre à gauche, commandes au centre avec la barre de progression et les temps, paroles / vitesse / volume à droite.
+* **Lecteur plein écran sur mobile** : un appui sur la barre de lecture ouvre un lecteur avec grande pochette et toutes les commandes (aléatoire, répétition, vitesse).
+
+**Corrections**
+* La pochette pouvait ne pas s'afficher du tout quand les médias sont servis par un CDN sans en-têtes CORS (attribut `crossorigin` sur l'image). La couleur est désormais lue sur une copie miniature chargée à part.
+* Les titres (h1, h2, h3) prenaient la police du thème au lieu de celle du lecteur.
+* Année du pied de page calculée dans le fuseau du site.
 
 = 1.7.2 =
 **Corrections de bugs**

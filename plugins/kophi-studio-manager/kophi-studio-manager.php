@@ -3,7 +3,7 @@
  * Plugin Name: KOPHI'S MUSIC STUDIO Manager
  * Plugin URI: https://studio.kophismusic.com
  * Description: Système complet de gestion du studio - Sessions, Clients, Projets, Réservations, Beats, Planning. Conçu pour WordPress Multisite.
- * Version: 4.7.5
+ * Version: 4.8.0
  * Author: KOPHI'S MUSIC STUDIO
  * Author URI: https://kophismusic.com
  * Text Domain: kophi-studio
@@ -25,7 +25,7 @@ if (function_exists('is_multisite') && is_multisite()) {
     // Si domaine non déterminable, laisser passer (sécurité)
 }
 
-define('KOPHI_VERSION',  '4.7.5');
+define('KOPHI_VERSION',  '4.8.0');
 define('KOPHI_DIR',      plugin_dir_path(__FILE__));
 define('KOPHI_URL',      plugin_dir_url(__FILE__));
 define('KOPHI_EMAIL',    'contact@kophismusic.com');
@@ -796,9 +796,16 @@ function kophi_check_conflicts(array $occ, int $hD, int $hF): array {
 }
 
 function kophi_gen_creneaux(string $date, float $duree): array {
+    // Date invalide : aucune disponibilité (auparavant strtotime(false) → 1er janvier 1970)
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || !strtotime($date)) {
+        return ['ouvert'=>false,'raison'=>'Date invalide','creneaux'=>[]];
+    }
     $dow = (int)date('w',strtotime($date));
     $h   = kophi_get_horaires($dow);
     if (!$h['actif']) return ['ouvert'=>false,'raison'=>'Studio fermé ce jour','creneaux'=>[]];
+    // « Maintenant » à l'heure du site : les créneaux déjà passés (ou qui commencent
+    // dans moins d'une heure) ne sont plus proposés pour aujourd'hui.
+    $now_local = (int) current_time('timestamp');
 
     $ouv  = strtotime("$date ".$h['ouv'].':00');
     $ferm = strtotime("$date ".$h['ferm'].':00');
@@ -809,6 +816,9 @@ function kophi_gen_creneaux(string $date, float $duree): array {
 
     for ($t=$ouv; ($t+$sec)<=$ferm; $t+=$step) {
         $c = kophi_check_conflicts($occ,$t,$t+$sec);
+        if ($t < $now_local + HOUR_IN_SECONDS) {
+            $c[] = ['type'=>'passe','message'=>'Créneau déjà passé ou trop proche','detail'=>''];
+        }
         $cren[]=['heure'=>date('H:i',$t),'heure_fin'=>date('H:i',$t+$sec),'disponible'=>empty($c),'conflicts'=>$c];
     }
     return ['ouvert'=>true,'ouverture'=>$h['ouv'],'fermeture'=>$h['ferm'],'creneaux'=>$cren];
@@ -829,10 +839,33 @@ function kophi_api_create_reservation(WP_REST_Request $req) {
 
     if (!$nom || !$tel || !$date) return new WP_Error('missing','Champs obligatoires manquants',['status'=>422]);
 
+    // Anti-abus : cet endpoint public crée un contenu et déclenche e-mail + WhatsApp
+    if (function_exists('kophi_rate_limit_exceeded') && kophi_rate_limit_exceeded('reservation', 6, 10 * MINUTE_IN_SECONDS)) {
+        return kophi_rate_limit_error();
+    }
+    // Validation des formats (auparavant n'importe quelle chaîne était enregistrée)
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || !strtotime($date)) {
+        return new WP_Error('bad_date','Date invalide',['status'=>422]);
+    }
+    if ($date < current_time('Y-m-d')) {
+        return new WP_Error('past_date','Cette date est déjà passée',['status'=>422]);
+    }
+    if ($heure && !preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $heure)) {
+        return new WP_Error('bad_time','Heure invalide',['status'=>422]);
+    }
+    if (strlen(preg_replace('/\D/', '', $tel)) < 8) {
+        return new WP_Error('bad_phone','Numéro de téléphone invalide',['status'=>422]);
+    }
+    $nom     = mb_substr($nom, 0, 120);
+    $message = mb_substr($message, 0, 2000);
+
     // Vérification conflits si heure fournie
     if ($heure) {
         $duree = kophi_get_duree($service, $forfait);
         $hD    = strtotime("$date $heure");
+        if ($hD < (int) current_time('timestamp')) {
+            return new WP_Error('past_slot','Ce créneau est déjà passé',['status'=>422]);
+        }
         $hF    = $hD + (int)round($duree * 3600);
         $occ   = kophi_get_occupations($date);
         $conf  = kophi_check_conflicts($occ, $hD, $hF);
@@ -869,12 +902,12 @@ function kophi_api_create_reservation(WP_REST_Request $req) {
         'type'    => 'reservation',
         'nom'     => $nom,
         'tel'     => $tel,
-        'email'   => sanitize_email($_POST['email'] ?? $req->get_param('email') ?? ''),
+        'email'   => $email,
         'service' => $service,
         'date'    => $date,
         'heure'   => $heure,
-        'forfait' => $forfait ?? '',
-        'notes'   => $req->get_param('message') ?? '',
+        'forfait' => $forfait,
+        'notes'   => $message,
         'source'  => 'site',
         'statut'  => 'pending',
         'post_id' => $post_id,
@@ -1133,8 +1166,20 @@ function kophi_api_achat_beat(WP_REST_Request $req) {
 
     if (!$beat_id || !$nom || !$tel) return new WP_Error('missing','Données manquantes',['status'=>422]);
 
+    if (function_exists('kophi_rate_limit_exceeded') && kophi_rate_limit_exceeded('achat_beat', 8, 10 * MINUTE_IN_SECONDS)) {
+        return kophi_rate_limit_error();
+    }
+    if (!in_array($licence, ['exclusive', 'non_exclusive'], true)) $licence = 'non_exclusive';
+
+    // Uniquement un beat publié : auparavant n'importe quel ID de contenu (page privée,
+    // brouillon, session client…) était accepté et son titre renvoyé dans la réponse.
     $beat  = get_post($beat_id);
-    if (!$beat) return new WP_Error('not_found','Beat introuvable',['status'=>404]);
+    if (!$beat || $beat->post_type !== 'kophi_beat' || $beat->post_status !== 'publish') {
+        return new WP_Error('not_found','Beat introuvable',['status'=>404]);
+    }
+    if ($licence === 'exclusive' && get_post_meta($beat_id, '_kophi_exclusive_vendu', true)) {
+        return new WP_Error('sold','La licence exclusive de ce beat est déjà vendue',['status'=>409]);
+    }
 
     $prix_key = $licence === 'exclusive' ? '_kophi_prix_exclusive' : '_kophi_prix_non_exclusive';
     $prix     = (int)get_post_meta($beat_id, $prix_key, true);
@@ -2253,19 +2298,46 @@ require_once KOPHI_DIR . 'templates/front/shortcode-reservation-home.php';
 add_action('wp_ajax_kophi_resa_home_submit',        'kophi_resa_home_submit');
 add_action('wp_ajax_nopriv_kophi_resa_home_submit', 'kophi_resa_home_submit');
 function kophi_resa_home_submit() {
-    if (!check_ajax_referer('kophi_resa_home', 'nonce', false)) {
+    // Le jeton n'est exigé que pour les utilisateurs connectés : pour un visiteur anonyme
+    // il n'apporte aucune protection, et il expirait sur les pages servies par un cache
+    // (« Session expirée » alors que le visiteur venait d'arriver). L'anti-abus par IP
+    // ci-dessous protège le formulaire.
+    if (is_user_logged_in() && !check_ajax_referer('kophi_resa_home', 'nonce', false)) {
         wp_send_json_error(['message' => 'Session expirée, rechargez la page.']);
     }
-    $nom     = sanitize_text_field($_POST['nom']     ?? '');
+    $nom     = sanitize_text_field(wp_unslash($_POST['nom']     ?? ''));
     $tel     = sanitize_text_field($_POST['tel']     ?? '');
     $service = sanitize_text_field($_POST['service'] ?? 'voix');
     $forfait = sanitize_text_field($_POST['forfait'] ?? '50000');
     $date    = sanitize_text_field($_POST['date']    ?? '');
     $heure   = sanitize_text_field($_POST['heure']   ?? '');
-    $message = sanitize_textarea_field($_POST['message'] ?? '');
+    $message = sanitize_textarea_field(wp_unslash($_POST['message'] ?? ''));
 
     if (!$nom || !$tel || !$date) {
         wp_send_json_error(['message' => 'Nom, téléphone et date obligatoires.']);
+    }
+    // Anti-abus + validation (mêmes règles que l'API de réservation)
+    if (function_exists('kophi_rate_limit_exceeded') && kophi_rate_limit_exceeded('reservation', 6, 10 * MINUTE_IN_SECONDS)) {
+        wp_send_json_error(['message' => 'Trop de demandes depuis cette connexion. Réessayez dans quelques minutes.']);
+    }
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || !strtotime($date)) {
+        wp_send_json_error(['message' => 'Date invalide.']);
+    }
+    if ($date < current_time('Y-m-d')) {
+        wp_send_json_error(['message' => 'Cette date est déjà passée.']);
+    }
+    if ($heure && !preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $heure)) $heure = '';
+    if (strlen(preg_replace('/\D/', '', $tel)) < 8) {
+        wp_send_json_error(['message' => 'Numéro de téléphone invalide.']);
+    }
+    $nom     = mb_substr($nom, 0, 120);
+    $message = mb_substr($message, 0, 2000);
+    // Créneau précis demandé : refuser s'il est déjà pris (comme la page Réserver)
+    if ($heure) {
+        $hD   = strtotime("$date $heure");
+        $hF   = $hD + (int) round(kophi_get_duree($service, $forfait) * 3600);
+        $conf = kophi_check_conflicts(kophi_get_occupations($date), $hD, $hF);
+        if (!empty($conf)) wp_send_json_error(['message' => $conf[0]['message']]);
     }
 
     // Créer la réservation
@@ -2288,6 +2360,7 @@ function kophi_resa_home_submit() {
     update_post_meta($res_id, '_kophi_statut',         'pending');
     update_post_meta($res_id, '_kophi_source',         'site_accueil');
     update_post_meta($res_id, '_kophi_notes',          $message);
+    update_post_meta($res_id, '_kophi_message',        $message); // clé lue par l'admin (comme la page Réserver)
 
     // Notification complète (email + WhatsApp) — un seul appel
     kophi_notify_all([

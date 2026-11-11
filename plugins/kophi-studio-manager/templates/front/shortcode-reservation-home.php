@@ -690,7 +690,7 @@ function kophi_shortcode_reservation_home($atts) {
 
     if (btn) { btn.disabled = true; document.getElementById('krh-btn-txt').innerHTML = '<span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:krhSpin .6s linear infinite"></span> Envoi...'; }
 
-    var ajaxUrl = (window.ajaxurl) ? ajaxurl : '/wp-admin/admin-ajax.php';
+    var ajaxUrl = <?= wp_json_encode(admin_url('admin-ajax.php')) ?>; // l'ancien repli « /wp-admin/… » cassait sur un site en sous-dossier
 
     var params = new URLSearchParams();
     params.append('action', 'kophi_resa_home_submit');
