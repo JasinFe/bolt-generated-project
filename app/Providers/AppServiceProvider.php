@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Console\Signals;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,6 +16,14 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Hébergement mutualisé (Hostinger…) : l'extension pcntl peut être chargée avec ses fonctions désactivées.
+        // Laravel ne doit alors jamais tenter d'utiliser les signaux.
+        Signals::resolveAvailabilityUsing(fn () => $this->app->runningInConsole()
+            && ! $this->app->runningUnitTests()
+            && function_exists('pcntl_async_signals')
+            && function_exists('pcntl_signal')
+            && function_exists('pcntl_signal_get_handler'));
+
         // Le lien de réinitialisation ouvre l'interface web, qui affiche le formulaire « nouveau mot de passe ».
         ResetPassword::createUrlUsing(fn (object $user, string $token) => url('/').'?'.http_build_query([
             'reinitialiser' => $token,

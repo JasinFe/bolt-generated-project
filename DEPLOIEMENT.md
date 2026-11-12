@@ -206,6 +206,7 @@ Après **toute** modification de `.env`, relancez aussi l'installation.
 | « 403 Forbidden » sur toutes les pages | `.htaccess` manquant à la racine de `public_html` (fichier caché) : ré-extrayez l'archive |
 | Page « Server Error » ou erreur 500 | PHP inférieur à 8.3 (étape 1), ou installation pas encore lancée (étape 6) |
 | « Your Composer dependencies require a PHP version >= 8.3 » en SSH | la commande `php` seule lance une ancienne version : utilisez `/opt/alt/php84/usr/bin/php` |
+| « The Process class relies on proc_open… » | ancienne version de l'application : extrayez la dernière archive par-dessus, puis relancez l'installation (les clés déjà générées sont conservées) |
 | L'installation signale des réglages « à remplir » | une valeur de `.env` est restée vide ou à son exemple : corrigez-la (étape 5) |
 | « Échec de php artisan migrate » | nom de base, utilisateur ou mot de passe incorrect : recopiez-les depuis hPanel, préfixe `u123456789_` compris |
 | « L'e-mail n'a pas pu être envoyé » | réglages `MAIL_*` incorrects : testez avec `energie:tester-email` (étape 9), corrigez `.env`, relancez l'installation |

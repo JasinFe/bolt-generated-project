@@ -128,7 +128,11 @@ class AlerteService
             'donnees' => $donnees,
         ]);
 
-        Notification::send($compteur->utilisateurs, new AlerteEnergieNotification($alerte));
+        try {
+            Notification::send($compteur->utilisateurs, new AlerteEnergieNotification($alerte));
+        } catch (\Throwable $e) {
+            report($e);   // l'alerte reste visible dans l'application même si l'e-mail ne part pas
+        }
     }
 
     private function nombre(float $v): string

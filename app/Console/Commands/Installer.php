@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Symfony\Component\Process\Process;
 
 /**
  * Installation ou mise à jour en une commande (SSH, ou tâche cron lancée une fois) :
@@ -52,6 +51,14 @@ class Installer extends Command
             }
         }
 
+        // Une configuration en cache masquerait les réglages de .env : on l'efface, puis on repart.
+        if (app()->configurationIsCached()) {
+            @unlink(app()->getCachedConfigPath());
+            $this->warn('Une ancienne configuration en cache a été effacée : relancez cette même commande.');
+
+            return self::FAILURE;
+        }
+
         $this->genererCles($env, $contenu);
 
         // Base SQLite (développement) : le fichier doit exister avant la migration.
@@ -61,17 +68,19 @@ class Installer extends Command
             is_file($fichier) || touch($fichier);
         }
 
-        // Chaque étape dans un nouveau processus, pour relire le .env qui vient d'être modifié.
-        // config:clear d'abord : une ancienne configuration en cache masquerait les modifications de .env.
-        foreach ([['config:clear'], ['migrate', '--force']] as $etape) {
-            if (! $this->artisan($etape)) {
-                $this->error('Échec de « php artisan '.implode(' ', $etape).' ».');
-                if ($etape[0] === 'migrate') {
-                    $this->line('Vérifiez DB_DATABASE, DB_USERNAME et DB_PASSWORD dans .env (hPanel → Bases de données).');
-                }
+        // Tout s'exécute dans ce même processus : Hostinger désactive proc_open (pas de sous-processus).
+        // Les réglages de base de données ont été lus au démarrage, depuis le .env rempli à la main.
+        try {
+            $resultat = $this->call('migrate', ['--force' => true]);
+        } catch (\Throwable $e) {
+            $this->error('Échec de la création des tables : '.$e->getMessage());
+            $resultat = self::FAILURE;
+        }
 
-                return self::FAILURE;
-            }
+        if ($resultat !== self::SUCCESS) {
+            $this->line('Vérifiez DB_DATABASE, DB_USERNAME et DB_PASSWORD dans .env (hPanel → Bases de données).');
+
+            return self::FAILURE;
         }
 
         $this->newLine();
@@ -139,20 +148,6 @@ class Installer extends Command
             $this->info('Clé(s) générée(s) dans .env : '.implode(', ', $creees).'.');
             $this->warn('Sauvegardez ces lignes de .env hors du serveur : sans elles, les codes enregistrés sont illisibles.');
         }
-    }
-
-    private function artisan(array $arguments): bool
-    {
-        $processus = new Process(
-            [PHP_BINARY, base_path('artisan'), ...$arguments, '--no-interaction'],
-            base_path(),
-            ['APP_KEY' => false, 'ENERGIE_CODE_PEPPER' => false],   // ne pas hériter des valeurs vides
-            null,
-            600
-        );
-        $processus->run(fn ($type, $sortie) => $this->output->write($sortie));
-
-        return $processus->isSuccessful();
     }
 
     /** La ligne de cron exacte pour ce serveur : même PHP que celui qui exécute l'installation. */

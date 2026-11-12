@@ -26,8 +26,13 @@ class RecalculerConsommations extends Command
         $requete->select('id')->chunkById(200, function ($compteurs) use (&$total) {
             foreach ($compteurs as $c) {
                 $job = new TraiterCompteurQuotidien($c->id, (int) $this->option('jours'));
-                $this->option('sync') ? dispatch_sync($job) : dispatch($job);
-                $total++;
+                try {
+                    $this->option('sync') ? dispatch_sync($job) : dispatch($job);
+                    $total++;
+                } catch (\Throwable $e) {
+                    report($e);   // un compteur en erreur n'empêche pas de traiter les suivants
+                    $this->error("Compteur {$c->id} : ".$e->getMessage());
+                }
             }
         });
 

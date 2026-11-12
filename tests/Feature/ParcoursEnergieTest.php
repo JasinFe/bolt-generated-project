@@ -9,12 +9,15 @@ use App\Models\Releve;
 use App\Models\User;
 use App\Notifications\AlerteEnergieNotification;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Console\Scheduling\CallbackEvent;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\TacheQuiEchoue;
 use Tests\TestCase;
 
 class ParcoursEnergieTest extends TestCase
@@ -435,6 +438,57 @@ class ParcoursEnergieTest extends TestCase
         $this->getJson('/api/compteurs')->assertOk()->assertJsonCount(0);
         $this->getJson("/api/compteurs/{$compteur->id}/tableau-de-bord")->assertNotFound();
         $this->assertSame(1, Recharge::count());
+    }
+
+    public function test_file_attente_traitee_sans_worker_permanent(): void
+    {
+        config(['queue.default' => 'database']);
+        $user = User::factory()->create();
+        $compteur = $this->compteurDe($user);
+        for ($j = 9; $j >= 0; $j--) {
+            Releve::create([
+                'compteur_id' => $compteur->id, 'type' => 'credit', 'valeur_kwh' => 18 + 8 * $j, 'source' => 'manuel',
+                'releve_le' => Carbon::parse('2026-11-12 08:00')->subDays($j),
+            ]);
+        }
+
+        // Le calcul de nuit met une tâche par compteur en file d'attente…
+        $this->artisan('energie:quotidien')->assertSuccessful();
+        $this->assertSame(1, DB::table('jobs')->count());
+        $this->assertSame(0, Alerte::count());
+
+        // … que la commande lancée chaque minute traite, ainsi que les notifications qu'elle crée.
+        $this->artisan('energie:file-attente')->assertSuccessful();
+        $this->assertSame(0, DB::table('jobs')->count());
+        $this->assertSame(0, DB::table('failed_jobs')->count());
+        $this->assertDatabaseHas('alertes', ['compteur_id' => $compteur->id, 'type' => 'credit_faible']);
+        $this->assertSame(1, $user->notifications()->count());
+    }
+
+    public function test_tache_en_echec_conservee_dans_failed_jobs(): void
+    {
+        config(['queue.default' => 'database']);
+        TacheQuiEchoue::dispatch();
+
+        $this->artisan('energie:file-attente')->assertSuccessful();
+
+        // Trois essais, puis la tâche est conservée (et non perdue) pour être examinée ou relancée.
+        $this->assertSame(0, DB::table('jobs')->count());
+        $this->assertSame(1, DB::table('failed_jobs')->count());
+        $this->assertStringContainsString('Serveur d\'e-mail injoignable', DB::table('failed_jobs')->value('exception'));
+    }
+
+    public function test_taches_planifiees_dans_le_meme_processus(): void
+    {
+        // Aucune tâche ne doit dépendre d'un sous-processus (proc_open désactivé chez Hostinger).
+        $evenements = app(Schedule::class)->events();
+        $this->assertCount(3, $evenements);
+        foreach ($evenements as $e) {
+            $this->assertInstanceOf(CallbackEvent::class, $e, $e->description ?? '');
+            // Ni signaux (pcntl désactivé), ni verrou de 24 h après un plantage.
+            $this->assertFalse($e->releaseOnTerminationSignals, $e->description);
+            $this->assertLessThanOrEqual(120, $e->expiresAt, $e->description);
+        }
     }
 
     public function test_messages_d_erreur_generiques_en_francais(): void
