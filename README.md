@@ -53,6 +53,7 @@ php artisan test
 - Mode saisie : le code s'affiche en 5 groupes de 4 chiffres, puis « J'ai tapé le code » → « Confirmer le crédit ».
 - Ajout de relevés (crédit ou index) avec contrôle de cohérence immédiat.
 - Alertes à lire.
+- Installable sur l'écran d'accueil du téléphone (« Ajouter à l'écran d'accueil » dans le navigateur).
 - Réglages (propriétaire) : renommer le compteur, seuil d'alerte, partage avec une personne inscrite,
   association d'un capteur (le jeton n'est affiché qu'une fois), suppression du compteur.
 

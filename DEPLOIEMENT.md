@@ -57,41 +57,44 @@ MAIL_USERNAME=adresse@votre-domaine.tld
 MAIL_PASSWORD=mot_de_passe_de_la_boite
 MAIL_FROM_ADDRESS="adresse@votre-domaine.tld"
 
-ENERGIE_CODE_PEPPER=
 ENERGIE_CANAUX_ALERTES=database,mail
 ```
+
+Laissez `APP_KEY=` et `ENERGIE_CODE_PEPPER=` vides : l'étape 4 les remplit.
 
 Les réglages `MAIL_*` sont ceux de la boîte e-mail créée chez l'hébergeur ; ils servent au lien
 « mot de passe oublié » et aux alertes par e-mail. Laissez `ENERGIE_CANAUX_ALERTES=database` si vous ne voulez pas d'e-mails d'alerte.
 
-## 4. Initialiser (en SSH)
+## 4. Initialiser
 
-Connectez-vous en SSH, placez-vous dans le dossier du projet, puis lancez une à une :
+Une seule commande prépare tout : elle génère les deux clés secrètes dans `.env` (`APP_KEY` et
+`ENERGIE_CODE_PEPPER`), crée les tables et met la configuration en cache.
 
-```bash
-php artisan key:generate
-```
-
-```bash
-php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"
-```
-
-Collez la valeur affichée dans `.env`, à la ligne `ENERGIE_CODE_PEPPER=`. Puis :
+**Avec un accès SSH** — placez-vous dans le dossier du projet, puis :
 
 ```bash
-php artisan migrate --force
+php artisan energie:installer
 ```
+
+**Sans accès SSH** — dans le menu « Tâches cron » du panneau, créez une tâche avec la commande ci-dessous,
+laissez-la s'exécuter une fois, puis supprimez-la :
 
 ```bash
-php artisan config:cache
+cd /chemin/complet/vers/le/projet && php artisan energie:installer > storage/logs/installation.log 2>&1
 ```
 
-Si la commande `php` du terminal est une version plus ancienne que 8.3, l'hébergeur fournit en général
-un chemin par version (ex. `/usr/bin/php8.3` ou `/opt/alt/php83/usr/bin/php`) : utilisez-le à la place de `php`,
-ici et dans la tâche cron.
+Le résultat se lit dans `storage/logs/installation.log` (dernière ligne attendue : « Installation terminée. »).
+
+La commande peut être relancée sans risque : une clé déjà présente n'est jamais remplacée.
+
+Si la commande `php` est une version plus ancienne que 8.3, l'hébergeur fournit en général un chemin par
+version (ex. `/usr/bin/php8.3` ou `/opt/alt/php83/usr/bin/php`) : utilisez-le à la place de `php`,
+ici et dans la tâche cron de l'étape 5.
 
 **Sauvegardez hors du serveur** les lignes `APP_KEY` et `ENERGIE_CODE_PEPPER` de `.env`. Sans `APP_KEY`,
 les codes de recharge enregistrés deviennent illisibles ; si le pepper change, les doublons ne sont plus détectés.
+
+Après toute modification de `.env`, relancez `php artisan energie:installer` pour qu'elle soit prise en compte.
 
 ## 5. Tâche cron
 
@@ -117,22 +120,21 @@ se font quand même, les notifications partent seulement avec ce délai.
 
 ## Mettre à jour plus tard
 
-Remplacez les fichiers par ceux de la nouvelle archive **sans écraser `.env` ni le dossier `storage/`**, puis :
+Remplacez les fichiers par ceux de la nouvelle archive **sans écraser `.env` ni le dossier `storage/`**,
+puis relancez `php artisan energie:installer` (SSH ou tâche cron ponctuelle, comme à l'étape 4).
 
-```bash
-php artisan migrate --force
-```
+## Pourquoi pas une « application Node.js » ?
 
-```bash
-php artisan config:cache
-```
+Certains hébergeurs proposent aussi d'héberger des applications Node.js. Cette application est écrite en PHP
+(Laravel) : elle s'installe comme un site PHP classique, ce que ce guide décrit. La faire tourner sous Node.js
+demanderait de la réécrire entièrement, sans bénéfice pour l'utilisateur.
 
 ## En cas de problème
 
 | Symptôme | Cause probable |
 |---|---|
 | Page blanche ou erreur 500 | version de PHP inférieure à 8.3, ou dossiers `storage/` et `bootstrap/cache/` non inscriptibles (droits 755 ou 775) |
-| « No application encryption key » | `php artisan key:generate` n'a pas été lancé |
-| Erreur de connexion à la base | hôte, nom, utilisateur ou mot de passe incorrects dans `.env` ; relancer `php artisan config:cache` après toute modification de `.env` |
+| « No application encryption key » | `php artisan energie:installer` n'a pas été lancé |
+| Erreur de connexion à la base | hôte, nom, utilisateur ou mot de passe incorrects dans `.env` ; relancer `php artisan energie:installer` après toute modification de `.env` |
 | Les alertes n'arrivent jamais | la tâche cron n'est pas active ou pointe sur le mauvais dossier |
 | Détail d'une erreur | dernier message dans `storage/logs/laravel.log` |

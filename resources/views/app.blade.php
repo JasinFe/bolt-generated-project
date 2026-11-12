@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Suivi énergie CIE</title>
+<meta name="theme-color" content="#0b6e4f">
+<meta name="description" content="Recharges, relevés et autonomie de votre compteur prépayé CIE.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icone-192.png">
 <style>
 :root {
   --fond: #f4f6f8; --carte: #fff; --texte: #17212b; --doux: #5d6b7a; --trait: #dde3ea;
