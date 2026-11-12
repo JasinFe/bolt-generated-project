@@ -74,7 +74,9 @@ class Installer extends Command
             $resultat = $this->call('migrate', ['--force' => true]);
         } catch (\Throwable $e) {
             $this->error('Échec de la création des tables : '.$e->getMessage());
-            $resultat = self::FAILURE;
+            $this->diagnostiquerBase($e, $contenu);
+
+            return self::FAILURE;
         }
 
         if ($resultat !== self::SUCCESS) {
@@ -147,6 +149,50 @@ class Installer extends Command
             file_put_contents($env, $contenu);
             $this->info('Clé(s) générée(s) dans .env : '.implode(', ', $creees).'.');
             $this->warn('Sauvegardez ces lignes de .env hors du serveur : sans elles, les codes enregistrés sont illisibles.');
+        }
+    }
+
+    /** Explique en clair un refus de connexion à la base, sans jamais afficher le mot de passe. */
+    private function diagnostiquerBase(\Throwable $e, string $contenu): void
+    {
+        $connexion = (string) config('database.default');
+        $reglages = (array) config("database.connections.$connexion");
+        $message = $e->getMessage();
+
+        $this->newLine();
+        $this->line('Réglages lus dans .env :');
+        $this->line('  base         : '.($reglages['database'] ?? '?'));
+        $this->line('  utilisateur  : '.($reglages['username'] ?? '?'));
+        $this->line('  hôte         : '.($reglages['host'] ?? '?'));
+        $this->line('  mot de passe : '.mb_strlen((string) ($reglages['password'] ?? '')).' caractère(s) lu(s)');
+        $this->newLine();
+
+        if (str_contains($message, '[1045]') || str_contains($message, 'Access denied')) {
+            $this->line('La base refuse cet utilisateur avec ce mot de passe.');
+
+            // Piège fréquent : un « # » non protégé coupe le mot de passe, la suite est ignorée.
+            if (preg_match('/^DB_PASSWORD=(.*)$/m', $contenu, $m)) {
+                $brut = trim($m[1]);
+                $protege = $brut !== '' && in_array($brut[0], ['"', "'"], true);
+                if (! $protege && str_contains($brut, '#')) {
+                    $this->warn('Votre mot de passe contient « # » sans apostrophes : tout ce qui suit « # » est ignoré.');
+                    $this->warn("Écrivez-le entre apostrophes dans .env, par exemple : DB_PASSWORD='votre#mot-de-passe'");
+
+                    return;
+                }
+            }
+
+            $this->line('1. Comparez le nombre de caractères ci-dessus avec votre mot de passe.');
+            $this->line("2. Par précaution, mettez-le entre apostrophes dans .env : DB_PASSWORD='votre-mot-de-passe'");
+            $this->line('3. Vérifiez la base et l\'utilisateur dans hPanel → Bases de données → Gestion.');
+            $this->line('4. En cas de doute, changez le mot de passe de la base dans hPanel, reportez-le dans .env,');
+            $this->line('   attendez une minute, puis relancez cette commande.');
+        } elseif (str_contains($message, '[1049]') || str_contains($message, 'Unknown database')) {
+            $this->line('Cette base n\'existe pas : recopiez son nom exact depuis hPanel → Bases de données (préfixe compris).');
+        } elseif (str_contains($message, '[2002]') || str_contains($message, 'Connection refused')) {
+            $this->line('Serveur de base injoignable : sur Hostinger, DB_HOST doit être « localhost ».');
+        } else {
+            $this->line('Vérifiez DB_DATABASE, DB_USERNAME et DB_PASSWORD dans .env (hPanel → Bases de données).');
         }
     }
 

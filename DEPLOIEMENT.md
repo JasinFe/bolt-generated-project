@@ -92,11 +92,16 @@ puis ouvrez `.env` (clic droit → Modifier) et remplacez :
 | `APP_URL` | `https://votre-domaine.tld` (ou `https://energie.votre-domaine.tld` en sous-domaine) |
 | `DB_DATABASE` | nom complet de la base (étape 2), ex. `u123456789_energie` |
 | `DB_USERNAME` | nom complet de l'utilisateur (étape 2) |
-| `DB_PASSWORD` | mot de passe de la base |
+| `DB_PASSWORD` | mot de passe de la base, **entre apostrophes** : `DB_PASSWORD='abc#123'` |
 | `MAIL_USERNAME` et `MAIL_FROM_ADDRESS` | l'adresse de l'étape 3 |
-| `MAIL_PASSWORD` | le mot de passe de cette boîte |
+| `MAIL_PASSWORD` | le mot de passe de cette boîte, **entre apostrophes** |
 
 **Laissez vides** `APP_KEY=` et `ENERGIE_CODE_PEPPER=` : l'étape suivante les remplit. Enregistrez.
+
+Sans apostrophes, un `#` dans un mot de passe coupe la valeur (tout ce qui suit est ignoré) et une espace empêche la lecture de `.env`.
+
+Plus simple pour la base : en SSH, `php artisan energie:base` demande la base, l'utilisateur et le mot de passe,
+**teste la connexion**, puis les écrit correctement dans `.env`.
 
 Les autres lignes sont déjà réglées pour Hostinger (`DB_HOST=localhost`, `smtp.hostinger.com`, port 465).
 
@@ -229,6 +234,7 @@ Après **toute** modification de `.env`, relancez aussi l'installation.
 | Page « Server Error » ou erreur 500 | PHP inférieur à 8.3 (étape 1), ou installation pas encore lancée (étape 6) |
 | « Your Composer dependencies require a PHP version >= 8.3 » en SSH | la commande `php` seule lance une ancienne version : utilisez `/opt/alt/php84/usr/bin/php` |
 | « The Process class relies on proc_open… » | ancienne version de l'application : extrayez la dernière archive par-dessus, puis relancez l'installation (les clés déjà générées sont conservées) |
+| « Access denied for user… » (erreur 1045) | mot de passe ou utilisateur de la base incorrect, souvent un `#` sans apostrophes : lancez `php artisan energie:base`, qui teste la connexion et corrige `.env`, puis relancez l'installation |
 | L'installation signale des réglages « à remplir » | une valeur de `.env` est restée vide ou à son exemple : corrigez-la (étape 5) |
 | « Échec de php artisan migrate » | nom de base, utilisateur ou mot de passe incorrect : recopiez-les depuis hPanel, préfixe `u123456789_` compris |
 | « L'e-mail n'a pas pu être envoyé » | réglages `MAIL_*` incorrects : testez avec `energie:tester-email` (étape 9), corrigez `.env`, relancez l'installation |
