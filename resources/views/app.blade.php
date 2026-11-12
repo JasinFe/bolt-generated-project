@@ -58,13 +58,24 @@ label { display: block; font-size: .9rem; color: var(--doux); margin: 10px 0 4px
 /* Grand écran (PC, tablette en paysage) : deux colonnes sous le graphique. */
 @media (min-width: 1000px) {
   main { max-width: 1160px; padding: 24px; }
-  #tableau { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; align-items: start; }
-  #tableau > * { grid-column: 1 / -1; min-width: 0; }
-  #tableau > .carte:nth-child(4) { grid-column: 1; grid-row: 4; }
-  #tableau > .carte:nth-child(6) { grid-column: 1; grid-row: 5; }
-  #tableau > .carte:nth-child(5) { grid-column: 2; grid-row: 4 / span 2; }
+  .bas { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; align-items: start;
+         grid-template-areas: "alertes recharges" "releves recharges"; }
+  .bas > .carte { min-width: 0; }
+  #carte-alertes { grid-area: alertes; }
+  #carte-recharges { grid-area: recharges; }
+  #carte-releves { grid-area: releves; }
   .graphique { height: 200px; }
 }
+.premiers-pas { border-color: var(--accent); }
+.premiers-pas ol { list-style: none; margin: 12px 0 0; padding: 0; counter-reset: pas; }
+.premiers-pas li { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--trait); counter-increment: pas; }
+.premiers-pas li:first-child { border-top: 0; }
+.premiers-pas li::before { content: counter(pas); flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 700; font-size: .9rem; background: var(--accent-clair); color: var(--accent); }
+.premiers-pas li.fait::before { content: "✓"; background: var(--accent); color: var(--carte); }
+.premiers-pas li.fait .texte { color: var(--doux); text-decoration: line-through; }
+.premiers-pas .texte { flex: 1; min-width: 0; }
+.premiers-pas .texte .actions { margin-top: 8px; }
 .cache { display: none !important; }
 .badge { display: inline-block; border-radius: 999px; padding: 1px 9px; font-size: .78rem; font-weight: 600; white-space: nowrap; }
 .badge.en_attente { background: var(--attention-clair); color: var(--attention); }
@@ -155,6 +166,15 @@ dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
       </div>
     </div>
 
+    <div class="carte premiers-pas cache" id="premiers-pas">
+      <div class="haut" style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
+        <h2 style="margin:0">Premiers pas</h2>
+        <button type="button" class="lien" id="pp-masquer">Masquer</button>
+      </div>
+      <p class="note" style="margin:6px 0 0">EnerTrack calcule tout à partir de ce que vous saisissez : il ne lit pas le compteur à votre place.</p>
+      <ol id="pp-etapes"></ol>
+    </div>
+
     <div class="carte">
       <h2>Consommation des 30 derniers jours</h2>
       <div id="graphique-vide" class="vide cache">Ajoutez au moins deux relevés, à des jours différents, pour voir votre consommation.</div>
@@ -165,19 +185,21 @@ dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
       </div>
     </div>
 
-    <div class="carte">
+    <div class="bas">
+    <div class="carte" id="carte-alertes">
       <h2>Alertes</h2>
       <div id="liste-alertes"></div>
     </div>
 
-    <div class="carte">
+    <div class="carte" id="carte-recharges">
       <h2>Recharges</h2>
       <div id="liste-recharges"></div>
     </div>
 
-    <div class="carte">
+    <div class="carte" id="carte-releves">
       <h2>Derniers relevés</h2>
       <div id="liste-releves"></div>
+    </div>
     </div>
   </div>
 </section>
@@ -538,9 +560,48 @@ dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
     etat.role = t.role;
     afficherChiffres(t); afficherGraphique(t.consommation.jours);
     afficherAlertes(alertes.data); afficherRecharges(recharges.data); afficherReleves(releves.data);
+    afficherPremiersPas(t, recharges.data.length > 0, releves.data.length);
     $('btn-recharge').classList.toggle('cache', t.role === 'occupant');
     $('btn-reglages').classList.toggle('cache', t.role !== 'proprietaire');
   }
+
+  /** Guide de démarrage : visible tant que la mise en route n'est pas faite (ou jusqu'à « Masquer »). */
+  function afficherPremiersPas(t, aDesRecharges, nbReleves) {
+    const cle = 'energie_pp_masque_' + etat.compteurId;
+    let masque = false;
+    try { masque = localStorage.getItem(cle) === '1'; } catch (e) {}
+
+    const etapes = [
+      {
+        fait: !!t.credit,
+        texte: 'Lisez le crédit restant (en kWh) sur l’écran du compteur et enregistrez-le comme relevé de crédit.',
+        bouton: ['Ajouter un relevé', () => $('btn-releve').click()],
+      },
+      {
+        fait: !!t.autonomie,
+        texte: 'Refaites un relevé chaque jour, de préférence à la même heure. Au 3ᵉ relevé (une journée entière couverte), la consommation moyenne et l’autonomie s’affichent.'
+          + (t.credit && !t.autonomie ? ' Relevés enregistrés : ' + nbReleves + '.' : ''),
+      },
+    ];
+    if (t.role !== 'occupant') {
+      etapes.push({
+        fait: aDesRecharges,
+        texte: 'À chaque achat de crédit, enregistrez le code dès réception du SMS de la CIE : collez le SMS entier, le code, le montant et les kWh sont repérés.',
+        bouton: ['Enregistrer une recharge', () => $('btn-recharge').click()],
+      });
+    }
+
+    const termine = etapes.every((e) => e.fait);
+    $('premiers-pas').classList.toggle('cache', termine || masque);
+    $('pp-etapes').replaceChildren(...etapes.map((e) => el('li', { class: e.fait ? 'fait' : '' },
+      el('div', { class: 'texte' },
+        el('div', {}, e.texte),
+        !e.fait && e.bouton ? el('div', { class: 'actions' }, el('button', { type: 'button', class: 'petit principal', onclick: e.bouton[1] }, e.bouton[0])) : null))));
+  }
+  $('pp-masquer').addEventListener('click', () => {
+    try { localStorage.setItem('energie_pp_masque_' + etat.compteurId, '1'); } catch (e) {}
+    $('premiers-pas').classList.add('cache');
+  });
 
   function afficherChiffres(t) {
     const c = t.credit, a = t.autonomie;
