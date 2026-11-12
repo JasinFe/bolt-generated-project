@@ -13,7 +13,7 @@ Elle comprend une API JSON (`/api`, jetons Sanctum) et une interface web d'une p
 Prérequis : PHP 8.3+ et Composer. SQLite par défaut ; MySQL / MariaDB ou PostgreSQL en changeant `DB_*`
 dans `.env` (les tests passent sur les trois).
 
-**Mise en ligne sur Hostinger (ou autre hébergement PHP) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md).**
+**Mise en ligne sur Hostinger (ou autre hébergement PHP), sur le domaine principal ou en sous-domaine : voir [DEPLOIEMENT.md](DEPLOIEMENT.md).**
 
 ```bash
 composer install

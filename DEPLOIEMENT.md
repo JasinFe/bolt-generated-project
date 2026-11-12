@@ -13,11 +13,43 @@ Dans ce guide, remplacez :
 - `votre-domaine.tld` par votre nom de domaine ;
 - `u123456789` par votre identifiant Hostinger (affiché dans hPanel → **Avancé → Accès SSH**, et au début des noms de bases de données).
 
+## Domaine principal ou sous-domaine ?
+
+Les deux fonctionnent. Un sous-domaine (par exemple `energie.votre-domaine.tld`) permet de garder
+votre site actuel sur `votre-domaine.tld` : l'application s'installe à côté, sans le toucher.
+
+- **Domaine principal** : suivez le guide tel quel ; le dossier d'installation est `domains/votre-domaine.tld/public_html`.
+- **Sous-domaine** : faites d'abord l'étape 0 ci-dessous, puis le guide en remplaçant partout
+  `public_html` par **le dossier du sous-domaine** et `https://votre-domaine.tld` par `https://energie.votre-domaine.tld`.
+
+---
+
+## 0. (Sous-domaine uniquement) Créer le sous-domaine
+
+hPanel → **Domaines → Sous-domaines** → saisissez `energie` (ou le nom de votre choix) → **Créer**.
+
+hPanel indique alors le **dossier du sous-domaine**. Selon les cas, c'est :
+
+- `domains/energie.votre-domaine.tld/public_html` (dossier à part), ou
+- `domains/votre-domaine.tld/public_html/energie` (sous-dossier du site principal).
+
+Les deux conviennent : notez celui qu'affiche hPanel, c'est lui que vous utiliserez aux étapes 4 à 7.
+
+Points d'attention :
+
+- **Ne videz pas** le `public_html` du site principal : à l'étape 4, ne travaillez que dans le dossier du sous-domaine.
+- Le sous-domaine peut mettre de quelques minutes à quelques heures à répondre (propagation DNS).
+- Utilisez toujours l'adresse `https://energie.votre-domaine.tld`. Dans le second cas, l'adresse
+  `votre-domaine.tld/energie` affiche aussi la page, mais l'application n'y fonctionne pas : ne la communiquez pas.
+
 ---
 
 ## 1. Choisir PHP 8.3 ou plus
 
 hPanel → **Sites web** → *votre domaine* → **Gérer** → **Avancé → Configuration PHP** → choisissez **PHP 8.3** (ou 8.4) → Enregistrer.
+
+En sous-domaine, c'est en général le réglage du site principal qui s'applique : vérifiez-le là.
+Votre site principal (WordPress…) fonctionne aussi en PHP 8.3 s'il est à jour.
 
 ## 2. Créer la base de données
 
@@ -36,9 +68,11 @@ Elle sert aux liens « mot de passe oublié » et aux alertes par e-mail.
 
 ## 4. Envoyer les fichiers
 
-hPanel → **Fichiers → Gestionnaire de fichiers** → ouvrez `domains/votre-domaine.tld/public_html` :
+hPanel → **Fichiers → Gestionnaire de fichiers** → ouvrez le dossier d'installation
+(`domains/votre-domaine.tld/public_html`, ou le dossier du sous-domaine noté à l'étape 0) :
 
-1. **Videz** le dossier (Hostinger y place un fichier `default.php` ; supprimez aussi tout ancien site).
+1. **Videz** ce dossier (Hostinger y place un fichier `default.php` ; supprimez aussi tout ancien site).
+   En sous-domaine, ne touchez à rien en dehors du dossier du sous-domaine.
 2. **Téléversez** `suivi-energie-cie-hostinger.zip` dans `public_html`.
 3. Clic droit sur le zip → **Extraire** → dans le dossier actuel (`public_html`, sans sous-dossier).
 4. Vérifiez que `public_html` contient **directement** `app`, `public`, `vendor`, `artisan`, `.htaccess`…
@@ -55,7 +89,7 @@ puis ouvrez `.env` (clic droit → Modifier) et remplacez :
 
 | Ligne | Valeur |
 |---|---|
-| `APP_URL` | `https://votre-domaine.tld` |
+| `APP_URL` | `https://votre-domaine.tld` (ou `https://energie.votre-domaine.tld` en sous-domaine) |
 | `DB_DATABASE` | nom complet de la base (étape 2), ex. `u123456789_energie` |
 | `DB_USERNAME` | nom complet de l'utilisateur (étape 2) |
 | `DB_PASSWORD` | mot de passe de la base |
@@ -83,6 +117,8 @@ Puis, une fois connecté :
 cd domains/votre-domaine.tld/public_html
 ```
 
+(en sous-domaine : `cd` suivi du dossier noté à l'étape 0, par exemple `cd domains/energie.votre-domaine.tld/public_html`)
+
 ```bash
 /opt/alt/php83/usr/bin/php artisan energie:installer
 ```
@@ -102,6 +138,7 @@ hPanel → **Avancé → Tâches Cron** → type **Personnalisé**, toutes les m
 /opt/alt/php83/usr/bin/php /home/u123456789/domains/votre-domaine.tld/public_html/artisan energie:installer > /home/u123456789/domains/votre-domaine.tld/public_html/storage/logs/installation.log 2>&1
 ```
 
+En sous-domaine, remplacez les deux chemins par celui du dossier du sous-domaine.
 Attendez deux minutes, **supprimez cette tâche**, puis ouvrez `storage/logs/installation.log` dans le gestionnaire de fichiers.
 La fin doit être « Installation terminée. » suivie de la commande cron de l'étape 7.
 
@@ -120,6 +157,9 @@ recalcule les consommations et les alertes (chaque nuit à 01:15).
 ## 8. Activer HTTPS
 
 hPanel → **Sécurité → SSL** : le certificat (gratuit) doit être **actif** pour votre domaine ; activez **Forcer HTTPS**.
+
+En sous-domaine, vérifiez que `energie.votre-domaine.tld` apparaît bien dans la liste des certificats ;
+sinon, installez-en un pour lui depuis le même écran.
 
 ## 9. Vérifier
 
@@ -170,6 +210,8 @@ Après **toute** modification de `.env`, relancez aussi l'installation.
 | « Échec de php artisan migrate » | nom de base, utilisateur ou mot de passe incorrect : recopiez-les depuis hPanel, préfixe `u123456789_` compris |
 | « L'e-mail n'a pas pu être envoyé » | réglages `MAIL_*` incorrects : testez avec `energie:tester-email` (étape 9), corrigez `.env`, relancez l'installation |
 | Les alertes n'arrivent jamais | tâche cron absente ou mauvais chemin : comparez avec la commande affichée par l'installation |
+| Le sous-domaine affiche « site introuvable » | DNS pas encore propagé : patientez (jusqu'à quelques heures) |
+| Le sous-domaine affiche le site principal | les fichiers ont été extraits dans le mauvais dossier : vérifiez le dossier indiqué par hPanel (étape 0) |
 | Détail d'une erreur | dernier fichier `storage/logs/laravel-AAAA-MM-JJ.log` (gestionnaire de fichiers) |
 
 ## Autre hébergeur
