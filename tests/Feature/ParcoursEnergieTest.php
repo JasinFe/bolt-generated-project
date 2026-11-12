@@ -456,6 +456,6 @@ class ParcoursEnergieTest extends TestCase
 
     public function test_page_d_accueil(): void
     {
-        $this->get('/')->assertOk()->assertSee('Suivi énergie');
+        $this->get('/')->assertOk()->assertSee('EnerTrack');
     }
 }

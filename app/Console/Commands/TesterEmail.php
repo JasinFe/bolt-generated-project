@@ -26,9 +26,9 @@ class TesterEmail extends Command
 
         try {
             Mail::raw(
-                "Cet e-mail confirme que l'application Suivi énergie CIE peut envoyer des messages.\n\n"
+                "Cet e-mail confirme que l'application EnerTrack peut envoyer des messages.\n\n"
                 .'Les liens « mot de passe oublié » et les alertes par e-mail fonctionneront.',
-                fn ($m) => $m->to($destinataire)->subject('Suivi énergie CIE — e-mail de test')
+                fn ($m) => $m->to($destinataire)->subject('EnerTrack — e-mail de test')
             );
         } catch (\Throwable $e) {
             $this->error('Échec de l\'envoi : '.$e->getMessage());

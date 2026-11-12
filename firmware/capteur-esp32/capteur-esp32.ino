@@ -1,5 +1,5 @@
 /*
- * Suivi énergie CIE — capteur d'impulsions pour ESP32 (Arduino IDE, carte « ESP32 Dev Module »).
+ * EnerTrack — capteur d'impulsions pour ESP32 (Arduino IDE, carte « ESP32 Dev Module »).
  *
  * Une photodiode / un phototransistor collé sur le voyant « 1600 imp/kWh » du compteur compte
  * les clignotements. Aucune ouverture du compteur, aucun contact électrique avec lui.

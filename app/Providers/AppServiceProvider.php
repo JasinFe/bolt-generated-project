@@ -25,13 +25,13 @@ class AppServiceProvider extends ServiceProvider
             $minutes = (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
 
             return (new MailMessage)
-                ->subject('Réinitialisation de votre mot de passe')
+                ->subject('EnerTrack — réinitialisation de votre mot de passe')
                 ->greeting('Bonjour,')
                 ->line('Vous recevez cet e-mail parce qu\'une réinitialisation du mot de passe a été demandée pour votre compte.')
                 ->action('Choisir un nouveau mot de passe', (ResetPassword::$createUrlCallback)($user, $token))
                 ->line("Ce lien expire dans $minutes minutes.")
                 ->line('Si vous n\'êtes pas à l\'origine de cette demande, ignorez cet e-mail : votre mot de passe reste inchangé.')
-                ->salutation('Suivi énergie CIE');
+                ->salutation('EnerTrack');
         });
     }
 }

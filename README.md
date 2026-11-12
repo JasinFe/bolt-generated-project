@@ -1,4 +1,4 @@
-# Suivi énergie CIE
+# EnerTrack
 
 Application Laravel de suivi d'un compteur électrique prépayé (CIE, Côte d'Ivoire) :
 enregistrement des codes de recharge STS de 20 chiffres, cycle de vie

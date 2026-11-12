@@ -1,7 +1,7 @@
 {
-  "name": "Suivi énergie CIE",
-  "short_name": "Énergie CIE",
-  "description": "Recharges, relevés et autonomie de votre compteur prépayé.",
+  "name": "EnerTrack",
+  "short_name": "EnerTrack",
+  "description": "Recharges, relevés et autonomie de votre compteur prépayé CIE.",
   "lang": "fr",
   "start_url": "/",
   "scope": "/",

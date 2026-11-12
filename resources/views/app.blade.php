@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Suivi énergie CIE</title>
+<title>EnerTrack</title>
 <meta name="theme-color" content="#0b6e4f">
 <meta name="description" content="Recharges, relevés et autonomie de votre compteur prépayé CIE.">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -101,7 +101,7 @@ dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
 
 <!-- ===================== Connexion ===================== -->
 <section id="ecran-connexion" class="connexion cache">
-  <h1 style="margin-bottom:6px">Suivi énergie CIE</h1>
+  <h1 style="margin-bottom:6px">EnerTrack</h1>
   <p class="note" style="margin:0 0 16px">Recharges, relevés et autonomie de votre compteur prépayé.</p>
   <div class="carte">
     <div class="onglets">
@@ -125,7 +125,7 @@ dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
 <!-- ===================== Application ===================== -->
 <section id="ecran-app" class="cache">
   <div class="entete">
-    <h1>Suivi énergie CIE</h1>
+    <h1>EnerTrack</h1>
     <div class="droite">
       <select id="choix-compteur" aria-label="Compteur" style="width:auto;max-width:230px"></select>
       <button type="button" id="btn-reglages" class="cache">Réglages</button>
