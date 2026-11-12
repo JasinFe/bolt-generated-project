@@ -49,6 +49,22 @@ label { display: block; font-size: .9rem; color: var(--doux); margin: 10px 0 4px
 .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 .erreur { background: var(--alerte-clair); color: var(--alerte); border-radius: 8px; padding: 8px 10px; margin-top: 12px; font-size: .9rem; }
 .info { background: var(--accent-clair); color: var(--accent); border-radius: 8px; padding: 8px 10px; margin-top: 12px; font-size: .9rem; }
+/* Écran tactile (téléphone, tablette) : zones de toucher d'au moins 44 px. */
+@media (pointer: coarse) {
+  button, select, input, textarea { min-height: 44px; }
+  button.petit { padding: 8px 14px; font-size: .9rem; }
+  button.lien { padding: 10px 6px; margin: -10px -6px; }
+}
+/* Grand écran (PC, tablette en paysage) : deux colonnes sous le graphique. */
+@media (min-width: 1000px) {
+  main { max-width: 1160px; padding: 24px; }
+  #tableau { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; align-items: start; }
+  #tableau > * { grid-column: 1 / -1; min-width: 0; }
+  #tableau > .carte:nth-child(4) { grid-column: 1; grid-row: 4; }
+  #tableau > .carte:nth-child(6) { grid-column: 1; grid-row: 5; }
+  #tableau > .carte:nth-child(5) { grid-column: 2; grid-row: 4 / span 2; }
+  .graphique { height: 200px; }
+}
 .cache { display: none !important; }
 .badge { display: inline-block; border-radius: 999px; padding: 1px 9px; font-size: .78rem; font-weight: 600; white-space: nowrap; }
 .badge.en_attente { background: var(--attention-clair); color: var(--attention); }
