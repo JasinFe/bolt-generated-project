@@ -107,7 +107,11 @@ class Installer extends Command
             $manquants[] = 'MAIL_PASSWORD';
         }
 
-        return $manquants;
+        // Valeurs d'exemple laissées telles quelles (« METTRE_ICI_… », « À REMPLIR »…).
+        preg_match_all('/^([A-Z0-9_]+)=.*(METTRE_ICI|A_REMPLIR|À REMPLIR).*$/mu', $contenu, $exemples);
+        $manquants = array_merge($manquants, $exemples[1]);
+
+        return array_values(array_unique($manquants));
     }
 
     private function genererCles(string $env, string $contenu): void
