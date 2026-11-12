@@ -8,10 +8,12 @@ use App\Models\Recharge;
 use App\Models\Releve;
 use App\Models\User;
 use App\Notifications\AlerteEnergieNotification;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -66,6 +68,35 @@ class ParcoursEnergieTest extends TestCase
 
         $this->withToken($token)->getJson('/api/moi')->assertOk()->assertJsonPath('email', 'awa@example.com')
             ->assertJsonMissingPath('password');
+    }
+
+    public function test_mot_de_passe_oublie_et_reinitialisation(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create(['email' => 'awa@example.com']);
+        $ancien = $user->createToken('telephone')->plainTextToken;
+
+        // Même réponse pour une adresse inconnue : on ne révèle pas quels comptes existent.
+        $this->postJson('/api/mot-de-passe/oublie', ['email' => 'inconnu@example.com'])->assertOk();
+        Notification::assertNothingSent();
+
+        $this->postJson('/api/mot-de-passe/oublie', ['email' => 'awa@example.com'])->assertOk();
+        $jeton = null;
+        Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $n) use (&$jeton, $user) {
+            $jeton = $n->token;
+            $mail = $n->toMail($user);
+
+            return str_contains($mail->actionUrl, '?reinitialiser='.$jeton) && str_contains($mail->actionUrl, 'email=awa%40example.com');
+        });
+
+        $corps = ['email' => 'awa@example.com', 'password' => 'nouveau-secret', 'password_confirmation' => 'nouveau-secret'];
+        $this->postJson('/api/mot-de-passe/reinitialiser', $corps + ['token' => 'faux'])->assertStatus(422);
+        $this->postJson('/api/mot-de-passe/reinitialiser', $corps + ['token' => $jeton])->assertOk();
+        $this->postJson('/api/mot-de-passe/reinitialiser', $corps + ['token' => $jeton])->assertStatus(422);   // usage unique
+
+        $this->postJson('/api/connexion', ['email' => 'awa@example.com', 'password' => 'nouveau-secret'])->assertOk();
+        $this->assertSame(1, $user->tokens()->count());   // l'ancien appareil est déconnecté
+        $this->assertNull(PersonalAccessToken::findToken($ancien));
     }
 
     // ------------------------------------------------------------------ compteurs

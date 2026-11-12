@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password as Courtier;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -40,6 +41,39 @@ class AuthController extends Controller
         }
 
         return response()->json($this->session($user, $request));
+    }
+
+    // POST /mot-de-passe/oublie — même réponse que le compte existe ou non
+    public function motDePasseOublie(Request $request): JsonResponse
+    {
+        $data = $request->validate(['email' => ['required', 'email']]);
+
+        Courtier::sendResetLink($data);
+
+        return response()->json([
+            'message' => 'Si un compte existe avec cette adresse, un e-mail contenant un lien de réinitialisation vient d\'être envoyé.',
+        ]);
+    }
+
+    // POST /mot-de-passe/reinitialiser
+    public function reinitialiser(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        $statut = Courtier::reset($data, function (User $user, string $motDePasse) {
+            $user->forceFill(['password' => $motDePasse])->save();   // haché par le cast du modèle
+            $user->tokens()->delete();                                // déconnecte tous les appareils
+        });
+
+        if ($statut !== Courtier::PASSWORD_RESET) {
+            throw ValidationException::withMessages(['email' => 'Ce lien est invalide ou a expiré. Refaites une demande.']);
+        }
+
+        return response()->json(['message' => 'Mot de passe modifié. Vous pouvez vous connecter.']);
     }
 
     // POST /deconnexion

@@ -43,6 +43,7 @@ label { display: block; font-size: .9rem; color: var(--doux); margin: 10px 0 4px
 .ligne { display: flex; gap: 10px; } .ligne > * { flex: 1; min-width: 0; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 .erreur { background: var(--alerte-clair); color: var(--alerte); border-radius: 8px; padding: 8px 10px; margin-top: 12px; font-size: .9rem; }
+.info { background: var(--accent-clair); color: var(--accent); border-radius: 8px; padding: 8px 10px; margin-top: 12px; font-size: .9rem; }
 .cache { display: none !important; }
 .badge { display: inline-block; border-radius: 999px; padding: 1px 9px; font-size: .78rem; font-weight: 600; white-space: nowrap; }
 .badge.en_attente { background: var(--attention-clair); color: var(--attention); }
@@ -91,7 +92,11 @@ dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
       <label for="auth-email">Adresse e-mail</label><input id="auth-email" type="email" required autocomplete="email">
       <label for="auth-mdp">Mot de passe</label><input id="auth-mdp" type="password" required minlength="8" autocomplete="current-password">
       <div class="erreur cache" id="auth-erreur"></div>
-      <div class="actions"><button class="principal" id="auth-envoyer">Se connecter</button></div>
+      <div class="info cache" id="auth-info"></div>
+      <div class="actions">
+        <button class="principal" id="auth-envoyer">Se connecter</button>
+        <button type="button" class="lien" id="auth-oublie">Mot de passe oublié ?</button>
+      </div>
     </form>
   </div>
 </section>
@@ -331,19 +336,44 @@ dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
   function ouvrir(id) { const d = $(id); const f = d.querySelector('form'); if (f) { f.reset(); montrerErreur(f, ''); } d.showModal(); }
 
   // ------------------------------------------------------------ connexion
+  const reinit = new URLSearchParams(location.search);   // lien reçu par e-mail : ?reinitialiser=<jeton>&email=
+  function info(message) { $('auth-info').textContent = message || ''; $('auth-info').classList.toggle('cache', !message); }
+
   function basculer(mode) {
     etat.mode = mode;
     $('onglet-connexion').classList.toggle('actif', mode === 'connexion');
     $('onglet-inscription').classList.toggle('actif', mode === 'inscription');
-    $('champ-nom').classList.toggle('cache', mode === 'connexion');
+    $('onglet-inscription').classList.toggle('cache', mode === 'reinitialiser');
+    $('onglet-connexion').textContent = mode === 'reinitialiser' ? 'Nouveau mot de passe' : 'Connexion';
+    $('champ-nom').classList.toggle('cache', mode !== 'inscription');
     $('auth-nom').required = mode === 'inscription';
-    $('auth-envoyer').textContent = mode === 'connexion' ? 'Se connecter' : 'Créer mon compte';
+    $('auth-email').readOnly = mode === 'reinitialiser';
+    $('auth-mdp').autocomplete = mode === 'connexion' ? 'current-password' : 'new-password';
+    $('auth-oublie').classList.toggle('cache', mode !== 'connexion');
+    $('auth-envoyer').textContent = { connexion: 'Se connecter', inscription: 'Créer mon compte', reinitialiser: 'Changer le mot de passe' }[mode];
+    montrerErreur($('form-auth'), '');
   }
-  $('onglet-connexion').addEventListener('click', () => basculer('connexion'));
-  $('onglet-inscription').addEventListener('click', () => basculer('inscription'));
+  $('onglet-connexion').addEventListener('click', () => { if (etat.mode !== 'reinitialiser') { info(''); basculer('connexion'); } });
+  $('onglet-inscription').addEventListener('click', () => { info(''); basculer('inscription'); });
+
+  $('auth-oublie').addEventListener('click', async () => {
+    const form = $('form-auth'), email = $('auth-email');
+    montrerErreur(form, ''); info('');
+    if (!email.value || !email.checkValidity()) { montrerErreur(form, 'Saisissez d\'abord votre adresse e-mail.'); email.focus(); return; }
+    $('auth-oublie').disabled = true;
+    try { info((await api('POST', '/mot-de-passe/oublie', { email: email.value })).message); } catch (e) { montrerErreur(form, e.message); }
+    $('auth-oublie').disabled = false;
+  });
 
   brancher($('form-auth'), async () => {
+    info('');
     const corps = { email: $('auth-email').value, password: $('auth-mdp').value };
+    if (etat.mode === 'reinitialiser') {
+      const r = await api('POST', '/mot-de-passe/reinitialiser', Object.assign(corps, { token: reinit.get('reinitialiser'), password_confirmation: corps.password }));
+      history.replaceState(null, '', location.pathname);   // le jeton ne reste pas dans la barre d'adresse
+      $('auth-mdp').value = ''; basculer('connexion'); info(r.message);
+      return;
+    }
     if (etat.mode === 'inscription') { corps.name = $('auth-nom').value; corps.password_confirmation = corps.password; }
     const r = await api('POST', etat.mode === 'connexion' ? '/connexion' : '/inscription', corps);
     etat.token = r.token;
@@ -650,6 +680,12 @@ dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
     try { await envoyerReleve(true); } catch (e) { montrerErreur(formReleve, e.message); }
   });
 
+  if (reinit.get('reinitialiser') && reinit.get('email')) {
+    etat.token = null;
+    try { localStorage.removeItem('energie_token'); } catch (e) {}
+    $('auth-email').value = reinit.get('email');
+    basculer('reinitialiser');
+  }
   demarrer();
 })();
 </script>

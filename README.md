@@ -10,8 +10,10 @@ Elle comprend une API JSON (`/api`, jetons Sanctum) et une interface web d'une p
 
 ## Démarrage
 
-Prérequis : PHP 8.3+ et Composer. SQLite par défaut ; PostgreSQL en changeant `DB_*` dans `.env`
-(les tests passent sur les deux).
+Prérequis : PHP 8.3+ et Composer. SQLite par défaut ; MySQL / MariaDB ou PostgreSQL en changeant `DB_*`
+dans `.env` (les tests passent sur les trois).
+
+**Mise en ligne sur un hébergement web mutualisé : voir [DEPLOIEMENT.md](DEPLOIEMENT.md).**
 
 ```bash
 composer install
@@ -44,7 +46,7 @@ php artisan test
 
 ## Ce que fait l'interface
 
-- Création de compte, connexion, plusieurs compteurs par utilisateur.
+- Création de compte, connexion, mot de passe oublié (lien par e-mail), plusieurs compteurs par utilisateur.
 - Ajout d'un compteur avec contrôle du numéro (11 ou 13 chiffres, clé de Luhn).
 - Tableau de bord : crédit estimé maintenant, autonomie (fourchette), consommation moyenne, graphique sur 30 jours.
 - Enregistrement d'une recharge — on peut coller le SMS entier, le code, le montant et les kWh sont repérés.
@@ -81,6 +83,7 @@ Toutes les routes sauf inscription, connexion et IoT demandent `Authorization: B
 | Méthode | Route | Rôle |
 |---|---|---|
 | POST | `/api/inscription`, `/api/connexion` | renvoient `{ user, token }` |
+| POST | `/api/mot-de-passe/oublie`, `/api/mot-de-passe/reinitialiser` | lien par e-mail, puis nouveau mot de passe |
 | GET / POST | `/api/moi`, `/api/deconnexion` | compte courant |
 | GET, POST, PUT, DELETE | `/api/sites`, `/api/sites/{site}` | lieux de l'utilisateur |
 | POST | `/api/sites/{site}/compteurs` | ajouter un compteur (Luhn, unique) |
@@ -112,13 +115,16 @@ Authorization: Bearer <jeton du capteur>
   "mesures": [ { "mesure_le": 1794480000, "impulsions_cumul": 123456, "puissance_w": 420 } ] }
 ```
 
+Un programme pour ESP32 est fourni dans `firmware/` (non testé sur matériel).
+
 `mesure_le` est un timestamp Unix ou une date ISO 8601. Un envoi rejoué ne crée pas de doublon ;
 une mesure datée d'avant 2020 (horloge non synchronisée) ou du futur est ignorée.
 
 ## Calcul nocturne et alertes
 
-En production, activez le cron `* * * * * php /chemin/artisan schedule:run` et un worker
-`php artisan queue:work` (sous Supervisor). Test manuel : `php artisan energie:quotidien 1 --sync`.
+En production, une seule tâche cron suffit : `* * * * * php /chemin/artisan schedule:run`.
+Elle vide aussi la file d'attente chaque minute : aucun worker permanent n'est nécessaire.
+Test manuel : `php artisan energie:quotidien 1 --sync`.
 
 **Chaque nuit à 01:15**, pour chaque compteur actif :
 - recalcul des 35 derniers jours de `consommations_journalieres` (un relevé saisi en retard corrige le passé) ;
@@ -151,5 +157,5 @@ Crédit estimé maintenant = dernier relevé de crédit + recharges tapées depu
 
 ## À faire ensuite
 
-- Notifications push / SMS, réinitialisation du mot de passe par e-mail.
-- Firmware ESP32 et, si besoin, passerelle MQTT → `POST /api/iot/mesures`.
+- Notifications push / SMS.
+- Valider le firmware ESP32 sur un montage réel.

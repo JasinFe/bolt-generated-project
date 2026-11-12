@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 // --- Comptes -------------------------------------------------------------------
 Route::post('inscription', [AuthController::class, 'inscription'])->middleware('throttle:10,1');
 Route::post('connexion', [AuthController::class, 'connexion'])->middleware('throttle:10,1');
+Route::post('mot-de-passe/oublie', [AuthController::class, 'motDePasseOublie'])->middleware('throttle:5,1');
+Route::post('mot-de-passe/reinitialiser', [AuthController::class, 'reinitialiser'])->middleware('throttle:10,1');
 
 // --- Capteurs IoT (authentifiés par leur propre jeton, pas par un compte) --------
 Route::post('iot/mesures', [IotController::class, 'mesures'])->middleware('throttle:120,1');
