@@ -1,140 +1,178 @@
-# Mise en ligne sur un hébergement web mutualisé
+# Mise en ligne sur Hostinger (Business Web Hosting)
 
-Ce guide vise une offre de type « Business Web Hosting » : PHP, base MySQL, tâches cron, accès SSH,
-sans serveur à administrer. Les noms des menus varient d'un hébergeur à l'autre.
+Ce guide installe l'application sur votre domaine, à partir de l'archive
+**`suivi-energie-cie-hostinger.zip`**. Comptez 30 à 45 minutes la première fois.
 
-L'application n'a besoin d'aucun programme permanent : **une seule tâche cron** fait tourner le calcul
-de nuit, les alertes et l'envoi des notifications.
+L'application est un site PHP classique : pas besoin de l'option « application Node.js » de Hostinger.
 
-## Ce qu'il faut côté hébergeur
+> Les noms des menus de hPanel changent de temps en temps. S'ils ne correspondent pas exactement,
+> cherchez le mot-clé indiqué (PHP, Bases de données, Accès SSH, Tâches Cron…) dans la barre de recherche de hPanel.
 
-| Élément | Valeur |
-|---|---|
-| Version de PHP | **8.3 ou plus** (à choisir dans le panneau) |
-| Extensions PHP | `pdo_mysql`, `mbstring`, `openssl`, `ctype`, `fileinfo`, `tokenizer`, `xml`, `curl` — en général déjà actives |
-| Base de données | une base MySQL ou MariaDB vide, avec son utilisateur |
-| HTTPS | certificat SSL activé sur le domaine (les jetons et les codes ne doivent jamais circuler en clair) |
+Dans ce guide, remplacez :
 
-## 1. Envoyer les fichiers
+- `votre-domaine.tld` par votre nom de domaine ;
+- `u123456789` par votre identifiant Hostinger (affiché dans hPanel → **Avancé → Accès SSH**, et au début des noms de bases de données).
 
-Utilisez l'archive **`suivi-energie-cie-deploiement.zip`** : elle contient déjà les dépendances (`vendor/`),
-Composer n'est donc pas nécessaire sur le serveur.
+---
 
-Décompressez-la, puis envoyez **le contenu** du dossier `suivi-energie-cie/` dans le dossier du domaine
-(souvent `public_html`), par le gestionnaire de fichiers ou en SFTP. Vérifiez que les fichiers cachés
-`.htaccess` et `.env.example` sont bien arrivés.
+## 1. Choisir PHP 8.3 ou plus
 
-Le fichier `.htaccess` placé à la racine renvoie toutes les visites vers `public/` : le reste du projet
-(`.env`, `storage/`, `vendor/`) n'est pas accessible depuis Internet.
-Si votre panneau permet de choisir le dossier racine du domaine, pointez-le plutôt directement sur `public/` : c'est encore mieux.
+hPanel → **Sites web** → *votre domaine* → **Gérer** → **Avancé → Configuration PHP** → choisissez **PHP 8.3** (ou 8.4) → Enregistrer.
 
 ## 2. Créer la base de données
 
-Dans le panneau : créez une base MySQL et un utilisateur, et notez le nom de la base, l'utilisateur,
-le mot de passe et l'hôte (souvent `localhost`).
+hPanel → **Bases de données → Gestion** :
 
-## 3. Configurer `.env`
+1. Nom de la base : par exemple `energie` (hPanel le transforme en `u123456789_energie`).
+2. Nom d'utilisateur : par exemple `energie` (devient `u123456789_energie`).
+3. Un mot de passe solide.
 
-Copiez `.env.example` en `.env` et modifiez ces lignes :
+Notez les trois valeurs **complètes**, préfixe `u123456789_` compris.
 
-```
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://votre-domaine.tld
+## 3. Créer la boîte e-mail d'envoi
 
-DB_CONNECTION=mysql
-DB_HOST=localhost
-DB_PORT=3306
-DB_DATABASE=nom_de_la_base
-DB_USERNAME=utilisateur
-DB_PASSWORD=mot_de_passe
+hPanel → **E-mails** → créez une adresse, par exemple `contact@votre-domaine.tld`, avec son mot de passe.
+Elle sert aux liens « mot de passe oublié » et aux alertes par e-mail.
 
-MAIL_MAILER=smtp
-MAIL_SCHEME=null
-MAIL_HOST=smtp.votre-hebergeur.tld
-MAIL_PORT=465
-MAIL_USERNAME=adresse@votre-domaine.tld
-MAIL_PASSWORD=mot_de_passe_de_la_boite
-MAIL_FROM_ADDRESS="adresse@votre-domaine.tld"
+## 4. Envoyer les fichiers
 
-ENERGIE_CANAUX_ALERTES=database,mail
-```
+hPanel → **Fichiers → Gestionnaire de fichiers** → ouvrez `domains/votre-domaine.tld/public_html` :
 
-Laissez `APP_KEY=` et `ENERGIE_CODE_PEPPER=` vides : l'étape 4 les remplit.
+1. **Videz** le dossier (Hostinger y place un fichier `default.php` ; supprimez aussi tout ancien site).
+2. **Téléversez** `suivi-energie-cie-hostinger.zip` dans `public_html`.
+3. Clic droit sur le zip → **Extraire** → dans le dossier actuel (`public_html`, sans sous-dossier).
+4. Vérifiez que `public_html` contient **directement** `app`, `public`, `vendor`, `artisan`, `.htaccess`…
+   (si tout est dans un sous-dossier, déplacez son contenu d'un niveau vers le haut).
+5. Supprimez le zip.
 
-Les réglages `MAIL_*` sont ceux de la boîte e-mail créée chez l'hébergeur ; ils servent au lien
-« mot de passe oublié » et aux alertes par e-mail. Laissez `ENERGIE_CANAUX_ALERTES=database` si vous ne voulez pas d'e-mails d'alerte.
+Le fichier `.htaccess` (fichier caché : activez l'affichage des fichiers cachés si vous ne le voyez pas)
+renvoie toutes les visites vers le dossier `public/`. Le reste — `.env`, le code, les journaux — n'est jamais accessible depuis Internet.
 
-## 4. Initialiser
+## 5. Remplir la configuration
 
-Une seule commande prépare tout : elle génère les deux clés secrètes dans `.env` (`APP_KEY` et
-`ENERGIE_CODE_PEPPER`), crée les tables et met la configuration en cache.
+Toujours dans `public_html` : clic droit sur **`.env.production.example`** → **Copier** → nommez la copie **`.env`**,
+puis ouvrez `.env` (clic droit → Modifier) et remplacez :
 
-**Avec un accès SSH** — placez-vous dans le dossier du projet, puis :
+| Ligne | Valeur |
+|---|---|
+| `APP_URL` | `https://votre-domaine.tld` |
+| `DB_DATABASE` | nom complet de la base (étape 2), ex. `u123456789_energie` |
+| `DB_USERNAME` | nom complet de l'utilisateur (étape 2) |
+| `DB_PASSWORD` | mot de passe de la base |
+| `MAIL_USERNAME` et `MAIL_FROM_ADDRESS` | l'adresse de l'étape 3 |
+| `MAIL_PASSWORD` | le mot de passe de cette boîte |
 
-```bash
-php artisan energie:installer
-```
+**Laissez vides** `APP_KEY=` et `ENERGIE_CODE_PEPPER=` : l'étape suivante les remplit. Enregistrez.
 
-**Sans accès SSH** — dans le menu « Tâches cron » du panneau, créez une tâche avec la commande ci-dessous,
-laissez-la s'exécuter une fois, puis supprimez-la :
+Les autres lignes sont déjà réglées pour Hostinger (`DB_HOST=localhost`, `smtp.hostinger.com`, port 465).
 
-```bash
-cd /chemin/complet/vers/le/projet && php artisan energie:installer > storage/logs/installation.log 2>&1
-```
+## 6. Lancer l'installation
 
-Le résultat se lit dans `storage/logs/installation.log` (dernière ligne attendue : « Installation terminée. »).
+### Avec SSH (recommandé)
 
-La commande peut être relancée sans risque : une clé déjà présente n'est jamais remplacée.
-
-Si la commande `php` est une version plus ancienne que 8.3, l'hébergeur fournit en général un chemin par
-version (ex. `/usr/bin/php8.3` ou `/opt/alt/php83/usr/bin/php`) : utilisez-le à la place de `php`,
-ici et dans la tâche cron de l'étape 5.
-
-**Sauvegardez hors du serveur** les lignes `APP_KEY` et `ENERGIE_CODE_PEPPER` de `.env`. Sans `APP_KEY`,
-les codes de recharge enregistrés deviennent illisibles ; si le pepper change, les doublons ne sont plus détectés.
-
-Après toute modification de `.env`, relancez `php artisan energie:installer` pour qu'elle soit prise en compte.
-
-## 5. Tâche cron
-
-Dans le panneau, menu « Tâches cron », créez une tâche **toutes les minutes** (`* * * * *`) :
+hPanel → **Avancé → Accès SSH** → activez-le et notez l'adresse IP, le **port (65002)** et l'identifiant.
+Depuis l'invite de commandes de votre ordinateur (Windows : « Terminal » ou « PowerShell ») :
 
 ```bash
-cd /chemin/complet/vers/le/projet && php artisan schedule:run >> /dev/null 2>&1
+ssh -p 65002 u123456789@ADRESSE_IP
 ```
 
-Elle lance : la file d'attente (notifications) chaque minute, la vérification des capteurs chaque heure,
-le recalcul des consommations et les alertes chaque nuit à 01:15.
+Puis, une fois connecté :
 
-Si votre offre n'autorise pas une tâche par minute, prenez l'intervalle le plus court proposé : les calculs
-se font quand même, les notifications partent seulement avec ce délai.
+```bash
+cd domains/votre-domaine.tld/public_html
+```
 
-## 6. Vérifier
+```bash
+/opt/alt/php83/usr/bin/php artisan energie:installer
+```
 
-1. Ouvrez `https://votre-domaine.tld` : l'écran de connexion s'affiche. Créez votre compte.
-2. `https://votre-domaine.tld/.env` doit répondre « introuvable » (404), jamais afficher le fichier.
-3. `https://votre-domaine.tld/up` répond 200 : l'application démarre correctement.
-4. Demandez un « mot de passe oublié » : l'e-mail doit arriver.
-5. En SSH : `php artisan schedule:list` affiche les trois tâches planifiées.
+> On écrit le chemin complet de PHP, car la commande `php` seule peut lancer une version plus ancienne
+> que celle choisie à l'étape 1. Pour voir les versions disponibles : `ls /opt/alt/ | grep php`
+> (prenez `php84` si vous avez choisi PHP 8.4).
 
-## Mettre à jour plus tard
+La commande vérifie `.env`, génère les clés, crée les tables, puis **affiche la commande cron à copier** pour l'étape 7.
+Si un réglage est faux, elle le dit en français : corrigez `.env` et relancez-la.
 
-Remplacez les fichiers par ceux de la nouvelle archive **sans écraser `.env` ni le dossier `storage/`**,
-puis relancez `php artisan energie:installer` (SSH ou tâche cron ponctuelle, comme à l'étape 4).
+### Sans SSH
 
-## Pourquoi pas une « application Node.js » ?
+hPanel → **Avancé → Tâches Cron** → type **Personnalisé**, toutes les minutes, avec cette commande :
 
-Certains hébergeurs proposent aussi d'héberger des applications Node.js. Cette application est écrite en PHP
-(Laravel) : elle s'installe comme un site PHP classique, ce que ce guide décrit. La faire tourner sous Node.js
-demanderait de la réécrire entièrement, sans bénéfice pour l'utilisateur.
+```bash
+/opt/alt/php83/usr/bin/php /home/u123456789/domains/votre-domaine.tld/public_html/artisan energie:installer > /home/u123456789/domains/votre-domaine.tld/public_html/storage/logs/installation.log 2>&1
+```
+
+Attendez deux minutes, **supprimez cette tâche**, puis ouvrez `storage/logs/installation.log` dans le gestionnaire de fichiers.
+La fin doit être « Installation terminée. » suivie de la commande cron de l'étape 7.
+
+## 7. Créer la tâche cron permanente
+
+hPanel → **Avancé → Tâches Cron** → type **Personnalisé** → **toutes les minutes** (`* * * * *`),
+avec la commande affichée par l'installation, de la forme :
+
+```bash
+/opt/alt/php83/usr/bin/php /home/u123456789/domains/votre-domaine.tld/public_html/artisan schedule:run >/dev/null 2>&1
+```
+
+Cette unique tâche envoie les notifications (chaque minute), vérifie les capteurs (chaque heure) et
+recalcule les consommations et les alertes (chaque nuit à 01:15).
+
+## 8. Activer HTTPS
+
+hPanel → **Sécurité → SSL** : le certificat (gratuit) doit être **actif** pour votre domaine ; activez **Forcer HTTPS**.
+
+## 9. Vérifier
+
+1. `https://votre-domaine.tld` affiche l'écran de connexion : **créez votre compte**.
+2. `https://votre-domaine.tld/.env` doit afficher **« Forbidden » (403)**, jamais le contenu du fichier.
+3. En SSH, depuis `public_html`, envoyez-vous un e-mail de test :
+
+   ```bash
+   /opt/alt/php83/usr/bin/php artisan energie:tester-email votre-adresse@exemple.com
+   ```
+
+4. En SSH, la liste des tâches planifiées doit en afficher trois :
+
+   ```bash
+   /opt/alt/php83/usr/bin/php artisan schedule:list
+   ```
+
+5. Sur votre téléphone, ouvrez le site puis « Ajouter à l'écran d'accueil » : l'application a son icône.
+
+## 10. Sauvegarder les clés
+
+Ouvrez `.env` et recopiez dans un endroit sûr, **hors du serveur** (gestionnaire de mots de passe, clé USB…),
+les lignes `APP_KEY=` et `ENERGIE_CODE_PEPPER=`.
+
+Sans `APP_KEY`, les codes de recharge enregistrés deviennent **illisibles**, même avec une sauvegarde de la base.
+Les sauvegardes automatiques de Hostinger couvrent les fichiers et la base, mais gardez quand même ces deux lignes à part.
+
+---
+
+## Mettre à jour l'application
+
+1. Téléversez la nouvelle archive dans `public_html` et **extrayez-la par-dessus** l'ancienne version.
+   L'archive ne contient ni `.env` ni journaux : votre configuration et vos données sont conservées.
+2. Relancez l'installation (étape 6, SSH ou tâche cron ponctuelle) : elle met la base à jour
+   et ne touche jamais aux clés existantes.
+
+Après **toute** modification de `.env`, relancez aussi l'installation.
 
 ## En cas de problème
 
-| Symptôme | Cause probable |
+| Symptôme | Cause probable et solution |
 |---|---|
-| Page blanche ou erreur 500 | version de PHP inférieure à 8.3, ou dossiers `storage/` et `bootstrap/cache/` non inscriptibles (droits 755 ou 775) |
-| « No application encryption key » | `php artisan energie:installer` n'a pas été lancé |
-| Erreur de connexion à la base | hôte, nom, utilisateur ou mot de passe incorrects dans `.env` ; relancer `php artisan energie:installer` après toute modification de `.env` |
-| Les alertes n'arrivent jamais | la tâche cron n'est pas active ou pointe sur le mauvais dossier |
-| Détail d'une erreur | dernier message dans `storage/logs/laravel.log` |
+| La page par défaut de Hostinger s'affiche | `default.php` est encore dans `public_html` : supprimez-le |
+| « 403 Forbidden » sur toutes les pages | `.htaccess` manquant à la racine de `public_html` (fichier caché) : ré-extrayez l'archive |
+| Page « Server Error » ou erreur 500 | PHP inférieur à 8.3 (étape 1), ou installation pas encore lancée (étape 6) |
+| « Your Composer dependencies require a PHP version >= 8.3 » en SSH | la commande `php` seule lance une ancienne version : utilisez `/opt/alt/php83/usr/bin/php` |
+| L'installation signale des réglages « à remplir » | une valeur de `.env` est restée vide ou à son exemple : corrigez-la (étape 5) |
+| « Échec de php artisan migrate » | nom de base, utilisateur ou mot de passe incorrect : recopiez-les depuis hPanel, préfixe `u123456789_` compris |
+| « L'e-mail n'a pas pu être envoyé » | réglages `MAIL_*` incorrects : testez avec `energie:tester-email` (étape 9), corrigez `.env`, relancez l'installation |
+| Les alertes n'arrivent jamais | tâche cron absente ou mauvais chemin : comparez avec la commande affichée par l'installation |
+| Détail d'une erreur | dernier fichier `storage/logs/laravel-AAAA-MM-JJ.log` (gestionnaire de fichiers) |
+
+## Autre hébergeur
+
+La même archive fonctionne chez tout hébergeur PHP 8.3+ avec MySQL : seuls changent les noms des menus,
+le chemin de PHP en ligne de commande et les réglages SMTP de `.env`.

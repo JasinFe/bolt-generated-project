@@ -48,7 +48,16 @@ class AuthController extends Controller
     {
         $data = $request->validate(['email' => ['required', 'email']]);
 
-        Courtier::sendResetLink($data);
+        try {
+            Courtier::sendResetLink($data);
+        } catch (\Throwable $e) {
+            // Serveur d'e-mail injoignable ou réglages MAIL_* erronés : erreur claire plutôt qu'une page 500.
+            report($e);
+
+            return response()->json([
+                'message' => 'L\'e-mail n\'a pas pu être envoyé pour le moment. Réessayez plus tard.',
+            ], 503);
+        }
 
         return response()->json([
             'message' => 'Si un compte existe avec cette adresse, un e-mail contenant un lien de réinitialisation vient d\'être envoyé.',

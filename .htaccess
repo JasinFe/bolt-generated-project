@@ -1,6 +1,12 @@
-# Hébergement mutualisé : si le domaine pointe sur ce dossier (et non sur public/),
-# toutes les requêtes sont renvoyées vers public/ et le reste du projet (.env, storage, vendor…) reste inaccessible.
+# Hébergement mutualisé (Hostinger…) : le domaine pointe sur ce dossier (public_html).
+# Toutes les requêtes sont renvoyées vers public/ : le reste du projet (.env, storage, vendor…)
+# n'est jamais servi directement.
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
+
+# Seconde barrière si la réécriture était désactivée : fichiers cachés et sensibles refusés.
+<FilesMatch "^(\.|composer\.(json|lock)$|artisan$|phpunit\.xml$)">
+    Require all denied
+</FilesMatch>

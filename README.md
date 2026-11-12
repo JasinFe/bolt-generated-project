@@ -13,7 +13,7 @@ Elle comprend une API JSON (`/api`, jetons Sanctum) et une interface web d'une p
 Prérequis : PHP 8.3+ et Composer. SQLite par défaut ; MySQL / MariaDB ou PostgreSQL en changeant `DB_*`
 dans `.env` (les tests passent sur les trois).
 
-**Mise en ligne sur un hébergement web mutualisé : voir [DEPLOIEMENT.md](DEPLOIEMENT.md).**
+**Mise en ligne sur Hostinger (ou autre hébergement PHP) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md).**
 
 ```bash
 composer install
@@ -37,6 +37,11 @@ php artisan serve
 
 Ouvrez http://localhost:8000 — compte de démonstration : `demo@example.com` / `demo-energie`
 (à ne pas créer en production : utilisez `php artisan migrate` sans `--seed`).
+
+Commandes utiles en production :
+
+- `php artisan energie:installer` — génère les clés, crée ou met à jour la base, affiche la tâche cron ;
+- `php artisan energie:tester-email vous@exemple.com` — vérifie l'envoi d'e-mails.
 
 Tests :
 

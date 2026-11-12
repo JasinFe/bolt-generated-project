@@ -99,6 +99,15 @@ class ParcoursEnergieTest extends TestCase
         $this->assertNull(PersonalAccessToken::findToken($ancien));
     }
 
+    public function test_mot_de_passe_oublie_quand_l_e_mail_ne_part_pas(): void
+    {
+        User::factory()->create(['email' => 'awa@example.com']);
+        config(['mail.default' => 'smtp', 'mail.mailers.smtp.host' => 'serveur-inexistant.invalid', 'mail.mailers.smtp.port' => 465]);
+
+        $this->postJson('/api/mot-de-passe/oublie', ['email' => 'awa@example.com'])
+            ->assertStatus(503)->assertJsonPath('message', 'L\'e-mail n\'a pas pu être envoyé pour le moment. Réessayez plus tard.');
+    }
+
     // ------------------------------------------------------------------ compteurs
 
     public function test_creation_de_compteur_avec_controle_luhn(): void
@@ -426,6 +435,23 @@ class ParcoursEnergieTest extends TestCase
         $this->getJson('/api/compteurs')->assertOk()->assertJsonCount(0);
         $this->getJson("/api/compteurs/{$compteur->id}/tableau-de-bord")->assertNotFound();
         $this->assertSame(1, Recharge::count());
+    }
+
+    public function test_messages_d_erreur_generiques_en_francais(): void
+    {
+        $this->getJson('/api/compteurs')->assertUnauthorized()->assertJsonPath('message', 'Vous devez vous connecter.');
+
+        $compteur = $this->compteurDe(User::factory()->create());
+        Sanctum::actingAs(User::factory()->create());
+        $this->getJson("/api/compteurs/{$compteur->id}")->assertForbidden()
+            ->assertJsonPath('message', 'Vous n\'avez pas le droit de faire cette action.');
+        $this->getJson('/api/compteurs/999999')->assertNotFound()->assertJsonPath('message', 'Élément introuvable.');
+
+        for ($i = 0; $i < 10; $i++) {
+            $this->postJson('/api/connexion', ['email' => 'x@example.com', 'password' => 'faux']);
+        }
+        $this->postJson('/api/connexion', ['email' => 'x@example.com', 'password' => 'faux'])
+            ->assertStatus(429)->assertJsonPath('message', 'Trop de tentatives. Patientez une minute avant de réessayer.');
     }
 
     public function test_page_d_accueil(): void
