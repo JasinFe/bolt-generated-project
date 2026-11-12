@@ -196,6 +196,28 @@ Les sauvegardes automatiques de Hostinger couvrent les fichiers et la base, mais
 2. Relancez l'installation (étape 6, SSH ou tâche cron ponctuelle) : elle met la base à jour
    et ne touche jamais aux clés existantes.
 
+Avec SSH, une fois l'archive téléversée dans le dossier d'installation, l'extraction se fait en une commande
+(elle remplace les fichiers de l'application, jamais `.env` ni les journaux) :
+
+```bash
+cd domains/votre-domaine.tld/public_html
+```
+
+```bash
+unzip -o -q enertrack-hostinger.zip && rm enertrack-hostinger.zip && echo "Extraction terminée"
+```
+
+```bash
+/opt/alt/php84/usr/bin/php artisan energie:installer
+```
+
+Si `unzip` n'est pas disponible (« command not found »), cette commande fait la même extraction avec PHP
+(supprimez ensuite le zip avec `rm enertrack-hostinger.zip`) :
+
+```bash
+/opt/alt/php84/usr/bin/php -r '$z = new ZipArchive; if ($z->open("enertrack-hostinger.zip") !== true) exit("Archive illisible\n"); $z->extractTo("."); $z->close(); echo "Extraction terminée\n";'
+```
+
 Après **toute** modification de `.env`, relancez aussi l'installation.
 
 ## En cas de problème
