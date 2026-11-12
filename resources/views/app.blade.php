@@ -65,6 +65,9 @@ dialog { border: 1px solid var(--trait); border-radius: 14px; padding: 20px; wid
 dialog::backdrop { background: rgba(0,0,0,.45); }
 .groupes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 16px 0; }
 .groupes span { font: 650 1.5rem ui-monospace, Menlo, Consolas, monospace; background: var(--accent-clair); color: var(--accent); border-radius: 8px; padding: 6px 10px; }
+h3 { font-size: .95rem; margin: 22px 0 8px; padding-top: 16px; border-top: 1px solid var(--trait); }
+button.danger { color: var(--alerte); border-color: var(--alerte); }
+dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
 .vide { color: var(--doux); text-align: center; padding: 12px 0; }
 .connexion { max-width: 400px; margin: 8vh auto 0; }
 .onglets { display: flex; gap: 6px; margin-bottom: 8px; }
@@ -99,6 +102,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
     <h1>Suivi énergie CIE</h1>
     <div class="droite">
       <select id="choix-compteur" aria-label="Compteur" style="width:auto;max-width:230px"></select>
+      <button type="button" id="btn-reglages" class="cache">Réglages</button>
       <button type="button" id="btn-nouveau-compteur">+ Compteur</button>
       <button type="button" id="btn-deconnexion">Déconnexion</button>
     </div>
@@ -163,6 +167,53 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
     <div class="erreur cache"></div>
     <div class="actions"><button class="principal">Ajouter</button><button type="button" data-fermer>Annuler</button></div>
   </form>
+</dialog>
+
+<dialog id="dlg-reglages">
+  <h2>Réglages du compteur</h2>
+  <p class="note" id="g-numero" style="margin-top:-6px"></p>
+
+  <form id="form-reglages">
+    <label for="g-libelle">Nom du compteur</label><input id="g-libelle" required maxlength="80">
+    <label for="g-seuil">M'alerter sous (kWh)</label><input id="g-seuil" type="number" min="0" step="1" required>
+    <div class="erreur cache"></div>
+    <div class="actions"><button class="principal">Enregistrer</button></div>
+  </form>
+
+  <h3>Partage</h3>
+  <div id="g-partages"></div>
+  <form id="form-partage">
+    <label for="g-email">Adresse e-mail d'une personne déjà inscrite</label><input id="g-email" type="email" required>
+    <label for="g-role">Rôle</label>
+    <select id="g-role">
+      <option value="occupant">Occupant — consulte, ajoute des relevés, ne voit pas les codes</option>
+      <option value="gestionnaire">Gestionnaire — enregistre les recharges et voit les codes</option>
+    </select>
+    <div class="erreur cache"></div>
+    <div class="actions"><button class="principal">Partager</button></div>
+  </form>
+
+  <h3>Capteur de consommation</h3>
+  <div id="g-capteur" class="note"></div>
+  <div id="g-jeton" class="cache">
+    <p class="note">Jeton du capteur — copiez-le maintenant, il ne sera plus affiché :</p>
+    <input id="g-jeton-valeur" class="code" readonly>
+  </div>
+  <form id="form-capteur">
+    <label for="g-identifiant">Identifiant du capteur (ex. ESP32-A1B2)</label><input id="g-identifiant" required maxlength="40" pattern="[A-Za-z0-9:_\-]+">
+    <div class="erreur cache"></div>
+    <div class="actions">
+      <button class="principal" id="g-associer">Associer</button>
+      <button type="button" id="g-dissocier" class="cache">Retirer le capteur</button>
+    </div>
+  </form>
+
+  <h3>Supprimer</h3>
+  <p class="note">Le compteur disparaît de l'application ; l'historique des recharges est conservé en base.</p>
+  <div class="actions" style="margin-top:8px">
+    <button type="button" id="g-supprimer" class="danger">Supprimer ce compteur</button>
+    <button type="button" data-fermer>Fermer</button>
+  </div>
 </dialog>
 
 <dialog id="dlg-recharge">
@@ -304,6 +355,9 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   function deconnecter() {
     etat.token = null; etat.compteurs = []; etat.compteurId = null;
     try { localStorage.removeItem('energie_token'); localStorage.removeItem('energie_compteur'); } catch (e) {}
+    // Rien de l'ancien compte ne reste dans la page.
+    ['liste-recharges', 'liste-releves', 'liste-alertes', 'graphique', 'choix-compteur'].forEach((id) => $(id).replaceChildren());
+    $('tableau').classList.add('cache'); $('btn-reglages').classList.add('cache');
     $('ecran-app').classList.add('cache'); $('ecran-connexion').classList.remove('cache');
   }
   $('btn-deconnexion').addEventListener('click', async () => { try { await api('POST', '/deconnexion'); } catch (e) {} deconnecter(); });
@@ -319,7 +373,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
     choix.classList.toggle('cache', etat.compteurs.length === 0);
     $('aucun-compteur').classList.toggle('cache', etat.compteurs.length > 0);
     $('tableau').classList.toggle('cache', etat.compteurs.length === 0);
-    if (!etat.compteurs.length) return;
+    if (!etat.compteurs.length) { $('btn-reglages').classList.add('cache'); return; }
 
     if (!etat.compteurs.some((c) => c.id === etat.compteurId)) etat.compteurId = etat.compteurs[0].id;
     choix.value = etat.compteurId;
@@ -353,6 +407,73 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
     await demarrer();
   });
 
+  // ------------------------------------------------------------ réglages (propriétaire)
+  const ROLES = { proprietaire: 'Propriétaire', gestionnaire: 'Gestionnaire', occupant: 'Occupant' };
+
+  $('btn-reglages').addEventListener('click', async () => {
+    document.querySelectorAll('#dlg-reglages form').forEach((f) => { f.reset(); montrerErreur(f, ''); });
+    $('g-jeton').classList.add('cache'); $('g-jeton-valeur').value = '';
+    try { await chargerReglages(); $('dlg-reglages').showModal(); } catch (e) { alert(e.message); }
+  });
+
+  async function chargerReglages() {
+    const [c, partages] = await Promise.all([
+      api('GET', '/compteurs/' + etat.compteurId),
+      api('GET', '/compteurs/' + etat.compteurId + '/partages'),
+    ]);
+    $('g-numero').textContent = 'N° ' + c.numero_sts + (c.site ? ' · ' + c.site.nom : '');
+    $('g-libelle').value = c.libelle;
+    $('g-seuil').value = Number(c.seuil_credit_faible_kwh);
+
+    $('g-partages').replaceChildren(...partages.map((u) => el('div', { class: 'element' },
+      el('div', { class: 'haut' },
+        el('span', {}, el('strong', {}, u.name), ' · ' + (ROLES[u.role] || u.role)),
+        u.role !== 'proprietaire' ? el('button', { class: 'lien', type: 'button', onclick: async () => {
+          if (!confirm('Retirer l\'accès de ' + u.name + ' ?')) return;
+          try { await api('DELETE', '/compteurs/' + etat.compteurId + '/partages/' + u.user_id); await chargerReglages(); } catch (e) { alert(e.message); }
+        } }, 'Retirer') : null),
+      el('div', { class: 'note' }, u.email))));
+
+    const k = c.capteur;
+    $('g-capteur').textContent = k
+      ? 'Capteur ' + k.identifiant + (k.derniere_activite ? ' — dernière mesure le ' + date(k.derniere_activite) : ' — aucune mesure reçue pour l\'instant')
+      : 'Aucun capteur associé. Un capteur (ESP32 sur le voyant du compteur) mesure la consommation en continu.';
+    $('g-identifiant').value = k ? k.identifiant : '';
+    $('g-associer').textContent = k ? 'Générer un nouveau jeton' : 'Associer';
+    $('g-dissocier').classList.toggle('cache', !k);
+  }
+
+  brancher($('form-reglages'), async () => {
+    await api('PUT', '/compteurs/' + etat.compteurId, { libelle: $('g-libelle').value, seuil_credit_faible_kwh: $('g-seuil').value });
+    await demarrer();
+  });
+
+  brancher($('form-partage'), async () => {
+    await api('POST', '/compteurs/' + etat.compteurId + '/partages', { email: $('g-email').value, role: $('g-role').value });
+    $('g-email').value = '';
+    await chargerReglages();
+  });
+
+  brancher($('form-capteur'), async () => {
+    const r = await api('POST', '/compteurs/' + etat.compteurId + '/capteur', { identifiant: $('g-identifiant').value });
+    await chargerReglages();
+    $('g-jeton-valeur').value = r.jeton; $('g-jeton').classList.remove('cache');
+  });
+  $('g-dissocier').addEventListener('click', async () => {
+    if (!confirm('Retirer le capteur ? Ses mesures seront supprimées.')) return;
+    try { await api('DELETE', '/compteurs/' + etat.compteurId + '/capteur'); $('g-jeton').classList.add('cache'); await chargerReglages(); } catch (e) { alert(e.message); }
+  });
+  $('dlg-reglages').addEventListener('close', () => { $('g-jeton-valeur').value = ''; });   // le jeton ne reste pas dans la page
+
+  $('g-supprimer').addEventListener('click', async () => {
+    if (!confirm('Supprimer définitivement ce compteur de l\'application ?')) return;
+    try {
+      await api('DELETE', '/compteurs/' + etat.compteurId);
+      $('dlg-reglages').close(); etat.compteurId = null;
+      await demarrer();
+    } catch (e) { alert(e.message); }
+  });
+
   // ------------------------------------------------------------ tableau de bord
   async function charger() {
     const id = etat.compteurId;
@@ -367,6 +488,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
     afficherChiffres(t); afficherGraphique(t.consommation.jours);
     afficherAlertes(alertes.data); afficherRecharges(recharges.data); afficherReleves(releves.data);
     $('btn-recharge').classList.toggle('cache', t.role === 'occupant');
+    $('btn-reglages').classList.toggle('cache', t.role !== 'proprietaire');
   }
 
   function afficherChiffres(t) {

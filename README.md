@@ -10,7 +10,8 @@ Elle comprend une API JSON (`/api`, jetons Sanctum) et une interface web d'une p
 
 ## Démarrage
 
-Prérequis : PHP 8.3+ et Composer. SQLite par défaut ; PostgreSQL ou MySQL en changeant `DB_*` dans `.env`.
+Prérequis : PHP 8.3+ et Composer. SQLite par défaut ; PostgreSQL en changeant `DB_*` dans `.env`
+(les tests passent sur les deux).
 
 ```bash
 composer install
@@ -50,8 +51,8 @@ php artisan test
 - Mode saisie : le code s'affiche en 5 groupes de 4 chiffres, puis « J'ai tapé le code » → « Confirmer le crédit ».
 - Ajout de relevés (crédit ou index) avec contrôle de cohérence immédiat.
 - Alertes à lire.
-
-Le partage d'un compteur et l'association d'un capteur IoT sont disponibles par l'API (pas encore d'écran).
+- Réglages (propriétaire) : renommer le compteur, seuil d'alerte, partage avec une personne inscrite,
+  association d'un capteur (le jeton n'est affiché qu'une fois), suppression du compteur.
 
 ## Sécurité des codes
 
@@ -150,7 +151,5 @@ Crédit estimé maintenant = dernier relevé de crédit + recharges tapées depu
 
 ## À faire ensuite
 
-- Écrans de partage d'un compteur et d'association du capteur (l'API existe).
-- Traduction française des messages de validation génériques de Laravel (`lang/fr`).
 - Notifications push / SMS, réinitialisation du mot de passe par e-mail.
 - Firmware ESP32 et, si besoin, passerelle MQTT → `POST /api/iot/mesures`.

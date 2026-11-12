@@ -141,7 +141,8 @@ class ParcoursEnergieTest extends TestCase
         $compteur = $this->compteurDe($user);
 
         $r = $this->recharge($compteur);
-        $this->assertSame('RCH-2026-000001', $r['numero']);
+        $numero = sprintf('RCH-2026-%06d', $r['id']);
+        $this->assertSame($numero, $r['numero']);
         $this->assertSame('en_attente', $r['statut']);
         $this->assertSame('**** **** **** **** 7890', $r['code_masque']);
         $this->assertArrayNotHasKey('code_chiffre', $r);
@@ -156,7 +157,7 @@ class ParcoursEnergieTest extends TestCase
         $this->postJson("/api/compteurs/{$compteur->id}/recharges", [
             'code' => '12345678-90123456-7890', 'montant_fcfa' => 10000,
             'date_achat' => now()->toIso8601String(), 'mode_paiement' => 'wave',
-        ])->assertStatus(409)->assertJsonPath('recharge_existante.numero', 'RCH-2026-000001');
+        ])->assertStatus(409)->assertJsonPath('recharge_existante.numero', $numero);
 
         // Confirmer avant d'avoir saisi : interdit.
         $this->postJson("/api/recharges/{$r['id']}/confirmer", ['credit_apres_kwh' => 110])->assertStatus(422);
@@ -373,6 +374,27 @@ class ParcoursEnergieTest extends TestCase
 
         $this->deleteJson("/api/compteurs/{$compteur->id}/capteur")->assertNoContent();
         $this->withToken($jeton)->postJson('/api/iot/mesures', $corps)->assertUnauthorized();
+    }
+
+    public function test_reglages_suppression_et_messages_en_francais(): void
+    {
+        $user = User::factory()->create();
+        $compteur = $this->compteurDe($user);
+        $this->recharge($compteur);
+
+        $this->putJson("/api/compteurs/{$compteur->id}", ['libelle' => 'Cuisine', 'seuil_credit_faible_kwh' => 35])
+            ->assertOk()->assertJsonPath('libelle', 'Cuisine')->assertJsonPath('seuil_credit_faible_kwh', '35.00');
+
+        $this->putJson("/api/compteurs/{$compteur->id}", ['libelle' => ''])
+            ->assertStatus(422)->assertJsonPath('errors.libelle.0', 'Le champ nom du compteur est obligatoire.');
+        $this->postJson("/api/compteurs/{$compteur->id}/releves", ['type' => 'credit', 'valeur_kwh' => 10, 'releve_le' => '2027-01-01 08:00'])
+            ->assertStatus(422)->assertJsonPath('errors.releve_le.0', 'La date du relevé ne peut pas être dans le futur.');
+
+        // Suppression douce : le compteur disparaît, l'historique reste en base.
+        $this->deleteJson("/api/compteurs/{$compteur->id}")->assertNoContent();
+        $this->getJson('/api/compteurs')->assertOk()->assertJsonCount(0);
+        $this->getJson("/api/compteurs/{$compteur->id}/tableau-de-bord")->assertNotFound();
+        $this->assertSame(1, Recharge::count());
     }
 
     public function test_page_d_accueil(): void

@@ -1,0 +1,60 @@
+<?php
+
+// Messages de validation en français (règles utilisées par l'application).
+return [
+    'after_or_equal' => 'Le champ :attribute doit être une date postérieure ou égale à :date.',
+    'array' => 'Le champ :attribute doit être une liste.',
+    'before_or_equal' => 'Le champ :attribute doit être une date antérieure ou égale à :date.',
+    'boolean' => 'Le champ :attribute doit être vrai ou faux.',
+    'confirmed' => 'La confirmation du champ :attribute ne correspond pas.',
+    'date' => 'Le champ :attribute n\'est pas une date valide.',
+    'date_format' => 'Le champ :attribute doit être au format :format.',
+    'digits' => 'Le champ :attribute doit contenir :digits chiffres.',
+    'email' => 'Le champ :attribute doit être une adresse e-mail valide.',
+    'exists' => 'Le champ :attribute est invalide.',
+    'in' => 'Le champ :attribute est invalide.',
+    'integer' => 'Le champ :attribute doit être un nombre entier.',
+    'max' => [
+        'array' => 'Le champ :attribute ne peut pas contenir plus de :max éléments.',
+        'numeric' => 'Le champ :attribute ne peut pas dépasser :max.',
+        'string' => 'Le champ :attribute ne peut pas dépasser :max caractères.',
+    ],
+    'min' => [
+        'array' => 'Le champ :attribute doit contenir au moins :min éléments.',
+        'numeric' => 'Le champ :attribute doit être d\'au moins :min.',
+        'string' => 'Le champ :attribute doit contenir au moins :min caractères.',
+    ],
+    'numeric' => 'Le champ :attribute doit être un nombre.',
+    'regex' => 'Le format du champ :attribute est invalide.',
+    'required' => 'Le champ :attribute est obligatoire.',
+    'string' => 'Le champ :attribute doit être un texte.',
+    'unique' => 'Cette valeur est déjà utilisée pour le champ :attribute.',
+
+    'custom' => [
+        'releve_le' => ['before_or_equal' => 'La date du relevé ne peut pas être dans le futur.'],
+        'date_achat' => ['before_or_equal' => 'La date d\'achat ne peut pas être dans le futur.'],
+    ],
+
+    'attributes' => [
+        'name' => 'nom',
+        'email' => 'adresse e-mail',
+        'password' => 'mot de passe',
+        'nom' => 'nom',
+        'libelle' => 'nom du compteur',
+        'numero_sts' => 'numéro du compteur',
+        'seuil_credit_faible_kwh' => 'seuil d\'alerte',
+        'impulsions_par_kwh' => 'impulsions par kWh',
+        'code' => 'code de recharge',
+        'montant_fcfa' => 'montant',
+        'credit_kwh' => 'énergie',
+        'date_achat' => 'date d\'achat',
+        'mode_paiement' => 'mode de paiement',
+        'valeur_kwh' => 'valeur',
+        'releve_le' => 'date du relevé',
+        'credit_avant_kwh' => 'crédit avant saisie',
+        'credit_apres_kwh' => 'crédit après saisie',
+        'message_compteur' => 'message du compteur',
+        'identifiant' => 'identifiant du capteur',
+        'role' => 'rôle',
+    ],
+];

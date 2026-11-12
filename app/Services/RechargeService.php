@@ -9,6 +9,7 @@ use App\Models\Recharge;
 use App\Models\User;
 use App\Support\CodeRecharge;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
 
 class RechargeService
 {
@@ -32,7 +33,8 @@ class RechargeService
         try {
             // L'index UNIQUE sur code_empreinte est la vraie garantie :
             // il tient même si deux requêtes arrivent en même temps.
-            $recharge->save();
+            // Dans une transaction : sous PostgreSQL, l'échec n'invalide alors que ce point de sauvegarde.
+            DB::transaction(fn () => $recharge->save());
         } catch (UniqueConstraintViolationException) {
             throw new CodeDejaEnregistre(
                 Recharge::where('code_empreinte', $recharge->code_empreinte)->first()
