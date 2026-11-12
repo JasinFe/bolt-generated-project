@@ -23,7 +23,7 @@ class Installer extends Command
     {
         if (version_compare(PHP_VERSION, self::PHP_MINIMUM, '<')) {
             $this->error(sprintf('PHP %s est trop ancien : il faut PHP %s ou plus.', PHP_VERSION, self::PHP_MINIMUM));
-            $this->line('Sur Hostinger, utilisez par exemple /opt/alt/php83/usr/bin/php à la place de « php ».');
+            $this->line('Sur Hostinger, utilisez par exemple /opt/alt/php84/usr/bin/php à la place de « php ».');
 
             return self::FAILURE;
         }
