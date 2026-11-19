@@ -9,53 +9,53 @@ if ( ! defined( 'ABSPATH' ) ) {
  * charge déjà. Les aperçus WhatsApp / Facebook / X utilisent ces balises.
  */
 add_action( 'wp_head', function () {
-	if ( ! kmb_is_blog_page() || kmb_seo_plugin_active() ) {
+	if ( ! kmb_is_blog_page() || kmblog_seo_plugin_active() ) {
 		return;
 	}
 
 	if ( is_singular( 'km_blog' ) ) {
-		kmb_head_single();
+		kmblog_head_single();
 	} else {
-		kmb_head_archive();
+		kmblog_head_archive();
 	}
 }, 5 );
 
-function kmb_meta_tag( $attr, $name, $content ) {
+function kmblog_meta_tag( $attr, $name, $content ) {
 	if ( '' === (string) $content ) {
 		return;
 	}
 	printf( '<meta %s="%s" content="%s">' . "\n", $attr, esc_attr( $name ), esc_attr( $content ) );
 }
 
-function kmb_head_single() {
+function kmblog_head_single() {
 	$post = get_queried_object();
 	if ( ! $post instanceof WP_Post ) {
 		return;
 	}
-	$title = kmb_plain_title( $post );
+	$title = kmblog_plain_title( $post );
 	$sub   = (string) get_post_meta( $post->ID, '_kmb_subtitle', true );
 	$desc  = has_excerpt( $post ) ? $post->post_excerpt : ( '' !== $sub ? $sub : wp_trim_words( strip_shortcodes( $post->post_content ), 30, '…' ) );
 	$desc  = trim( html_entity_decode( wp_strip_all_tags( $desc ), ENT_QUOTES, 'UTF-8' ) );
 	$url   = get_permalink( $post );
 	$img   = get_the_post_thumbnail_url( $post, 'large' );
 	$site  = html_entity_decode( get_bloginfo( 'name' ), ENT_QUOTES, 'UTF-8' );
-	$term  = kmb_primary_term( $post->ID );
+	$term  = kmblog_primary_term( $post->ID );
 
-	kmb_meta_tag( 'name', 'description', $desc );
-	kmb_meta_tag( 'property', 'og:type', 'article' );
-	kmb_meta_tag( 'property', 'og:locale', str_replace( '-', '_', get_bloginfo( 'language' ) ) );
-	kmb_meta_tag( 'property', 'og:site_name', $site );
-	kmb_meta_tag( 'property', 'og:title', $title );
-	kmb_meta_tag( 'property', 'og:description', $desc );
-	kmb_meta_tag( 'property', 'og:url', $url );
-	kmb_meta_tag( 'property', 'og:image', $img );
-	kmb_meta_tag( 'property', 'article:published_time', get_the_date( 'c', $post ) );
-	kmb_meta_tag( 'property', 'article:modified_time', get_the_modified_date( 'c', $post ) );
-	kmb_meta_tag( 'property', 'article:section', $term ? $term->name : '' );
-	kmb_meta_tag( 'name', 'twitter:card', $img ? 'summary_large_image' : 'summary' );
-	kmb_meta_tag( 'name', 'twitter:title', $title );
-	kmb_meta_tag( 'name', 'twitter:description', $desc );
-	kmb_meta_tag( 'name', 'twitter:image', $img );
+	kmblog_meta_tag( 'name', 'description', $desc );
+	kmblog_meta_tag( 'property', 'og:type', 'article' );
+	kmblog_meta_tag( 'property', 'og:locale', str_replace( '-', '_', get_bloginfo( 'language' ) ) );
+	kmblog_meta_tag( 'property', 'og:site_name', $site );
+	kmblog_meta_tag( 'property', 'og:title', $title );
+	kmblog_meta_tag( 'property', 'og:description', $desc );
+	kmblog_meta_tag( 'property', 'og:url', $url );
+	kmblog_meta_tag( 'property', 'og:image', $img );
+	kmblog_meta_tag( 'property', 'article:published_time', get_the_date( 'c', $post ) );
+	kmblog_meta_tag( 'property', 'article:modified_time', get_the_modified_date( 'c', $post ) );
+	kmblog_meta_tag( 'property', 'article:section', $term ? $term->name : '' );
+	kmblog_meta_tag( 'name', 'twitter:card', $img ? 'summary_large_image' : 'summary' );
+	kmblog_meta_tag( 'name', 'twitter:title', $title );
+	kmblog_meta_tag( 'name', 'twitter:description', $desc );
+	kmblog_meta_tag( 'name', 'twitter:image', $img );
 
 	$publisher = array(
 		'@type' => 'Organization',
@@ -77,7 +77,7 @@ function kmb_head_single() {
 		'mainEntityOfPage' => $url,
 		'url'              => $url,
 		'inLanguage'       => get_bloginfo( 'language' ),
-		'wordCount'        => kmb_count_words( $post->post_content ),
+		'wordCount'        => kmblog_count_words( $post->post_content ),
 		'timeRequired'     => 'PT' . kmb_reading_time( $post->ID ) . 'M',
 		'author'           => array(
 			'@type' => 'Person',
@@ -105,10 +105,10 @@ function kmb_head_single() {
 	}
 	$crumbs[] = array( 'name' => $title, 'item' => $url );
 
-	kmb_print_jsonld( array( $article, kmb_breadcrumb_schema( $crumbs ) ) );
+	kmblog_print_jsonld( array( $article, kmblog_breadcrumb_schema( $crumbs ) ) );
 }
 
-function kmb_head_archive() {
+function kmblog_head_archive() {
 	$term  = is_tax() ? get_queried_object() : null;
 	$title = $term ? $term->name . ' — ' . kmb_opt( 'title' ) : kmb_opt( 'title' );
 	$desc  = $term && $term->description ? $term->description : kmb_opt( 'intro' );
@@ -117,16 +117,16 @@ function kmb_head_archive() {
 	if ( is_wp_error( $url ) ) {
 		return;
 	}
-	kmb_meta_tag( 'name', 'description', $desc );
-	kmb_meta_tag( 'property', 'og:type', 'website' );
-	kmb_meta_tag( 'property', 'og:site_name', html_entity_decode( get_bloginfo( 'name' ), ENT_QUOTES, 'UTF-8' ) );
-	kmb_meta_tag( 'property', 'og:title', $title );
-	kmb_meta_tag( 'property', 'og:description', $desc );
-	kmb_meta_tag( 'property', 'og:url', $url );
-	kmb_meta_tag( 'name', 'twitter:card', 'summary' );
+	kmblog_meta_tag( 'name', 'description', $desc );
+	kmblog_meta_tag( 'property', 'og:type', 'website' );
+	kmblog_meta_tag( 'property', 'og:site_name', html_entity_decode( get_bloginfo( 'name' ), ENT_QUOTES, 'UTF-8' ) );
+	kmblog_meta_tag( 'property', 'og:title', $title );
+	kmblog_meta_tag( 'property', 'og:description', $desc );
+	kmblog_meta_tag( 'property', 'og:url', $url );
+	kmblog_meta_tag( 'name', 'twitter:card', 'summary' );
 }
 
-function kmb_breadcrumb_schema( $crumbs ) {
+function kmblog_breadcrumb_schema( $crumbs ) {
 	$items = array();
 	foreach ( array_values( $crumbs ) as $i => $c ) {
 		$items[] = array(
@@ -139,7 +139,7 @@ function kmb_breadcrumb_schema( $crumbs ) {
 	return array( '@type' => 'BreadcrumbList', 'itemListElement' => $items );
 }
 
-function kmb_print_jsonld( $graph ) {
+function kmblog_print_jsonld( $graph ) {
 	$data = array(
 		'@context' => 'https://schema.org',
 		'@graph'   => apply_filters( 'kmb_schema_graph', $graph ),

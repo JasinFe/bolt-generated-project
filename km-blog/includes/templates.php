@@ -50,7 +50,7 @@ function kmb_load_assets() {
 	$js     = KMB_DIR . 'assets/js/km-blog.js';
 	// Version = version du plugin + date du fichier : les caches sont vidés à chaque modification.
 	wp_enqueue_style( 'km-blog', KMB_URL . 'assets/css/km-blog.css', array(), KMB_VERSION . '.' . ( file_exists( $css ) ? filemtime( $css ) : 0 ) );
-	wp_add_inline_style( 'km-blog', ':root{--kmb-user-accent:' . $accent . ';--kmb-user-on-accent:' . kmb_on_color( $accent ) . ';}' );
+	wp_add_inline_style( 'km-blog', ':root{--kmb-user-accent:' . $accent . ';--kmb-user-on-accent:' . kmblog_on_color( $accent ) . ';}' );
 	wp_enqueue_script( 'km-blog', KMB_URL . 'assets/js/km-blog.js', array(), KMB_VERSION . '.' . ( file_exists( $js ) ? filemtime( $js ) : 0 ), true );
 	if ( function_exists( 'wp_script_add_data' ) ) {
 		wp_script_add_data( 'km-blog', 'strategy', 'defer' );
@@ -60,7 +60,7 @@ function kmb_load_assets() {
 add_action( 'wp_enqueue_scripts', function () {
 	// Chargé sur les pages du blog et sur toute page contenant [km_blog]
 	// (évite l'apparition tardive des styles en pied de page).
-	if ( kmb_is_blog_page() || kmb_has_shortcode() ) {
+	if ( kmb_is_blog_page() || kmblog_has_shortcode() ) {
 		kmb_load_assets();
 	}
 } );

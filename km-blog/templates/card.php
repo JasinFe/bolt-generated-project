@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 $kmb_tag  = ( isset( $kmb_heading ) && in_array( $kmb_heading, array( 'h2', 'h3', 'h4' ), true ) ) ? $kmb_heading : 'h2';
-$kmb_term = kmb_primary_term( get_the_ID() );
+$kmb_term = kmblog_primary_term( get_the_ID() );
 $kmb_ex   = wp_strip_all_tags( get_the_excerpt() );
 ?>
 <article class="kmb-card">
@@ -38,7 +38,7 @@ $kmb_ex   = wp_strip_all_tags( get_the_excerpt() );
 				<span class="kmb-meta__sep" aria-hidden="true">·</span>
 				<span><?php echo (int) kmb_reading_time(); ?> min de lecture</span>
 			<?php endif; ?>
-			<span class="kmb-card__go" aria-hidden="true"><?php echo kmb_icon( 'arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+			<span class="kmb-card__go" aria-hidden="true"><?php echo kmblog_icon( 'arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
 		</div>
 	</div>
 </article>

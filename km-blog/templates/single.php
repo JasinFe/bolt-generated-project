@@ -4,16 +4,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 get_header();
 ?>
-<main id="main-content" class="kmb kmb-single kmb--<?php echo esc_attr( kmb_mode() ); ?>">
+<main id="main-content" class="kmb kmb-single kmb--<?php echo esc_attr( kmblog_mode() ); ?>">
 <?php
 while ( have_posts() ) :
 	the_post();
 	$kmb_id    = get_the_ID();
 	$kmb_sub   = get_post_meta( $kmb_id, '_kmb_subtitle', true );
-	$kmb_term  = kmb_primary_term( $kmb_id );
+	$kmb_term  = kmblog_primary_term( $kmb_id );
 	$kmb_tags  = get_the_terms( $kmb_id, 'km_blog_tag' );
 	$kmb_link  = get_permalink();
-	$kmb_plain = kmb_plain_title();
+	$kmb_plain = kmblog_plain_title();
 	$kmb_url   = rawurlencode( $kmb_link );
 	$kmb_blog  = get_post_type_archive_link( 'km_blog' );
 	$kmb_upd   = get_the_modified_date( 'U' ) - get_the_date( 'U' ) > DAY_IN_SECONDS;
@@ -97,11 +97,11 @@ while ( have_posts() ) :
 			<div class="kmb-share">
 				<span class="kmb-share__label" id="kmb-share-label">Partager</span>
 				<div class="kmb-share__list" role="group" aria-labelledby="kmb-share-label">
-					<button type="button" class="kmb-share__btn kmb-share__native" data-kmb-share data-title="<?php echo esc_attr( $kmb_plain ); ?>" data-url="<?php echo esc_url( $kmb_link ); ?>" hidden><?php echo kmb_icon( 'share' ); // phpcs:ignore ?><span>Partager</span></button>
-					<a class="kmb-share__btn" target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( 'https://wa.me/?text=' . rawurlencode( $kmb_plain . ' — ' . $kmb_link ) ); ?>"><?php echo kmb_icon( 'whatsapp' ); // phpcs:ignore ?><span>WhatsApp</span><span class="screen-reader-text"> (nouvel onglet)</span></a>
-					<a class="kmb-share__btn" target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( 'https://www.facebook.com/sharer/sharer.php?u=' . $kmb_url ); ?>"><?php echo kmb_icon( 'facebook' ); // phpcs:ignore ?><span>Facebook</span><span class="screen-reader-text"> (nouvel onglet)</span></a>
-					<a class="kmb-share__btn" target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( 'https://x.com/intent/post?text=' . rawurlencode( $kmb_plain ) . '&url=' . $kmb_url ); ?>"><?php echo kmb_icon( 'x' ); // phpcs:ignore ?><span>X</span><span class="screen-reader-text"> (nouvel onglet)</span></a>
-					<button type="button" class="kmb-share__btn" data-kmb-copy="<?php echo esc_url( $kmb_link ); ?>"><?php echo kmb_icon( 'link' ); // phpcs:ignore ?><span data-kmb-copy-label>Copier le lien</span></button>
+					<button type="button" class="kmb-share__btn kmb-share__native" data-kmb-share data-title="<?php echo esc_attr( $kmb_plain ); ?>" data-url="<?php echo esc_url( $kmb_link ); ?>" hidden><?php echo kmblog_icon( 'share' ); // phpcs:ignore ?><span>Partager</span></button>
+					<a class="kmb-share__btn" target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( 'https://wa.me/?text=' . rawurlencode( $kmb_plain . ' — ' . $kmb_link ) ); ?>"><?php echo kmblog_icon( 'whatsapp' ); // phpcs:ignore ?><span>WhatsApp</span><span class="screen-reader-text"> (nouvel onglet)</span></a>
+					<a class="kmb-share__btn" target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( 'https://www.facebook.com/sharer/sharer.php?u=' . $kmb_url ); ?>"><?php echo kmblog_icon( 'facebook' ); // phpcs:ignore ?><span>Facebook</span><span class="screen-reader-text"> (nouvel onglet)</span></a>
+					<a class="kmb-share__btn" target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( 'https://x.com/intent/post?text=' . rawurlencode( $kmb_plain ) . '&url=' . $kmb_url ); ?>"><?php echo kmblog_icon( 'x' ); // phpcs:ignore ?><span>X</span><span class="screen-reader-text"> (nouvel onglet)</span></a>
+					<button type="button" class="kmb-share__btn" data-kmb-copy="<?php echo esc_url( $kmb_link ); ?>"><?php echo kmblog_icon( 'link' ); // phpcs:ignore ?><span data-kmb-copy-label>Copier le lien</span></button>
 				</div>
 				<span class="screen-reader-text" role="status" aria-live="polite" data-kmb-live></span>
 			</div>
@@ -131,7 +131,7 @@ while ( have_posts() ) :
 			<section class="kmb-wrap kmb-related" aria-labelledby="kmb-related-title">
 				<div class="kmb-related__head">
 					<h2 class="kmb-section-title" id="kmb-related-title">À lire aussi</h2>
-					<a class="kmb-link-arrow" href="<?php echo esc_url( $kmb_blog ); ?>">Tous les articles <?php echo kmb_icon( 'arrow' ); // phpcs:ignore ?></a>
+					<a class="kmb-link-arrow" href="<?php echo esc_url( $kmb_blog ); ?>">Tous les articles <?php echo kmblog_icon( 'arrow' ); // phpcs:ignore ?></a>
 				</div>
 				<div class="kmb-grid kmb-cols-3">
 					<?php
@@ -148,7 +148,7 @@ while ( have_posts() ) :
 	endif;
 	?>
 
-	<p class="kmb-back"><a href="<?php echo esc_url( $kmb_blog ); ?>"><?php echo kmb_icon( 'back' ); // phpcs:ignore ?> Retour au blog</a></p>
+	<p class="kmb-back"><a href="<?php echo esc_url( $kmb_blog ); ?>"><?php echo kmblog_icon( 'back' ); // phpcs:ignore ?> Retour au blog</a></p>
 <?php endwhile; ?>
 </main>
 <?php

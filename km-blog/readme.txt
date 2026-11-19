@@ -3,7 +3,7 @@ Contributors: kophisgroup
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 
 Blog personnalisé pour KOPHI'S MUSIC, séparé des actualités du label.
@@ -26,6 +26,9 @@ Puis Blog > Réglages.
 Copiez les fichiers du dossier templates/ dans votre thème, dans un dossier km-blog/, pour les surcharger.
 
 == Changelog ==
+= 1.2.1 =
+* Garde-fou d'activation : si une ancienne copie de KM Blog (autre dossier) ou une fonction du même nom (thème, snippet, autre extension) est déjà chargée, le plugin ne se charge pas et affiche un message précis au lieu d'une erreur fatale.
+* Les nouvelles fonctions utilitaires utilisent le préfixe kmblog_ pour limiter les conflits.
 = 1.2.0 =
 * Correctif : les pages de rubriques (/blog/rubrique/…) et de sujets (/blog/sujet/…) renvoyaient une erreur 404.
 * Correctif : les titres partagés (WhatsApp, X) et le JSON-LD affichaient des entités HTML (&#8217;…).

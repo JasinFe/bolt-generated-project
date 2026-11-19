@@ -13,11 +13,11 @@ $kmb_feat_id = ( ! $kmb_term && ! is_paged() ) ? kmb_featured_id() : 0;
 $kmb_total   = (int) $wp_query->found_posts + ( $kmb_feat_id ? 1 : 0 );
 $kmb_blog    = get_post_type_archive_link( 'km_blog' );
 ?>
-<main id="main-content" class="kmb kmb-archive kmb--<?php echo esc_attr( kmb_mode() ); ?>">
+<main id="main-content" class="kmb kmb-archive kmb--<?php echo esc_attr( kmblog_mode() ); ?>">
 	<div class="kmb-wrap">
 		<header class="kmb-hero">
 			<?php if ( $kmb_term ) : ?>
-				<a class="kmb-eyebrow kmb-eyebrow--link" href="<?php echo esc_url( $kmb_blog ); ?>"><?php echo kmb_icon( 'back' ); // phpcs:ignore WordPress.Security.EscapeOutput ?> <?php echo esc_html( kmb_opt( 'title' ) ); ?></a>
+				<a class="kmb-eyebrow kmb-eyebrow--link" href="<?php echo esc_url( $kmb_blog ); ?>"><?php echo kmblog_icon( 'back' ); // phpcs:ignore WordPress.Security.EscapeOutput ?> <?php echo esc_html( kmb_opt( 'title' ) ); ?></a>
 			<?php else : ?>
 				<span class="kmb-eyebrow">KOPHI’S MUSIC</span>
 			<?php endif; ?>
@@ -47,7 +47,7 @@ $kmb_blog    = get_post_type_archive_link( 'km_blog' );
 		<?php
 		if ( $kmb_feat_id ) :
 			$kmb_feat  = get_post( $kmb_feat_id );
-			$kmb_fterm = kmb_primary_term( $kmb_feat_id );
+			$kmb_fterm = kmblog_primary_term( $kmb_feat_id );
 			$kmb_fsub  = get_post_meta( $kmb_feat_id, '_kmb_subtitle', true );
 			$kmb_fex   = has_excerpt( $kmb_feat ) ? get_the_excerpt( $kmb_feat ) : ( $kmb_fsub ? $kmb_fsub : get_the_excerpt( $kmb_feat ) );
 			?>
@@ -77,7 +77,7 @@ $kmb_blog    = get_post_type_archive_link( 'km_blog' );
 							<span><?php echo (int) kmb_reading_time( $kmb_feat_id ); ?> min de lecture</span>
 						<?php endif; ?>
 					</div>
-					<span class="kmb-btn kmb-btn--solid" aria-hidden="true">Lire l’article <?php echo kmb_icon( 'arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+					<span class="kmb-btn kmb-btn--solid" aria-hidden="true">Lire l’article <?php echo kmblog_icon( 'arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
 				</div>
 			</article>
 		<?php endif; ?>
@@ -94,8 +94,8 @@ $kmb_blog    = get_post_type_archive_link( 'km_blog' );
 			<?php
 			the_posts_pagination( array(
 				'mid_size'           => 1,
-				'prev_text'          => kmb_icon( 'back' ) . '<span class="screen-reader-text">Articles plus récents</span>',
-				'next_text'          => kmb_icon( 'arrow' ) . '<span class="screen-reader-text">Articles plus anciens</span>',
+				'prev_text'          => kmblog_icon( 'back' ) . '<span class="screen-reader-text">Articles plus récents</span>',
+				'next_text'          => kmblog_icon( 'arrow' ) . '<span class="screen-reader-text">Articles plus anciens</span>',
 				'screen_reader_text' => 'Pagination du blog',
 				'aria_label'         => 'Pagination du blog',
 				'class'              => 'kmb-pagination',

@@ -48,7 +48,7 @@ add_shortcode( 'km_blog', function ( $atts ) {
 	$more = ! in_array( strtolower( trim( (string) $a['more'] ) ), array( '0', 'false', 'no', 'non', 'off', '' ), true );
 
 	ob_start();
-	echo '<div class="kmb kmb-embed kmb--' . esc_attr( kmb_mode() ) . '">';
+	echo '<div class="kmb kmb-embed kmb--' . esc_attr( kmblog_mode() ) . '">';
 	if ( '' !== trim( $a['title'] ) ) {
 		echo '<h2 class="kmb-section-title">' . esc_html( $a['title'] ) . '</h2>';
 	}
@@ -60,7 +60,7 @@ add_shortcode( 'km_blog', function ( $atts ) {
 		}
 		echo '</div>';
 		if ( $more ) {
-			echo '<p class="kmb-more"><a class="kmb-btn" href="' . esc_url( get_post_type_archive_link( 'km_blog' ) ) . '">Tous les articles ' . kmb_icon( 'arrow' ) . '</a></p>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			echo '<p class="kmb-more"><a class="kmb-btn" href="' . esc_url( get_post_type_archive_link( 'km_blog' ) ) . '">Tous les articles ' . kmblog_icon( 'arrow' ) . '</a></p>'; // phpcs:ignore WordPress.Security.EscapeOutput
 		}
 	} else {
 		echo '<p class="kmb-empty">Aucun article pour le moment.</p>';

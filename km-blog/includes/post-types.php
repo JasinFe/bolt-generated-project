@@ -135,7 +135,7 @@ function kmb_subtitle_box( $post ) {
 add_action( 'save_post_km_blog', function ( $post_id, $post ) {
 	// Temps de lecture : recalculé à chaque enregistrement (révisions exclues).
 	if ( ! wp_is_post_revision( $post_id ) ) {
-		update_post_meta( $post_id, '_kmb_reading', max( 1, (int) ceil( kmb_count_words( $post->post_content ) / 230 ) ) );
+		update_post_meta( $post_id, '_kmb_reading', max( 1, (int) ceil( kmblog_count_words( $post->post_content ) / 230 ) ) );
 	}
 
 	if ( ! isset( $_POST['kmb_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['kmb_nonce'] ) ), 'kmb_save' ) ) {

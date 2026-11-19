@@ -45,12 +45,12 @@ function kmb_opt( $key ) {
 }
 
 /** Mode d'affichage validé (dark|light), sûr pour une classe CSS. */
-function kmb_mode() {
+function kmblog_mode() {
 	return 'light' === kmb_opt( 'mode' ) ? 'light' : 'dark';
 }
 
 /** Compte les mots d'un contenu (shortcodes et HTML retirés). */
-function kmb_count_words( $content ) {
+function kmblog_count_words( $content ) {
 	$text = wp_strip_all_tags( strip_shortcodes( (string) $content ) );
 	$text = html_entity_decode( $text, ENT_QUOTES, 'UTF-8' );
 	return count( preg_split( '/\s+/u', trim( $text ), -1, PREG_SPLIT_NO_EMPTY ) );
@@ -70,7 +70,7 @@ function kmb_reading_time( $post_id = null ) {
 	if ( $cached > 0 ) {
 		return $cached;
 	}
-	$minutes = max( 1, (int) ceil( kmb_count_words( $post->post_content ) / 230 ) );
+	$minutes = max( 1, (int) ceil( kmblog_count_words( $post->post_content ) / 230 ) );
 	if ( 'publish' === $post->post_status ) {
 		update_post_meta( $post->ID, '_kmb_reading', $minutes );
 	}
@@ -82,7 +82,7 @@ function kmb_is_blog_page() {
 }
 
 /** Le contenu courant contient-il le shortcode [km_blog] ? */
-function kmb_has_shortcode() {
+function kmblog_has_shortcode() {
 	if ( ! is_singular() ) {
 		return false;
 	}
@@ -108,12 +108,12 @@ function kmb_get_template( $name, $args = array() ) {
 }
 
 /** Titre en texte brut (entités décodées) pour le partage et le JSON-LD. */
-function kmb_plain_title( $post = null ) {
+function kmblog_plain_title( $post = null ) {
 	return html_entity_decode( wp_strip_all_tags( get_the_title( $post ) ), ENT_QUOTES, 'UTF-8' );
 }
 
 /** Première rubrique d'un article, ou null. */
-function kmb_primary_term( $post_id ) {
+function kmblog_primary_term( $post_id ) {
 	$terms = get_the_terms( $post_id, 'km_blog_cat' );
 	return ( $terms && ! is_wp_error( $terms ) ) ? $terms[0] : null;
 }
@@ -203,15 +203,15 @@ function kmb_featured_id() {
 }
 
 /** Une SEO extension gère-t-elle déjà les balises meta / JSON-LD ? */
-function kmb_seo_plugin_active() {
+function kmblog_seo_plugin_active() {
 	$active = defined( 'RANK_MATH_VERSION' ) || defined( 'WPSEO_VERSION' ) || defined( 'AIOSEO_VERSION' )
 		|| defined( 'SEOPRESS_VERSION' ) || defined( 'THE_SEO_FRAMEWORK_VERSION' ) || defined( 'SLIM_SEO_VER' )
 		|| class_exists( 'SQ_Classes_ObjController' );
-	return (bool) apply_filters( 'kmb_seo_plugin_active', $active );
+	return (bool) apply_filters( 'kmblog_seo_plugin_active', $active );
 }
 
 /** Couleur de texte lisible (noir ou blanc) sur un fond de couleur donnée. */
-function kmb_on_color( $hex ) {
+function kmblog_on_color( $hex ) {
 	$hex = ltrim( (string) $hex, '#' );
 	if ( 3 === strlen( $hex ) ) {
 		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
@@ -229,7 +229,7 @@ function kmb_on_color( $hex ) {
 }
 
 /** Icônes SVG inline (décoratives, masquées aux lecteurs d'écran). */
-function kmb_icon( $name ) {
+function kmblog_icon( $name ) {
 	$paths = array(
 		'whatsapp' => '<path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.5-.3Z" fill="currentColor"/>',
 		'facebook' => '<path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.2A21 21 0 0 0 14.6 2C12.2 2 10.6 3.5 10.6 6.2v2.3H8V12h2.6v10H14V12h2.7l.4-3.5H14Z" fill="currentColor"/>',
