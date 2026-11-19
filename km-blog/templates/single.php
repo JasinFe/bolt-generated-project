@@ -4,74 +4,123 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 get_header();
 ?>
-<main id="main-content" class="kmb kmb-single kmb--<?php echo esc_attr( kmb_opt( 'mode' ) ); ?>">
+<main id="main-content" class="kmb kmb-single kmb--<?php echo esc_attr( kmb_mode() ); ?>">
 <?php
 while ( have_posts() ) :
 	the_post();
 	$kmb_id    = get_the_ID();
 	$kmb_sub   = get_post_meta( $kmb_id, '_kmb_subtitle', true );
-	$kmb_cats  = get_the_terms( $kmb_id, 'km_blog_cat' );
+	$kmb_term  = kmb_primary_term( $kmb_id );
 	$kmb_tags  = get_the_terms( $kmb_id, 'km_blog_tag' );
-	$kmb_url   = rawurlencode( get_permalink() );
-	$kmb_text  = rawurlencode( get_the_title() . ' — ' );
+	$kmb_link  = get_permalink();
+	$kmb_plain = kmb_plain_title();
+	$kmb_url   = rawurlencode( $kmb_link );
+	$kmb_blog  = get_post_type_archive_link( 'km_blog' );
+	$kmb_upd   = get_the_modified_date( 'U' ) - get_the_date( 'U' ) > DAY_IN_SECONDS;
 	?>
+	<?php if ( kmb_opt( 'show_progress' ) ) : ?>
+		<div class="kmb-progress" aria-hidden="true"><span class="kmb-progress__bar"></span></div>
+	<?php endif; ?>
+
 	<article class="kmb-article">
 		<header class="kmb-article__head">
-			<?php if ( $kmb_cats && ! is_wp_error( $kmb_cats ) ) : ?>
-				<a class="kmb-badge" href="<?php echo esc_url( get_term_link( $kmb_cats[0] ) ); ?>"><?php echo esc_html( $kmb_cats[0]->name ); ?></a>
-			<?php endif; ?>
+			<nav class="kmb-crumbs" aria-label="Fil d’Ariane">
+				<a href="<?php echo esc_url( $kmb_blog ); ?>"><?php echo esc_html( kmb_opt( 'title' ) ); ?></a>
+				<?php if ( $kmb_term ) : ?>
+					<span aria-hidden="true">/</span>
+					<a class="kmb-crumbs__term" href="<?php echo esc_url( get_term_link( $kmb_term ) ); ?>"><?php echo esc_html( $kmb_term->name ); ?></a>
+				<?php endif; ?>
+			</nav>
 			<h1 class="kmb-article__title"><?php the_title(); ?></h1>
 			<?php if ( $kmb_sub ) : ?>
 				<p class="kmb-article__sub"><?php echo esc_html( $kmb_sub ); ?></p>
 			<?php endif; ?>
-			<div class="kmb-meta">
+			<div class="kmb-byline">
 				<?php if ( kmb_opt( 'show_author' ) ) : ?>
-					<span><?php echo esc_html( get_the_author() ); ?></span><span>·</span>
+					<?php echo get_avatar( get_the_author_meta( 'ID' ), 40, '', '', array( 'class' => 'kmb-byline__img' ) ); ?>
+					<span class="kmb-byline__name"><?php echo esc_html( get_the_author() ); ?></span>
+					<span class="kmb-meta__sep" aria-hidden="true">·</span>
 				<?php endif; ?>
 				<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
 				<?php if ( kmb_opt( 'show_reading' ) ) : ?>
-					<span>· <?php echo (int) kmb_reading_time(); ?> min de lecture</span>
+					<span class="kmb-meta__sep" aria-hidden="true">·</span>
+					<span><?php echo (int) kmb_reading_time(); ?> min de lecture</span>
+				<?php endif; ?>
+				<?php if ( $kmb_upd ) : ?>
+					<span class="kmb-meta__sep" aria-hidden="true">·</span>
+					<span>Mis à jour le <time datetime="<?php echo esc_attr( get_the_modified_date( 'c' ) ); ?>"><?php echo esc_html( get_the_modified_date() ); ?></time></span>
 				<?php endif; ?>
 			</div>
 		</header>
 
 		<?php if ( has_post_thumbnail() ) : ?>
-			<figure class="kmb-article__cover"><?php the_post_thumbnail( 'full' ); ?></figure>
+			<figure class="kmb-article__cover">
+				<?php
+				the_post_thumbnail( 'full', array(
+					'loading'       => 'eager',
+					'fetchpriority' => 'high',
+					'sizes'         => '(max-width: 860px) 100vw, 840px',
+				) );
+				$kmb_cap = get_the_post_thumbnail_caption();
+				if ( $kmb_cap ) {
+					echo '<figcaption>' . wp_kses_post( $kmb_cap ) . '</figcaption>';
+				}
+				?>
+			</figure>
+		<?php endif; ?>
+
+		<?php if ( kmb_opt( 'show_toc' ) ) : ?>
+			<nav class="kmb-toc" aria-labelledby="kmb-toc-title" hidden>
+				<p class="kmb-toc__title" id="kmb-toc-title">Sommaire</p>
+				<ol class="kmb-toc__list"></ol>
+			</nav>
 		<?php endif; ?>
 
 		<div class="kmb-content"><?php the_content(); ?></div>
 
+		<?php
+		wp_link_pages( array(
+			'before' => '<nav class="kmb-pagelinks" aria-label="Pages de l’article"><span>Pages :</span>',
+			'after'  => '</nav>',
+		) );
+		?>
+
 		<?php if ( $kmb_tags && ! is_wp_error( $kmb_tags ) ) : ?>
-			<div class="kmb-tags">
+			<ul class="kmb-tags" aria-label="Sujets">
 				<?php foreach ( $kmb_tags as $kmb_tag ) : ?>
-					<a href="<?php echo esc_url( get_term_link( $kmb_tag ) ); ?>">#<?php echo esc_html( $kmb_tag->name ); ?></a>
+					<li><a href="<?php echo esc_url( get_term_link( $kmb_tag ) ); ?>">#<?php echo esc_html( $kmb_tag->name ); ?></a></li>
 				<?php endforeach; ?>
-			</div>
+			</ul>
 		<?php endif; ?>
 
 		<?php if ( kmb_opt( 'show_share' ) ) : ?>
 			<div class="kmb-share">
-				<span>Partager</span>
-				<a class="kmb-share__btn" target="_blank" rel="noopener" href="<?php echo esc_url( 'https://wa.me/?text=' . $kmb_text . $kmb_url ); ?>">WhatsApp</a>
-				<a class="kmb-share__btn" target="_blank" rel="noopener" href="<?php echo esc_url( 'https://www.facebook.com/sharer/sharer.php?u=' . $kmb_url ); ?>">Facebook</a>
-				<a class="kmb-share__btn" target="_blank" rel="noopener" href="<?php echo esc_url( 'https://twitter.com/intent/tweet?text=' . $kmb_text . '&url=' . $kmb_url ); ?>">X</a>
-				<button type="button" class="kmb-share__btn" data-kmb-copy="<?php echo esc_url( get_permalink() ); ?>">Copier le lien</button>
+				<span class="kmb-share__label" id="kmb-share-label">Partager</span>
+				<div class="kmb-share__list" role="group" aria-labelledby="kmb-share-label">
+					<button type="button" class="kmb-share__btn kmb-share__native" data-kmb-share data-title="<?php echo esc_attr( $kmb_plain ); ?>" data-url="<?php echo esc_url( $kmb_link ); ?>" hidden><?php echo kmb_icon( 'share' ); // phpcs:ignore ?><span>Partager</span></button>
+					<a class="kmb-share__btn" target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( 'https://wa.me/?text=' . rawurlencode( $kmb_plain . ' — ' . $kmb_link ) ); ?>"><?php echo kmb_icon( 'whatsapp' ); // phpcs:ignore ?><span>WhatsApp</span><span class="screen-reader-text"> (nouvel onglet)</span></a>
+					<a class="kmb-share__btn" target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( 'https://www.facebook.com/sharer/sharer.php?u=' . $kmb_url ); ?>"><?php echo kmb_icon( 'facebook' ); // phpcs:ignore ?><span>Facebook</span><span class="screen-reader-text"> (nouvel onglet)</span></a>
+					<a class="kmb-share__btn" target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( 'https://x.com/intent/post?text=' . rawurlencode( $kmb_plain ) . '&url=' . $kmb_url ); ?>"><?php echo kmb_icon( 'x' ); // phpcs:ignore ?><span>X</span><span class="screen-reader-text"> (nouvel onglet)</span></a>
+					<button type="button" class="kmb-share__btn" data-kmb-copy="<?php echo esc_url( $kmb_link ); ?>"><?php echo kmb_icon( 'link' ); // phpcs:ignore ?><span data-kmb-copy-label>Copier le lien</span></button>
+				</div>
+				<span class="screen-reader-text" role="status" aria-live="polite" data-kmb-live></span>
 			</div>
 		<?php endif; ?>
 
-		<?php kmb_get_template( 'cta' ); ?>
-
 		<?php if ( kmb_opt( 'show_author' ) ) : ?>
-			<aside class="kmb-author">
+			<aside class="kmb-author" aria-label="À propos de l’auteur">
 				<?php echo get_avatar( get_the_author_meta( 'ID' ), 72, '', '', array( 'class' => 'kmb-author__img' ) ); ?>
 				<div>
-					<strong><?php echo esc_html( get_the_author() ); ?></strong>
+					<span class="kmb-author__kicker">Écrit par</span>
+					<strong class="kmb-author__name"><?php echo esc_html( get_the_author() ); ?></strong>
 					<?php if ( get_the_author_meta( 'description' ) ) : ?>
 						<p><?php echo esc_html( get_the_author_meta( 'description' ) ); ?></p>
 					<?php endif; ?>
 				</div>
 			</aside>
 		<?php endif; ?>
+
+		<?php kmb_get_template( 'cta' ); ?>
 	</article>
 
 	<?php
@@ -79,13 +128,16 @@ while ( have_posts() ) :
 		$kmb_related = kmb_related_posts( $kmb_id, 3 );
 		if ( $kmb_related->have_posts() ) :
 			?>
-			<section class="kmb-wrap kmb-related">
-				<h2 class="kmb-related__title">À lire aussi</h2>
+			<section class="kmb-wrap kmb-related" aria-labelledby="kmb-related-title">
+				<div class="kmb-related__head">
+					<h2 class="kmb-section-title" id="kmb-related-title">À lire aussi</h2>
+					<a class="kmb-link-arrow" href="<?php echo esc_url( $kmb_blog ); ?>">Tous les articles <?php echo kmb_icon( 'arrow' ); // phpcs:ignore ?></a>
+				</div>
 				<div class="kmb-grid kmb-cols-3">
 					<?php
 					while ( $kmb_related->have_posts() ) {
 						$kmb_related->the_post();
-						kmb_get_template( 'card' );
+						kmb_get_template( 'card', array( 'kmb_heading' => 'h3' ) );
 					}
 					wp_reset_postdata();
 					?>
@@ -96,7 +148,7 @@ while ( have_posts() ) :
 	endif;
 	?>
 
-	<p class="kmb-back"><a href="<?php echo esc_url( get_post_type_archive_link( 'km_blog' ) ); ?>">← Retour au blog</a></p>
+	<p class="kmb-back"><a href="<?php echo esc_url( $kmb_blog ); ?>"><?php echo kmb_icon( 'back' ); // phpcs:ignore ?> Retour au blog</a></p>
 <?php endwhile; ?>
 </main>
 <?php

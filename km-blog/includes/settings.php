@@ -22,6 +22,7 @@ add_action( 'admin_init', function () {
 	) );
 } );
 
+// Note : options.php a déjà appliqué wp_unslash() aux valeurs reçues.
 function kmb_sanitize_settings( $in ) {
 	$in  = is_array( $in ) ? $in : array();
 	$d   = kmb_default_settings();
@@ -31,23 +32,33 @@ function kmb_sanitize_settings( $in ) {
 	$out['slug']     = sanitize_title( isset( $in['slug'] ) ? $in['slug'] : $d['slug'] );
 	$out['slug']     = '' === $out['slug'] ? $d['slug'] : $out['slug'];
 	$out['title']    = isset( $in['title'] ) ? sanitize_text_field( $in['title'] ) : $d['title'];
+	$out['title']    = '' === $out['title'] ? $d['title'] : $out['title'];
 	$out['intro']    = isset( $in['intro'] ) ? sanitize_textarea_field( $in['intro'] ) : $d['intro'];
 	$out['per_page'] = isset( $in['per_page'] ) ? max( 1, min( 30, absint( $in['per_page'] ) ) ) : $d['per_page'];
 	$accent          = isset( $in['accent'] ) ? sanitize_hex_color( $in['accent'] ) : '';
 	$out['accent']   = $accent ? $accent : $d['accent'];
 	$out['mode']     = ( isset( $in['mode'] ) && 'light' === $in['mode'] ) ? 'light' : 'dark';
 
-	foreach ( array( 'use_templates', 'show_author', 'show_reading', 'show_share', 'show_related', 'show_featured', 'cta_newsletter', 'cta_family' ) as $key ) {
+	foreach ( array( 'use_templates', 'show_author', 'show_reading', 'show_share', 'show_related', 'show_featured', 'show_progress', 'show_toc', 'cta_newsletter', 'cta_family' ) as $key ) {
 		$out[ $key ] = empty( $in[ $key ] ) ? 0 : 1;
 	}
 
 	foreach ( array( 'newsletter_url', 'family_url' ) as $key ) {
-		$url         = isset( $in[ $key ] ) ? esc_url_raw( trim( $in[ $key ] ) ) : '';
+		$raw = isset( $in[ $key ] ) ? trim( (string) $in[ $key ] ) : '';
+		// Chemin relatif (/newsletter/) conservé tel quel ; sinon URL http(s) uniquement.
+		if ( '' !== $raw && '/' === $raw[0] && ( ! isset( $raw[1] ) || '/' !== $raw[1] ) ) {
+			$url = '/' . ltrim( preg_replace( '#[^A-Za-z0-9\-._~/?\#=&%+]#', '', $raw ), '/' );
+		} else {
+			$url = esc_url_raw( $raw, array( 'http', 'https' ) );
+		}
 		$out[ $key ] = '' !== $url ? $url : $d[ $key ];
 	}
 
 	if ( $out['slug'] !== $old['slug'] ) {
 		update_option( 'kmb_needs_flush', 1 );
+		if ( get_page_by_path( $out['slug'] ) ) {
+			add_settings_error( 'kmb_settings', 'kmb_slug_conflict', sprintf( 'Attention : une page utilise déjà l’adresse « %s ». Le blog risque de la masquer (ou inversement).', $out['slug'] ), 'warning' );
+		}
 	}
 	return $out;
 }
@@ -60,6 +71,7 @@ function kmb_settings_page() {
 	?>
 	<div class="wrap">
 		<h1>Réglages du blog</h1>
+		<?php settings_errors(); ?>
 		<p>Adresse actuelle du blog : <a href="<?php echo esc_url( home_url( '/' . $s['slug'] . '/' ) ); ?>" target="_blank" rel="noopener"><?php echo esc_html( home_url( '/' . $s['slug'] . '/' ) ); ?></a></p>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'kmb_group' ); ?>
@@ -98,7 +110,9 @@ function kmb_settings_page() {
 						<label><input type="checkbox" name="kmb_settings[show_author]" value="1" <?php checked( $s['show_author'], 1 ); ?>> Encadré auteur</label><br>
 						<label><input type="checkbox" name="kmb_settings[show_reading]" value="1" <?php checked( $s['show_reading'], 1 ); ?>> Temps de lecture</label><br>
 						<label><input type="checkbox" name="kmb_settings[show_share]" value="1" <?php checked( $s['show_share'], 1 ); ?>> Boutons de partage (WhatsApp, Facebook, X, copier le lien)</label><br>
-						<label><input type="checkbox" name="kmb_settings[show_related]" value="1" <?php checked( $s['show_related'], 1 ); ?>> Articles similaires</label>
+						<label><input type="checkbox" name="kmb_settings[show_related]" value="1" <?php checked( $s['show_related'], 1 ); ?>> Articles similaires</label><br>
+						<label><input type="checkbox" name="kmb_settings[show_progress]" value="1" <?php checked( $s['show_progress'], 1 ); ?>> Barre de progression de lecture</label><br>
+						<label><input type="checkbox" name="kmb_settings[show_toc]" value="1" <?php checked( $s['show_toc'], 1 ); ?>> Sommaire automatique (si l’article compte au moins 3 intertitres H2)</label>
 					</td>
 				</tr>
 				<tr>
@@ -110,9 +124,9 @@ function kmb_settings_page() {
 					<th scope="row">Fin d’article</th>
 					<td>
 						<label><input type="checkbox" name="kmb_settings[cta_newsletter]" value="1" <?php checked( $s['cta_newsletter'], 1 ); ?>> Encart newsletter</label><br>
-						<input type="text" class="regular-text" name="kmb_settings[newsletter_url]" value="<?php echo esc_attr( $s['newsletter_url'] ); ?>"><br><br>
+						<input type="text" class="regular-text" aria-label="Adresse de la newsletter" name="kmb_settings[newsletter_url]" value="<?php echo esc_attr( $s['newsletter_url'] ); ?>"><br><br>
 						<label><input type="checkbox" name="kmb_settings[cta_family]" value="1" <?php checked( $s['cta_family'], 1 ); ?>> Encart KM Family</label><br>
-						<input type="text" class="regular-text" name="kmb_settings[family_url]" value="<?php echo esc_attr( $s['family_url'] ); ?>">
+						<input type="text" class="regular-text" aria-label="Adresse KM Family" name="kmb_settings[family_url]" value="<?php echo esc_attr( $s['family_url'] ); ?>">
 						<p class="description">Adresses de destination des boutons (chemin comme <code>/newsletter/</code> ou URL complète).</p>
 					</td>
 				</tr>
