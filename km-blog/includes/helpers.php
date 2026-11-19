@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-function kmb_default_settings() {
+function kmblog_default_settings() {
 	return array(
 		'slug'           => 'blog',
 		'title'          => 'Le Blog',
@@ -30,23 +30,35 @@ function kmb_default_settings() {
  * Réglages fusionnés avec les valeurs par défaut, mis en cache pour la requête.
  * Le cache est invalidé dès que l'option est modifiée.
  */
-function kmb_get_settings() {
+function kmblog_get_settings() {
 	static $cache = null;
 	if ( null === $cache ) {
-		$saved = get_option( 'kmb_settings', array() );
-		$cache = wp_parse_args( is_array( $saved ) ? $saved : array(), kmb_default_settings() );
+		$saved = get_option( 'kmblog_settings', false );
+		if ( false === $saved ) {
+			/*
+			 * Migration depuis KM Blog 1.0–1.2 (option « kmb_settings »). On ne
+			 * reprend l'ancienne option que si elle a bien la forme des réglages
+			 * du blog : « kmb_ » est aussi utilisé par d'autres codes du site.
+			 */
+			$old   = get_option( 'kmb_settings' );
+			$saved = ( is_array( $old ) && isset( $old['slug'], $old['use_templates'], $old['per_page'] ) ) ? $old : array();
+			if ( $saved ) {
+				add_option( 'kmblog_settings', $saved );
+			}
+		}
+		$cache = wp_parse_args( is_array( $saved ) ? $saved : array(), kmblog_default_settings() );
 	}
 	return $cache;
 }
 
-function kmb_opt( $key ) {
-	$s = kmb_get_settings();
+function kmblog_opt( $key ) {
+	$s = kmblog_get_settings();
 	return isset( $s[ $key ] ) ? $s[ $key ] : null;
 }
 
 /** Mode d'affichage validé (dark|light), sûr pour une classe CSS. */
 function kmblog_mode() {
-	return 'light' === kmb_opt( 'mode' ) ? 'light' : 'dark';
+	return 'light' === kmblog_opt( 'mode' ) ? 'light' : 'dark';
 }
 
 /** Compte les mots d'un contenu (shortcodes et HTML retirés). */
@@ -61,7 +73,7 @@ function kmblog_count_words( $content ) {
  * Calculé à l'enregistrement et stocké dans _kmb_reading pour éviter de
  * re-parser chaque contenu à chaque affichage de carte.
  */
-function kmb_reading_time( $post_id = null ) {
+function kmblog_reading_time( $post_id = null ) {
 	$post = get_post( $post_id );
 	if ( ! $post ) {
 		return 1;
@@ -77,7 +89,7 @@ function kmb_reading_time( $post_id = null ) {
 	return $minutes;
 }
 
-function kmb_is_blog_page() {
+function kmblog_is_blog_page() {
 	return is_singular( 'km_blog' ) || is_post_type_archive( 'km_blog' ) || is_tax( array( 'km_blog_cat', 'km_blog_tag' ) );
 }
 
@@ -90,14 +102,14 @@ function kmblog_has_shortcode() {
 	return $post instanceof WP_Post && has_shortcode( $post->post_content, 'km_blog' );
 }
 
-function kmb_locate( $name ) {
+function kmblog_locate( $name ) {
 	$name  = sanitize_file_name( $name );
 	$theme = locate_template( 'km-blog/' . $name . '.php' );
-	return $theme ? $theme : KMB_DIR . 'templates/' . $name . '.php';
+	return $theme ? $theme : KMBLOG_DIR . 'templates/' . $name . '.php';
 }
 
-function kmb_get_template( $name, $args = array() ) {
-	$file = kmb_locate( $name );
+function kmblog_get_template( $name, $args = array() ) {
+	$file = kmblog_locate( $name );
 	if ( ! file_exists( $file ) ) {
 		return;
 	}
@@ -122,7 +134,7 @@ function kmblog_primary_term( $post_id ) {
  * Articles similaires : même rubrique d'abord, complétés par les plus récents
  * si la rubrique ne suffit pas.
  */
-function kmb_related_posts( $post_id, $limit = 3 ) {
+function kmblog_related_posts( $post_id, $limit = 3 ) {
 	$limit = max( 1, (int) $limit );
 	$ids   = array();
 	$terms = wp_get_post_terms( $post_id, 'km_blog_cat', array( 'fields' => 'ids' ) );
@@ -168,7 +180,7 @@ function kmb_related_posts( $post_id, $limit = 3 ) {
 }
 
 // Transforme un chemin relatif (/newsletter/) en URL complète.
-function kmb_link( $url ) {
+function kmblog_link( $url ) {
 	$url = trim( (string) $url );
 	if ( '' !== $url && '/' === $url[0] && ( ! isset( $url[1] ) || '/' !== $url[1] ) ) {
 		return home_url( $url );
@@ -177,13 +189,13 @@ function kmb_link( $url ) {
 }
 
 // Identifiant de l'article « À la une » (le plus récent coché), mis en cache.
-function kmb_featured_id() {
+function kmblog_featured_id() {
 	static $id = null;
 	if ( null !== $id ) {
 		return $id;
 	}
 	$id = 0;
-	if ( ! kmb_opt( 'show_featured' ) ) {
+	if ( ! kmblog_opt( 'show_featured' ) ) {
 		return $id;
 	}
 	$q = new WP_Query( array(
@@ -245,5 +257,5 @@ function kmblog_icon( $name ) {
 	if ( ! isset( $paths[ $name ] ) ) {
 		return '';
 	}
-	return '<svg class="kmb-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' . $paths[ $name ] . '</svg>';
+	return '<svg class="kmblog-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' . $paths[ $name ] . '</svg>';
 }

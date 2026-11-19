@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * charge déjà. Les aperçus WhatsApp / Facebook / X utilisent ces balises.
  */
 add_action( 'wp_head', function () {
-	if ( ! kmb_is_blog_page() || kmblog_seo_plugin_active() ) {
+	if ( ! kmblog_is_blog_page() || kmblog_seo_plugin_active() ) {
 		return;
 	}
 
@@ -78,7 +78,7 @@ function kmblog_head_single() {
 		'url'              => $url,
 		'inLanguage'       => get_bloginfo( 'language' ),
 		'wordCount'        => kmblog_count_words( $post->post_content ),
-		'timeRequired'     => 'PT' . kmb_reading_time( $post->ID ) . 'M',
+		'timeRequired'     => 'PT' . kmblog_reading_time( $post->ID ) . 'M',
 		'author'           => array(
 			'@type' => 'Person',
 			'name'  => get_the_author_meta( 'display_name', $post->post_author ),
@@ -98,7 +98,7 @@ function kmblog_head_single() {
 
 	$crumbs = array(
 		array( 'name' => $site, 'item' => home_url( '/' ) ),
-		array( 'name' => kmb_opt( 'title' ), 'item' => get_post_type_archive_link( 'km_blog' ) ),
+		array( 'name' => kmblog_opt( 'title' ), 'item' => get_post_type_archive_link( 'km_blog' ) ),
 	);
 	if ( $term ) {
 		$crumbs[] = array( 'name' => $term->name, 'item' => get_term_link( $term ) );
@@ -110,8 +110,8 @@ function kmblog_head_single() {
 
 function kmblog_head_archive() {
 	$term  = is_tax() ? get_queried_object() : null;
-	$title = $term ? $term->name . ' — ' . kmb_opt( 'title' ) : kmb_opt( 'title' );
-	$desc  = $term && $term->description ? $term->description : kmb_opt( 'intro' );
+	$title = $term ? $term->name . ' — ' . kmblog_opt( 'title' ) : kmblog_opt( 'title' );
+	$desc  = $term && $term->description ? $term->description : kmblog_opt( 'intro' );
 	$desc  = trim( wp_strip_all_tags( (string) $desc ) );
 	$url   = $term ? get_term_link( $term ) : get_post_type_archive_link( 'km_blog' );
 	if ( is_wp_error( $url ) ) {
@@ -142,7 +142,7 @@ function kmblog_breadcrumb_schema( $crumbs ) {
 function kmblog_print_jsonld( $graph ) {
 	$data = array(
 		'@context' => 'https://schema.org',
-		'@graph'   => apply_filters( 'kmb_schema_graph', $graph ),
+		'@graph'   => apply_filters( 'kmblog_schema_graph', $graph ),
 	);
 	// JSON_HEX_TAG empêche toute sortie de la balise <script> via un titre piégé.
 	echo '<script type="application/ld+json">' . wp_json_encode( $data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP ) . '</script>' . "\n";

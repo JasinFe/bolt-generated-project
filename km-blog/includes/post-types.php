@@ -3,10 +3,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-add_action( 'init', 'kmb_register_content_types' );
+add_action( 'init', 'kmblog_register_content_types' );
 
-function kmb_register_content_types() {
-	$slug = sanitize_title( kmb_opt( 'slug' ) );
+function kmblog_register_content_types() {
+	$slug = sanitize_title( kmblog_opt( 'slug' ) );
 	if ( '' === $slug ) {
 		$slug = 'blog';
 	}
@@ -110,19 +110,19 @@ function kmb_register_content_types() {
 
 // Régénère les URL après un changement d'adresse du blog ou une mise à jour du plugin.
 add_action( 'init', function () {
-	if ( get_option( 'kmb_needs_flush' ) || KMB_VERSION !== get_option( 'kmb_version' ) ) {
+	if ( get_option( 'kmblog_needs_flush' ) || KMBLOG_VERSION !== get_option( 'kmblog_version' ) ) {
 		flush_rewrite_rules( false );
-		delete_option( 'kmb_needs_flush' );
-		update_option( 'kmb_version', KMB_VERSION, false );
+		delete_option( 'kmblog_needs_flush' );
+		update_option( 'kmblog_version', KMBLOG_VERSION, false );
 	}
 }, 99 );
 
 // Champ « Sous-titre » + « À la une ».
 add_action( 'add_meta_boxes', function () {
-	add_meta_box( 'kmb_subtitle', 'Sous-titre et mise en avant', 'kmb_subtitle_box', 'km_blog', 'normal', 'high' );
+	add_meta_box( 'kmb_subtitle', 'Sous-titre et mise en avant', 'kmblog_subtitle_box', 'km_blog', 'normal', 'high' );
 } );
 
-function kmb_subtitle_box( $post ) {
+function kmblog_subtitle_box( $post ) {
 	wp_nonce_field( 'kmb_save', 'kmb_nonce' );
 	$value    = get_post_meta( $post->ID, '_kmb_subtitle', true );
 	$featured = get_post_meta( $post->ID, '_kmb_featured', true );
@@ -175,7 +175,7 @@ add_filter( 'manage_km_blog_posts_columns', function ( $cols ) {
 
 add_action( 'manage_km_blog_posts_custom_column', function ( $col, $post_id ) {
 	if ( 'kmb_featured' === $col && '1' === get_post_meta( $post_id, '_kmb_featured', true ) ) {
-		$is_shown = (int) kmb_featured_id() === (int) $post_id;
+		$is_shown = (int) kmblog_featured_id() === (int) $post_id;
 		echo '<span class="dashicons dashicons-star-filled" style="color:' . ( $is_shown ? '#d4a24c' : '#bbb' ) . '" title="' . esc_attr( $is_shown ? 'Affiché à la une' : 'Coché, mais un article plus récent est à la une' ) . '"></span>';
 	}
 }, 10, 2 );

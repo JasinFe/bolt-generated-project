@@ -3,7 +3,7 @@ Contributors: kophisgroup
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.3.0
 License: GPLv2 or later
 
 Blog personnalisé pour KOPHI'S MUSIC, séparé des actualités du label.
@@ -26,6 +26,11 @@ Puis Blog > Réglages.
 Copiez les fichiers du dossier templates/ dans votre thème, dans un dossier km-blog/, pour les surcharger.
 
 == Changelog ==
+= 1.3.0 =
+* Compatibilité avec les extraits WPCode du site (Actualités, Newsletter) : tout le plugin utilise désormais son propre préfixe « kmblog » (fonctions, constantes, options, classes CSS, JavaScript). Plus aucun conflit « Cannot redeclare kmb_opt() ».
+* Réglages repris automatiquement depuis l'ancienne option « kmb_settings ».
+* Détection d'une ancienne copie de KM Blog 1.0/1.1 encore active dans un autre dossier.
+* Pour personnaliser les modèles dans le thème (dossier km-blog/), repartez des fichiers de cette version : les fonctions s'appellent kmblog_opt(), kmblog_get_template(), etc.
 = 1.2.1 =
 * Garde-fou d'activation : si une ancienne copie de KM Blog (autre dossier) ou une fonction du même nom (thème, snippet, autre extension) est déjà chargée, le plugin ne se charge pas et affiche un message précis au lieu d'une erreur fatale.
 * Les nouvelles fonctions utilitaires utilisent le préfixe kmblog_ pour limiter les conflits.

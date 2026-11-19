@@ -3,7 +3,7 @@
 	'use strict';
 
 	var live = function (msg) {
-		var el = document.querySelector('[data-kmb-live]');
+		var el = document.querySelector('[data-kmblog-live]');
 		if (el) {
 			el.textContent = '';
 			setTimeout(function () { el.textContent = msg; }, 50);
@@ -26,10 +26,10 @@
 	};
 
 	document.addEventListener('click', function (e) {
-		var btn = e.target.closest ? e.target.closest('[data-kmb-copy]') : null;
+		var btn = e.target.closest ? e.target.closest('[data-kmblog-copy]') : null;
 		if (!btn) { return; }
-		var url = btn.getAttribute('data-kmb-copy');
-		var label = btn.querySelector('[data-kmb-copy-label]') || btn;
+		var url = btn.getAttribute('data-kmblog-copy');
+		var label = btn.querySelector('[data-kmblog-copy-label]') || btn;
 		if (!btn.hasAttribute('data-label')) { btn.setAttribute('data-label', label.textContent); }
 		var original = btn.getAttribute('data-label');
 
@@ -52,7 +52,7 @@
 	});
 
 	/* ---------- Partage natif (mobile) ---------- */
-	var nativeBtn = document.querySelector('[data-kmb-share]');
+	var nativeBtn = document.querySelector('[data-kmblog-share]');
 	if (nativeBtn && navigator.share) {
 		nativeBtn.hidden = false;
 		nativeBtn.addEventListener('click', function () {
@@ -64,12 +64,12 @@
 	}
 
 	/* ---------- Sommaire automatique ---------- */
-	var content = document.querySelector('.kmb-single .kmb-content');
-	var toc = document.querySelector('.kmb-toc');
+	var content = document.querySelector('.kmblog-single .kmblog-content');
+	var toc = document.querySelector('.kmblog-toc');
 	if (content && toc) {
 		var heads = content.querySelectorAll('h2');
 		if (heads.length >= 3) {
-			var list = toc.querySelector('.kmb-toc__list');
+			var list = toc.querySelector('.kmblog-toc__list');
 			var used = {};
 			var slug = function (s) {
 				var base = (s || '').toLowerCase()
@@ -110,8 +110,8 @@
 	}
 
 	/* ---------- Barre de progression de lecture ---------- */
-	var bar = document.querySelector('.kmb-progress__bar');
-	var article = document.querySelector('.kmb-single .kmb-content');
+	var bar = document.querySelector('.kmblog-progress__bar');
+	var article = document.querySelector('.kmblog-single .kmblog-content');
 	if (bar && article) {
 		var ticking = false;
 		var update = function () {

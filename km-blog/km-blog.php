@@ -2,7 +2,7 @@
 /**
  * Plugin Name: KM Blog
  * Description: Blog personnalisé pour KOPHI'S MUSIC : des articles de fond, distincts des actualités du label et des artistes.
- * Version: 1.2.1
+ * Version: 1.3.0
  * Author: KOPHI'S GROUP SAS
  * Text Domain: km-blog
  * Requires at least: 6.0
@@ -23,16 +23,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! function_exists( 'kmblog_conflicts' ) ) {
 	function kmblog_conflicts() {
 		$found = array();
-		if ( defined( 'KMB_VERSION' ) || defined( 'KMB_DIR' ) ) {
-			$where   = defined( 'KMB_FILE' ) ? KMB_FILE : ( defined( 'KMB_DIR' ) ? KMB_DIR : '?' );
-			$found[] = 'une autre copie de KM Blog est déjà active (' . ( defined( 'KMB_VERSION' ) ? 'version ' . KMB_VERSION . ', ' : '' ) . $where . ')';
+		if ( defined( 'KMBLOG_VERSION' ) || defined( 'KMBLOG_DIR' ) ) {
+			$where   = defined( 'KMBLOG_FILE' ) ? KMBLOG_FILE : ( defined( 'KMBLOG_DIR' ) ? KMBLOG_DIR : '?' );
+			$found[] = 'une autre copie de KM Blog est déjà active (' . ( defined( 'KMBLOG_VERSION' ) ? 'version ' . KMBLOG_VERSION . ', ' : '' ) . $where . ')';
+			return $found;
+		}
+		// Ancienne version 1.0/1.1 de KM Blog encore active dans un autre dossier.
+		if ( defined( 'KMB_FILE' ) && 'km-blog.php' === basename( (string) KMB_FILE ) ) {
+			$found[] = 'une ancienne copie de KM Blog est encore active (' . ( defined( 'KMB_VERSION' ) ? 'version ' . KMB_VERSION . ', ' : '' ) . KMB_FILE . ')';
 			return $found;
 		}
 		$names = array(
-			'kmb_default_settings', 'kmb_get_settings', 'kmb_opt', 'kmb_reading_time', 'kmb_is_blog_page',
-			'kmb_locate', 'kmb_get_template', 'kmb_related_posts', 'kmb_link', 'kmb_featured_id',
-			'kmb_register_content_types', 'kmb_subtitle_box', 'kmb_sanitize_settings', 'kmb_settings_page',
-			'kmb_load_assets', 'kmblog_mode', 'kmblog_count_words', 'kmblog_has_shortcode', 'kmblog_plain_title',
+			'kmblog_default_settings', 'kmblog_get_settings', 'kmblog_opt', 'kmblog_reading_time', 'kmblog_is_blog_page',
+			'kmblog_locate', 'kmblog_get_template', 'kmblog_related_posts', 'kmblog_link', 'kmblog_featured_id',
+			'kmblog_register_content_types', 'kmblog_subtitle_box', 'kmblog_sanitize_settings', 'kmblog_settings_page',
+			'kmblog_load_assets', 'kmblog_mode', 'kmblog_count_words', 'kmblog_has_shortcode', 'kmblog_plain_title',
 			'kmblog_primary_term', 'kmblog_seo_plugin_active', 'kmblog_on_color', 'kmblog_icon', 'kmblog_meta_tag',
 			'kmblog_head_single', 'kmblog_head_archive', 'kmblog_breadcrumb_schema', 'kmblog_print_jsonld',
 		);
@@ -57,7 +62,7 @@ if ( $kmblog_conflicts ) {
 		if ( ! current_user_can( 'activate_plugins' ) ) {
 			return;
 		}
-		echo '<div class="notice notice-error"><p><strong>KM Blog ' . esc_html( '1.2.1' ) . ' n’a pas été chargé pour éviter une erreur fatale :</strong></p><ul style="list-style:disc;padding-left:20px">';
+		echo '<div class="notice notice-error"><p><strong>KM Blog ' . esc_html( '1.3.0' ) . ' n’a pas été chargé pour éviter une erreur fatale :</strong></p><ul style="list-style:disc;padding-left:20px">';
 		foreach ( $kmblog_conflicts as $c ) {
 			echo '<li>' . esc_html( $c ) . '</li>';
 		}
@@ -68,25 +73,25 @@ if ( $kmblog_conflicts ) {
 	return;
 }
 
-define( 'KMB_VERSION', '1.2.1' );
-define( 'KMB_FILE', __FILE__ );
-define( 'KMB_DIR', plugin_dir_path( __FILE__ ) );
-define( 'KMB_URL', plugin_dir_url( __FILE__ ) );
+define( 'KMBLOG_VERSION', '1.3.0' );
+define( 'KMBLOG_FILE', __FILE__ );
+define( 'KMBLOG_DIR', plugin_dir_path( __FILE__ ) );
+define( 'KMBLOG_URL', plugin_dir_url( __FILE__ ) );
 
-require_once KMB_DIR . 'includes/helpers.php';
-require_once KMB_DIR . 'includes/post-types.php';
-require_once KMB_DIR . 'includes/settings.php';
-require_once KMB_DIR . 'includes/templates.php';
-require_once KMB_DIR . 'includes/shortcode.php';
-require_once KMB_DIR . 'includes/schema.php';
+require_once KMBLOG_DIR . 'includes/helpers.php';
+require_once KMBLOG_DIR . 'includes/post-types.php';
+require_once KMBLOG_DIR . 'includes/settings.php';
+require_once KMBLOG_DIR . 'includes/templates.php';
+require_once KMBLOG_DIR . 'includes/shortcode.php';
+require_once KMBLOG_DIR . 'includes/schema.php';
 
 register_activation_hook( __FILE__, function () {
-	if ( false === get_option( 'kmb_settings' ) ) {
-		add_option( 'kmb_settings', kmb_default_settings() );
+	if ( false === get_option( 'kmblog_settings' ) ) {
+		add_option( 'kmblog_settings', kmblog_default_settings() );
 	}
-	kmb_register_content_types();
+	kmblog_register_content_types();
 	flush_rewrite_rules();
-	update_option( 'kmb_version', KMB_VERSION, false );
+	update_option( 'kmblog_version', KMBLOG_VERSION, false );
 } );
 
 register_deactivation_hook( __FILE__, function () {
@@ -97,6 +102,6 @@ register_deactivation_hook( __FILE__, function () {
 
 // Lien « Réglages » dans la liste des extensions.
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), function ( $links ) {
-	array_unshift( $links, '<a href="' . esc_url( admin_url( 'edit.php?post_type=km_blog&page=kmb-settings' ) ) . '">Réglages</a>' );
+	array_unshift( $links, '<a href="' . esc_url( admin_url( 'edit.php?post_type=km_blog&page=kmblog-settings' ) ) . '">Réglages</a>' );
 	return $links;
 } );

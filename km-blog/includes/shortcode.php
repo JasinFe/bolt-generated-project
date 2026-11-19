@@ -42,28 +42,28 @@ add_shortcode( 'km_blog', function ( $atts ) {
 	}
 
 	$q = new WP_Query( $args );
-	kmb_load_assets();
+	kmblog_load_assets();
 
 	$cols = min( 4, max( 1, absint( $a['columns'] ) ) );
 	$more = ! in_array( strtolower( trim( (string) $a['more'] ) ), array( '0', 'false', 'no', 'non', 'off', '' ), true );
 
 	ob_start();
-	echo '<div class="kmb kmb-embed kmb--' . esc_attr( kmblog_mode() ) . '">';
+	echo '<div class="kmblog kmblog-embed kmblog--' . esc_attr( kmblog_mode() ) . '">';
 	if ( '' !== trim( $a['title'] ) ) {
-		echo '<h2 class="kmb-section-title">' . esc_html( $a['title'] ) . '</h2>';
+		echo '<h2 class="kmblog-section-title">' . esc_html( $a['title'] ) . '</h2>';
 	}
 	if ( $q->have_posts() ) {
-		echo '<div class="kmb-grid kmb-cols-' . (int) $cols . '">';
+		echo '<div class="kmblog-grid kmblog-cols-' . (int) $cols . '">';
 		while ( $q->have_posts() ) {
 			$q->the_post();
-			kmb_get_template( 'card', array( 'kmb_heading' => '' !== trim( $a['title'] ) ? 'h3' : 'h2' ) );
+			kmblog_get_template( 'card', array( 'kmb_heading' => '' !== trim( $a['title'] ) ? 'h3' : 'h2' ) );
 		}
 		echo '</div>';
 		if ( $more ) {
-			echo '<p class="kmb-more"><a class="kmb-btn" href="' . esc_url( get_post_type_archive_link( 'km_blog' ) ) . '">Tous les articles ' . kmblog_icon( 'arrow' ) . '</a></p>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			echo '<p class="kmblog-more"><a class="kmblog-btn" href="' . esc_url( get_post_type_archive_link( 'km_blog' ) ) . '">Tous les articles ' . kmblog_icon( 'arrow' ) . '</a></p>'; // phpcs:ignore WordPress.Security.EscapeOutput
 		}
 	} else {
-		echo '<p class="kmb-empty">Aucun article pour le moment.</p>';
+		echo '<p class="kmblog-empty">Aucun article pour le moment.</p>';
 	}
 	echo '</div>';
 	wp_reset_postdata();
